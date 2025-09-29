@@ -67,14 +67,9 @@ class LoginApp {
 
     // Botones de login alternativo
     const googleLoginBtn = document.querySelector('.google-login');
-    const microsoftLoginBtn = document.querySelector('.microsoft-login');
 
     if (googleLoginBtn) {
       googleLoginBtn.addEventListener('click', () => this.handleAlternativeLogin('google'));
-    }
-
-    if (microsoftLoginBtn) {
-      microsoftLoginBtn.addEventListener('click', () => this.handleAlternativeLogin('microsoft'));
     }
 
     // Enlaces
@@ -590,7 +585,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Log de información del sistema
   console.log('Sistema de login UCN inicializado');
-  console.log('Versión: 2.1.0');
+  console.log('Versión: 1.0.1');
   console.log('Entorno:', window.location.hostname === 'localhost' ? 'desarrollo' : 'producción');
 });
 
