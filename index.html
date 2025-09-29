@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Login - Proyecto Integrador</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Contenedor principal -->
+    <div class="main-container">
+        <!-- Navegación superior -->
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-logo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>UCN Portal</span>
+                </div>
+                <div class="nav-links">
+                    <a href="#" class="nav-link">Inicio</a>
+                    <a href="#" class="nav-link">Ayuda</a>
+                    <a href="#" class="nav-link">Contacto</a>
+                </div>
+                <div class="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Contenido principal -->
+        <main class="main-content">
+            <!-- Sección izquierda - Formulario de login -->
+            <section class="login-section">
+                <div class="login-container">
+                    <div class="login-header">
+                        <h2>Iniciar Sesión</h2>
+                        <p>Ingresa tus credenciales para acceder al sistema</p>
+                    </div>
+
+                    <!-- Formulario de login -->
+                    <form class="login-form" id="loginForm">
+                        <div class="form-group">
+                            <label for="username" class="form-label">
+                                <i class="fas fa-user"></i>
+                                Usuario o Email
+                            </label>
+                            <input 
+                                type="text" 
+                                id="username" 
+                                name="username" 
+                                class="form-input" 
+                                placeholder="Ingresa tu usuario o email"
+                                required
+                                autocomplete="username"
+                            >
+                            <div class="error-message" id="usernameError"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock"></i>
+                                Contraseña
+                            </label>
+                            <div class="password-input-container">
+                                <input 
+                                    type="password" 
+                                    id="password" 
+                                    name="password" 
+                                    class="form-input" 
+                                    placeholder="Ingresa tu contraseña"
+                                    required
+                                    autocomplete="current-password"
+                                >
+                                <button type="button" class="password-toggle" id="passwordToggle">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="error-message" id="passwordError"></div>
+                        </div>
+
+                        <div class="form-options">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="rememberMe" name="rememberMe">
+                                <span class="checkmark"></span>
+                                Recordar sesión
+                            </label>
+                            <a href="#" class="forgot-password">¿Olvidaste tu contraseña?</a>
+                        </div>
+
+                        <button type="submit" class="login-btn" id="loginBtn">
+                            <span class="btn-text">Iniciar Sesión</span>
+                            <div class="btn-loading" style="display: none;">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <span>Verificando...</span>
+                            </div>
+                        </button>
+
+                        <div class="form-divider">
+                            <span>o</span>
+                        </div>
+
+                        <!-- Opciones adicionales de acceso -->
+                        <div class="alternative-login">
+                            <button type="button" class="alt-login-btn google-login">
+                                <i class="fab fa-google"></i>
+                                Continuar con Google
+                            </button>
+                            <button type="button" class="alt-login-btn microsoft-login">
+                                <i class="fab fa-microsoft"></i>
+                                Continuar con Microsoft
+                            </button>
+                        </div>
+
+                        <!-- Enlaces adicionales -->
+                        <div class="additional-links">
+                            <p>¿No tienes cuenta? <a href="#" class="register-link">Solicitar acceso</a></p>
+                            <p>¿Eres docente? <a href="#" class="faculty-link">Acceso para docentes</a></p>
+                        </div>
+                    </form>
+
+                    <!-- Mensaje de estado -->
+                    <div class="status-message" id="statusMessage" style="display: none;">
+                        <div class="status-content">
+                            <i class="status-icon"></i>
+                            <span class="status-text"></span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sección derecha - Información -->
+            <section class="info-section">
+                <div class="info-content">
+                    <div class="university-branding">
+                        <div class="university-logo">
+                            <img src="images/ucn-logo.png" alt="UCN Logo" class="ucn-logo-img">
+                        </div>
+                        <h1>Universidad Católica del Norte</h1>
+                        <p class="university-subtitle">PredictClass</p>
+                    </div>
+                    
+                    <div class="features-list">
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Acceso seguro a tus datos académicos</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Consulta de notas y calificaciones</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Gestión de horarios y materias</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Comunicación con docentes</span>
+                        </div>
+                    </div>
+
+                    <div class="contact-info">
+                        <p>Desarrollado por:</p>
+                        <div class="contact-methods">
+                            <span><i class="fas fa-user-graduate"></i> Branco Abalos Ortiz - RUT: 21.619.393-8</span>
+                            <span><i class="fas fa-user-graduate"></i> Nicolás Cordero Varas - RUT: 20.543.155-1</span>
+                            <span><i class="fas fa-user-graduate"></i> Maximiliano Urrutia Araya - RUT: 21.573.565-6</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <p>&copy; 2025 Universidad Católica del Norte. Todos los derechos reservados.</p>
+                    <div class="footer-links">
+                        <a href="#">Términos de Servicio</a>
+                        <a href="#">Política de Privacidad</a>
+                        <a href="#">Soporte Técnico</a>
+                    </div>
+                </div>
+                <div class="footer-version">
+                    <span>Versión 2.1.0</span>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Modal de carga -->
+    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Verificando credenciales...</p>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="script.js"></script>
+</body>
+</html>
