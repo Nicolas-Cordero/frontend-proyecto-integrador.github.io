@@ -1,19 +1,19 @@
 // ===== CONFIGURACIÓN Y CONSTANTES =====
-const CONFIG = {
-  API_BASE_URL: 'https://puclaro.ucn.cl/eross/avance',
+const CONFIGURACION = {
+  URL_BASE_API: 'https://puclaro.ucn.cl/eross/avance',
   ENDPOINTS: {
     LOGIN: '/auth/login',
     VALIDATE: '/auth/validate',
     REFRESH: '/auth/refresh'
   },
-  STORAGE_KEYS: {
-    USER_DATA: 'ucn_user_data'
+  CLAVES_ALMACENAMIENTO: {
+    DATOS_USUARIO: 'ucn_user_data'
     // Solo sessionStorage para desarrollo
   },
-  VALIDATION: {
-    MIN_PASSWORD_LENGTH: 3,
-    MAX_LOGIN_ATTEMPTS: 3,
-    LOCKOUT_DURATION: 300000 // 5 minutos en milisegundos
+  VALIDACION: {
+    LONGITUD_MINIMA_CONTRASENA: 3,
+    MAX_INTENTOS_LOGIN: 3,
+    DURACION_BLOQUEO: 300000 // 5 minutos en milisegundos
   }
 };
 
@@ -23,86 +23,87 @@ const CONFIG = {
 // ===== CLASE PRINCIPAL DE LA APLICACIÓN =====
 class LoginApp {
   constructor() {
-    this.init();
+    this.inicializar();
   }
 
   // Inicialización de la aplicación
-  init() {
-    this.bindEvents();
-    this.checkExistingSession();
-    this.setupFormValidation();
+  inicializar() {
+    this.enlazarEventos();
+    this.verificarSesionExistente();
+    this.configurarValidacionFormulario();
   }
 
   // ===== MANEJO DE EVENTOS =====
-  bindEvents() {
+  enlazarEventos() {
     // Formulario de login
     const loginForm = document.getElementById('loginForm');
     if (loginForm) {
-      loginForm.addEventListener('submit', this.handleLogin.bind(this));
+      loginForm.addEventListener('submit', this.manejarInicioSesion.bind(this));
     }
 
     // Toggle de contraseña
-    const passwordToggle = document.getElementById('passwordToggle');
+    const passwordToggle = document.getElementById('alternarContrasena');
     if (passwordToggle) {
-      passwordToggle.addEventListener('click', this.togglePasswordVisibility.bind(this));
+      passwordToggle.addEventListener('click', this.alternarVisibilidadContrasena.bind(this));
     }
 
     // Validación en tiempo real
-    const usernameInput = document.getElementById('username');
-    const passwordInput = document.getElementById('password');
+    const usernameInput = document.getElementById('usuario');
+    const passwordInput = document.getElementById('contrasena');
 
     if (usernameInput) {
-      usernameInput.addEventListener('blur', () => this.validateField('username'));
-      usernameInput.addEventListener('input', this.clearErrors.bind(this, 'username'));
+      usernameInput.addEventListener('blur', () => this.validarCampo('usuario'));
+      usernameInput.addEventListener('input', this.limpiarErrores.bind(this, 'usuario'));
     }
 
     if (passwordInput) {
-      passwordInput.addEventListener('blur', () => this.validateField('password'));
-      passwordInput.addEventListener('input', this.clearErrors.bind(this, 'password'));
+      passwordInput.addEventListener('blur', () => this.validarCampo('contrasena'));
+      passwordInput.addEventListener('input', this.limpiarErrores.bind(this, 'contrasena'));
     }
 
     // Botones de login alternativo
     const googleLoginBtn = document.querySelector('.google-login');
 
     if (googleLoginBtn) {
-      googleLoginBtn.addEventListener('click', () => this.handleAlternativeLogin('google'));
+      googleLoginBtn.addEventListener('click', () => this.manejarInicioSesionAlternativo('google'));
     }
 
     // Enlaces
     const forgotPasswordLink = document.querySelector('.forgot-password');
     if (forgotPasswordLink) {
-      forgotPasswordLink.addEventListener('click', this.handleForgotPassword.bind(this));
+      forgotPasswordLink.addEventListener('click', this.manejarOlvidoContrasena.bind(this));
     }
 
     // Menú móvil
     const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
     if (mobileMenuBtn) {
-      mobileMenuBtn.addEventListener('click', this.toggleMobileMenu.bind(this));
+      mobileMenuBtn.addEventListener('click', this.alternarMenuMovil.bind(this));
     }
 
     // Tecla Enter en campos
     document.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter' && (e.target.id === 'username' || e.target.id === 'password')) {
-        this.handleLogin(e);
+      if (e.key === 'Enter' && (e.target.id === 'usuario' || e.target.id === 'contrasena')) {
+        this.manejarInicioSesion(e);
       }
     });
   }
 
   // ===== VALIDACIÓN DE FORMULARIO =====
-  setupFormValidation() {
+  configurarValidacionFormulario() {
     const form = document.getElementById('loginForm');
     if (!form) return;
 
     // Configurar validación HTML5 personalizada
     const inputs = form.querySelectorAll('input[required]');
     inputs.forEach(input => {
-      input.addEventListener('invalid', this.handleInvalidInput.bind(this));
+      input.addEventListener('invalid', this.manejarEntradaInvalida.bind(this));
     });
   }
 
-  validateField(fieldName) {
+  validarCampo(fieldName) {
     const input = document.getElementById(fieldName);
-    const errorElement = document.getElementById(`${fieldName}Error`);
+    const errorElementId = fieldName === 'usuario' ? 'errorUsuario' : fieldName === 'contrasena' ? 'errorContrasena' : `${fieldName}Error`;
+    const errorElement = document.getElementById(errorElementId);
     
     if (!input || !errorElement) return false;
 
@@ -110,23 +111,23 @@ class LoginApp {
     let errorMessage = '';
 
     switch (fieldName) {
-      case 'username':
-        isValid = this.validateUsername(input.value);
+      case 'usuario':
+        isValid = this.validarNombreUsuario(input.value);
         errorMessage = isValid ? '' : 'Ingresa un usuario o email válido';
         break;
-      case 'password':
-        isValid = this.validatePassword(input.value);
-        errorMessage = isValid ? '' : `La contraseña debe tener al menos ${CONFIG.VALIDATION.MIN_PASSWORD_LENGTH} caracteres`;
+      case 'contrasena':
+        isValid = this.validarContrasena(input.value);
+        errorMessage = isValid ? '' : `La contraseña debe tener al menos ${CONFIGURACION.VALIDACION.LONGITUD_MINIMA_CONTRASENA} caracteres`;
         break;
     }
 
-    this.showFieldError(fieldName, errorMessage);
-    this.updateFieldStyles(input, isValid);
+    this.mostrarErrorCampo(errorElementId, errorMessage);
+    this.actualizarEstilosCampo(input, isValid);
 
     return isValid;
   }
 
-  validateUsername(username) {
+  validarNombreUsuario(username) {
     if (!username || username.trim().length === 0) return false;
     
     // Validar email si contiene @
@@ -140,13 +141,13 @@ class LoginApp {
     return usernameRegex.test(username);
   }
 
-  validatePassword(password) {
-    return password && password.length >= CONFIG.VALIDATION.MIN_PASSWORD_LENGTH;
+  validarContrasena(password) {
+    return password && password.length >= CONFIGURACION.VALIDACION.LONGITUD_MINIMA_CONTRASENA;
   }
 
   // ===== MANEJO DE ERRORES VISUALES =====
-  showFieldError(fieldName, message) {
-    const errorElement = document.getElementById(`${fieldName}Error`);
+  mostrarErrorCampo(errorElementId, message) {
+    const errorElement = document.getElementById(errorElementId);
     if (!errorElement) return;
 
     if (message) {
@@ -157,15 +158,16 @@ class LoginApp {
     }
   }
 
-  clearErrors(fieldName) {
-    this.showFieldError(fieldName, '');
+  limpiarErrores(fieldName) {
+    const errorElementId = fieldName === 'usuario' ? 'errorUsuario' : fieldName === 'contrasena' ? 'errorContrasena' : `${fieldName}Error`;
+  this.mostrarErrorCampo(errorElementId, '');
     const input = document.getElementById(fieldName);
     if (input) {
-      this.updateFieldStyles(input, true);
+      this.actualizarEstilosCampo(input, true);
     }
   }
 
-  updateFieldStyles(input, isValid) {
+  actualizarEstilosCampo(input, isValid) {
     if (isValid) {
       input.classList.remove('invalid');
       input.classList.add('valid');
@@ -175,60 +177,61 @@ class LoginApp {
     }
   }
 
-  handleInvalidInput(event) {
+  manejarEntradaInvalida(event) {
     event.preventDefault();
     const input = event.target;
     const fieldName = input.name || input.id;
     
     let message = '';
     if (input.validity.valueMissing) {
-      message = `El campo ${fieldName === 'username' ? 'usuario' : 'contraseña'} es requerido`;
+      message = `El campo ${fieldName === 'usuario' ? 'usuario' : 'contraseña'} es requerido`;
     } else if (input.validity.typeMismatch) {
       message = 'Formato no válido';
     }
     
-    this.showFieldError(fieldName, message);
+    const errorElementId = fieldName === 'usuario' ? 'errorUsuario' : fieldName === 'contrasena' ? 'errorContrasena' : `${fieldName}Error`;
+    this.showFieldError(errorElementId, message);
   }
 
   // ===== FUNCIONALIDAD DE LOGIN =====
-  async handleLogin(event) {
+  async manejarInicioSesion(event) {
     event.preventDefault();
 
     const formData = new FormData(event.target);
     const loginData = {
-      username: formData.get('username')?.trim(),
-      password: formData.get('password')
+      username: formData.get('usuario')?.trim(),
+      password: formData.get('contrasena')
     };
 
     // Validar campos
-    const isUsernameValid = this.validateField('username');
-    const isPasswordValid = this.validateField('password');
+  const isUsernameValid = this.validarCampo('usuario');
+  const isPasswordValid = this.validarCampo('contrasena');
 
     if (!isUsernameValid || !isPasswordValid) {
-      this.showStatusMessage('error', 'Por favor corrige los errores antes de continuar');
+      this.mostrarMensajeEstado('error', 'Por favor corrige los errores antes de continuar');
       return;
     }
 
     try {
-      this.showLoading(true);
+      this.mostrarCarga(true);
       
-      const result = await this.performLogin(loginData);
+      const result = await this.realizarInicioSesion(loginData);
       
       if (result.success) {
-        this.handleLoginSuccess(result.data);
+        this.manejarInicioSesionExitoso(result.data);
       } else {
-        this.handleLoginError(result.error);
+        this.manejarErrorInicioSesion(result.error);
       }
     } catch (error) {
-      this.handleLoginError('Error al procesar la solicitud');
+      this.manejarErrorInicioSesion('Error al procesar la solicitud');
     } finally {
-      this.showLoading(false);
+      this.mostrarCarga(false);
     }
   }
 
-  async performLogin(loginData) {
+  async realizarInicioSesion(loginData) {
     try {
-      const response = await fetch(`${CONFIG.API_BASE_URL}${CONFIG.ENDPOINTS.LOGIN}`, {
+      const response = await fetch(`${CONFIGURACION.URL_BASE_API}${CONFIGURACION.ENDPOINTS.LOGIN}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -254,8 +257,8 @@ class LoginApp {
       // Modo desarrollo: usar mockups hardcodeados
       console.warn('🔧 API no disponible, usando modo desarrollo');
       
-      // Buscar usuario en MOCK_USERS (datos hardcodeados)
-      const user = MOCK_USERS.find(u => 
+      // Buscar usuario en USUARIOS_MOCK (datos hardcodeados)
+      const user = USUARIOS_MOCK.find(u => 
         (u.username === loginData.username || u.email === loginData.username) && 
         u.password === loginData.password
       );
@@ -293,15 +296,15 @@ class LoginApp {
     }
   }
 
-  handleLoginSuccess(data) {
+  manejarInicioSesionExitoso(data) {
     console.log('✅ Login exitoso, datos del usuario:', data.user);
     console.log('📊 academicInfo recibido:', data.user.academicInfo);
     
     // Guardar SOLO en sessionStorage
-    this.saveSessionData(data);
+  this.guardarDatosSesion(data);
 
     // Mostrar mensaje de éxito
-    this.showStatusMessage('success', '¡Inicio de sesión exitoso! Redirigiendo...');
+  this.mostrarMensajeEstado('success', '¡Inicio de sesión exitoso! Redirigiendo...');
 
     // Redirigir al menú principal después de 1.5 segundos
     setTimeout(() => {
@@ -309,27 +312,27 @@ class LoginApp {
     }, 1500);
   }
 
-  handleLoginError(errorMessage) {
-    this.showStatusMessage('error', errorMessage);
+  manejarErrorInicioSesion(errorMessage) {
+    this.mostrarMensajeEstado('error', errorMessage);
 
     // Limpiar contraseña
-    const passwordInput = document.getElementById('password');
+    const passwordInput = document.getElementById('contrasena');
     if (passwordInput) {
       passwordInput.value = '';
     }
   }
 
   // ===== GESTIÓN DE SESIÓN =====
-  saveSessionData(data) {
+  guardarDatosSesion(data) {
     // SOLO sessionStorage para desarrollo
     if (data.user) {
-      sessionStorage.setItem(CONFIG.STORAGE_KEYS.USER_DATA, JSON.stringify(data.user));
+      sessionStorage.setItem(CONFIGURACION.CLAVES_ALMACENAMIENTO.DATOS_USUARIO, JSON.stringify(data.user));
       console.log('✅ Usuario guardado en sessionStorage:', data.user);
     }
   }
 
-  checkExistingSession() {
-    const userData = sessionStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA);
+  verificarSesionExistente() {
+    const userData = sessionStorage.getItem(CONFIGURACION.CLAVES_ALMACENAMIENTO.DATOS_USUARIO);
     
     if (userData) {
       console.log('Sesión existente encontrada');
@@ -338,15 +341,15 @@ class LoginApp {
     }
   }
 
-  clearSessionData() {
+  limpiarDatosSesion() {
     sessionStorage.clear();
     console.log('✅ SessionStorage limpiado');
   }
 
   // ===== FUNCIONALIDADES ADICIONALES =====
-  togglePasswordVisibility() {
-    const passwordInput = document.getElementById('password');
-    const toggleBtn = document.getElementById('passwordToggle');
+  alternarVisibilidadContrasena() {
+    const passwordInput = document.getElementById('contrasena');
+    const toggleBtn = document.getElementById('alternarContrasena');
     
     if (!passwordInput || !toggleBtn) return;
 
@@ -359,28 +362,28 @@ class LoginApp {
     }
   }
 
-  handleAlternativeLogin(provider) {
-    this.showStatusMessage('warning', `Login con ${provider} no está disponible temporalmente`);
+  manejarInicioSesionAlternativo(provider) {
+    this.mostrarMensajeEstado('warning', `Login con ${provider} no está disponible temporalmente`);
   }
 
-  handleForgotPassword(event) {
+  manejarOlvidoContrasena(event) {
     event.preventDefault();
-    this.showStatusMessage('info', 'Contacta al administrador para recuperar tu contraseña: soporte@ucn.cl');
+    this.mostrarMensajeEstado('info', 'Contacta al administrador para recuperar tu contraseña: soporte@ucn.cl');
   }
 
-  toggleMobileMenu() {
+  alternarMenuMovil() {
     // Implementar funcionalidad de menú móvil si es necesario
     console.log('Toggle mobile menu');
   }
 
   // ===== UI HELPERS =====
-  showLoading(show) {
-    const loginBtn = document.getElementById('loginBtn');
-    const loadingOverlay = document.getElementById('loadingOverlay');
+  mostrarCarga(show) {
+    const loginBtn = document.getElementById('botonLogin');
+    const loadingOverlay = document.getElementById('superposicionCarga');
     
     if (loginBtn) {
-      const btnText = loginBtn.querySelector('.btn-text');
-      const btnLoading = loginBtn.querySelector('.btn-loading');
+      const btnText = loginBtn.querySelector('.texto-boton');
+      const btnLoading = loginBtn.querySelector('.carga-boton');
       
       if (show) {
         loginBtn.disabled = true;
@@ -398,8 +401,8 @@ class LoginApp {
     }
   }
 
-  showStatusMessage(type, message) {
-    const statusElement = document.getElementById('statusMessage');
+  mostrarMensajeEstado(type, message) {
+    const statusElement = document.getElementById('mensajeEstado');
     if (!statusElement) return;
 
     const statusIcon = statusElement.querySelector('.status-icon');
@@ -447,11 +450,11 @@ class LoginApp {
 
 // ===== UTILIDADES ADICIONALES =====
 class Utils {
-  static formatDate(date) {
+  static formatearFecha(date) {
     return new Intl.DateTimeFormat('es-CL').format(date);
   }
 
-  static formatTime(date) {
+  static formatearHora(date) {
     return new Intl.DateTimeFormat('es-CL', {
       hour: '2-digit',
       minute: '2-digit'
@@ -512,5 +515,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ===== EXPORTAR PARA TESTING =====
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { LoginApp, Utils, CONFIG };
+  module.exports = { LoginApp, Utils, CONFIGURACION };
 }

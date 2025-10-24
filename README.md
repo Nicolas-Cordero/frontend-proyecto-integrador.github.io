@@ -161,9 +161,9 @@ Desarrollar un **sitio web integral** donde los estudiantes puedan revisar su tr
 | Sprint | Duración | Fechas | Estado |
 |:------:|:--------:|:------:|:------:|
 | **Sprint 1** | 2 semanas | 01/09 - 14/09 | ✅ **Completado** |
-| **Sprint 2** | 2 semanas | 15/09 - 28/09 | 🔄 **Actual** |
-| **Sprint 3** | 2 semanas | 29/09 - 12/10 | ⏳ Pendiente |
-| **Sprint 4** | 2 semanas | 13/10 - 26/10 | ⏳ Pendiente |
+| **Sprint 2** | 2 semanas | 15/09 - 28/09 | ✅ **Completado** |
+| **Sprint 3** | 2 semanas | 29/09 - 12/10 | ✅ **Completado**  |
+| **Sprint 4** | 2 semanas | 13/10 - 26/10 | 🔄 **Actual** |
 | **Sprint 5** | 2 semanas | 27/10 - 09/11 | ⏳ Pendiente |
 | **Sprint 6** | 2 semanas | 10/11 - 23/11 | ⏳ Pendiente |
 | **Sprint 7** | 2 semanas | 24/11 - 07/12 | ⏳ Pendiente |

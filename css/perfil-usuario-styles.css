@@ -1,7 +1,7 @@
 /* ===== PERFIL DE USUARIO - ESTILOS ===== */
 
 /* Contenedor principal del perfil */
-.profile-container {
+.contenedor-perfil {
   padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
@@ -9,14 +9,14 @@
 }
 
 /* Header del perfil */
-.profile-header {
+.cabecera-perfil {
   display: flex;
   align-items: center;
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
 
-.back-btn {
+.boton-volver {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -31,16 +31,16 @@
   transition: all 0.2s ease;
 }
 
-.back-btn:hover {
+.boton-volver:hover {
   background: var(--gray-200, #e2e8f0);
   transform: translateX(-2px);
 }
 
-.back-btn i {
+.boton-volver i {
   font-size: 1rem;
 }
 
-.profile-header h1 {
+.cabecera-perfil h1 {
   color: var(--gray-800, #1e293b);
   font-size: 2rem;
   font-weight: 700;
@@ -48,11 +48,11 @@
 }
 
 /* Card principal del perfil */
-.profile-main {
+.perfil-principal {
   margin-bottom: 2rem;
 }
 
-.profile-card {
+.tarjeta-perfil {
   background: white;
   border-radius: 1rem;
   padding: 3rem;
@@ -62,11 +62,11 @@
   gap: 3rem;
 }
 
-.profile-avatar-section {
+.seccion-avatar-perfil {
   position: relative;
 }
 
-.profile-avatar-large {
+.avatar-perfil-grande {
   width: 150px;
   height: 150px;
   border-radius: 50%;
@@ -84,13 +84,13 @@
   background-repeat: no-repeat;
 }
 
-.profile-avatar-large img {
+.avatar-perfil-grande img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.change-avatar-btn {
+.boton-cambiar-avatar {
   position: absolute;
   bottom: 5px;
   right: 5px;
@@ -108,44 +108,44 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-.change-avatar-btn:hover {
+.boton-cambiar-avatar:hover {
   background: var(--primary-dark, #1e3a8a);
   transform: scale(1.1);
 }
 
-.change-avatar-btn i {
+.boton-cambiar-avatar i {
   font-size: 1.1rem;
 }
 
-.profile-info-section h2 {
+.seccion-informacion-perfil h2 {
   color: var(--gray-800, #1e293b);
   font-size: 2rem;
   font-weight: 700;
   margin: 0 0 0.5rem 0;
 }
 
-.profile-role {
+.rol-perfil {
   color: var(--primary-color, #1e40af);
   font-size: 1.1rem;
   font-weight: 600;
   margin: 0 0 0.5rem 0;
 }
 
-.profile-email {
+.correo-perfil {
   color: var(--gray-600, #475569);
   font-size: 1rem;
   margin: 0;
 }
 
 /* Detalles del perfil */
-.profile-details {
+.detalles-perfil {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
 
-.detail-card {
+.tarjeta-detalle {
   background: white;
   border-radius: 1rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -153,12 +153,12 @@
   transition: all 0.3s ease;
 }
 
-.detail-card:hover {
+.tarjeta-detalle:hover {
   transform: translateY(-4px);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
-.detail-card-header {
+.cabecera-tarjeta-detalle {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   padding: 1.5rem;
@@ -167,21 +167,21 @@
   gap: 1rem;
 }
 
-.detail-card-header i {
+.cabecera-tarjeta-detalle i {
   font-size: 1.5rem;
 }
 
-.detail-card-header h3 {
+.cabecera-tarjeta-detalle h3 {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
 }
 
-.detail-card-body {
+.cuerpo-tarjeta-detalle {
   padding: 1.5rem;
 }
 
-.detail-row {
+.fila-detalle {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -189,17 +189,17 @@
   border-bottom: 1px solid var(--gray-200, #e2e8f0);
 }
 
-.detail-row:last-child {
+.fila-detalle:last-child {
   border-bottom: none;
 }
 
-.detail-label {
+.etiqueta-detalle {
   color: var(--gray-600, #475569);
   font-weight: 500;
   font-size: 0.95rem;
 }
 
-.detail-value {
+.valor-detalle {
   color: var(--gray-800, #1e293b);
   font-weight: 600;
   font-size: 1rem;
@@ -207,13 +207,13 @@
 }
 
 /* Grid de estadísticas */
-.stats-grid {
+.cuadricula-estadisticas {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 1.5rem;
 }
 
-.stat-item {
+.elemento-estadistica {
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -223,42 +223,42 @@
   transition: all 0.2s ease;
 }
 
-.stat-item:hover {
+.elemento-estadistica:hover {
   background: var(--gray-100, #f1f5f9);
   transform: scale(1.02);
 }
 
-.stat-item i {
+.elemento-estadistica i {
   font-size: 2rem;
   color: var(--primary-color, #1e40af);
 }
 
-.stat-content {
+.contenido-estadistica {
   display: flex;
   flex-direction: column;
 }
 
-.stat-number {
+.numero-estadistica {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--gray-800, #1e293b);
   line-height: 1;
 }
 
-.stat-label {
+.etiqueta-estadistica {
   font-size: 0.85rem;
   color: var(--gray-600, #475569);
   margin-top: 0.25rem;
 }
 
 /* Acciones del perfil */
-.profile-actions {
+.acciones-perfil {
   display: flex;
   gap: 1rem;
   flex-wrap: wrap;
 }
 
-.action-btn {
+.boton-accion {
   display: flex;
   align-items: center;
   gap: 0.75rem;
@@ -271,28 +271,28 @@
   transition: all 0.3s ease;
 }
 
-.action-btn i {
+.boton-accion i {
   font-size: 1.1rem;
 }
 
-.action-btn.primary {
+.boton-accion.primario {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
-.action-btn.primary:hover {
+.boton-accion.primario:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
 }
 
-.action-btn.secondary {
+.boton-accion.secundario {
   background: white;
   color: var(--gray-700, #334155);
   border: 2px solid var(--gray-300, #cbd5e1);
 }
 
-.action-btn.secondary:hover {
+.boton-accion.secundario:hover {
   background: var(--gray-50, #f8fafc);
   border-color: var(--gray-400, #94a3b8);
   transform: translateY(-2px);
@@ -312,62 +312,62 @@
 
 /* Responsividad */
 @media (max-width: 1024px) {
-  .profile-card {
+  .tarjeta-perfil {
     flex-direction: column;
     text-align: center;
     padding: 2rem;
   }
 
-  .profile-details {
+  .detalles-perfil {
     grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 768px) {
-  .profile-container {
+  .contenedor-perfil {
     padding: 1rem;
   }
 
-  .profile-header h1 {
+  .cabecera-perfil h1 {
     font-size: 1.5rem;
   }
 
-  .profile-avatar-large {
+  .avatar-perfil-grande {
     width: 120px;
     height: 120px;
     font-size: 3rem;
   }
 
-  .profile-info-section h2 {
+  .seccion-informacion-perfil h2 {
     font-size: 1.5rem;
   }
 
-  .stats-grid {
+  .cuadricula-estadisticas {
     grid-template-columns: 1fr;
   }
 
-  .profile-actions {
+  .acciones-perfil {
     flex-direction: column;
   }
 
-  .action-btn {
+  .boton-accion {
     width: 100%;
     justify-content: center;
   }
 }
 
 @media (max-width: 480px) {
-  .back-btn span {
+  .boton-volver span {
     display: none;
   }
 
-  .detail-row {
+  .fila-detalle {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
   }
 
-  .detail-value {
+  .valor-detalle {
     text-align: left;
   }
 }

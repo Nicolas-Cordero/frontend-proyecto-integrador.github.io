@@ -1,5 +1,5 @@
 // ===== DATOS DE USUARIOS MOCKUP (HARDCODEADOS) =====
-const MOCK_USERS = [
+const USUARIOS_MOCK = [
   {
     id: 1,
     username: 'nicolas',
@@ -62,9 +62,9 @@ const MOCK_USERS = [
   }
 ];
 
-console.log('✅ Datos de usuarios cargados:', MOCK_USERS.length, 'usuarios con academicInfo completo');
+console.log('✅ Datos de usuarios cargados:', USUARIOS_MOCK.length, 'usuarios con academicInfo completo');
 
 // ===== EXPORTAR PARA USO EN OTROS MÓDULOS =====
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { MOCK_USERS };
+  module.exports = { USUARIOS_MOCK };
 }

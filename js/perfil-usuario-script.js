@@ -1,32 +1,32 @@
 // ===== CONFIGURACIÓN Y CONSTANTES =====
-const STORAGE_KEYS = {
-  USER_DATA: 'ucn_user_data'
+const CLAVES_ALMACENAMIENTO = {
+  DATOS_USUARIO: 'ucn_user_data'
   // Solo sessionStorage para desarrollo
 };
 
 // ===== CLASE PERFIL DE USUARIO =====
-class UserProfileApp {
+class AplicacionPerfilUsuario {
   constructor() {
-    this.userData = null;
-    this.init();
+    this.datosUsuario = null;
+    this.inicializar();
   }
 
   // Inicialización
-  init() {
-    this.loadUserData();
-    this.setupBackButton();
-    this.setupActionButtons();
+  inicializar() {
+    this.cargarDatosUsuario();
+    this.configurarBotonVolver();
+    this.configurarBotonesAccion();
   }
 
   // ===== CARGA DE DATOS DEL USUARIO =====
-  loadUserData() {
+  cargarDatosUsuario() {
     // Solo sessionStorage
-    const userDataStr = sessionStorage.getItem(STORAGE_KEYS.USER_DATA);
+    const cadenaDatosUsuario = sessionStorage.getItem(CLAVES_ALMACENAMIENTO.DATOS_USUARIO);
     
-    if (userDataStr) {
+    if (cadenaDatosUsuario) {
       try {
-        this.userData = JSON.parse(userDataStr);
-        this.displayUserProfile();
+  this.datosUsuario = JSON.parse(cadenaDatosUsuario);
+  this.mostrarPerfilUsuario();
       } catch (error) {
         console.error('Error al parsear datos del usuario:', error);
       }
@@ -35,102 +35,102 @@ class UserProfileApp {
     }
   }
 
-  // ===== VISUALIZACIÓN DEL PERFIL =====
-  displayUserProfile() {
-    if (!this.userData) return;
+    // ===== VISUALIZACIÓN DEL PERFIL =====
+  mostrarPerfilUsuario() {
+    if (!this.datosUsuario) return;
 
     // Avatar grande
-    const avatarLarge = document.getElementById('profileAvatarLarge');
-    if (avatarLarge && this.userData.firstName) {
-      avatarLarge.textContent = this.userData.firstName.charAt(0).toUpperCase();
+    const avatarGrande = document.getElementById('avatarPerfilGrande');
+    if (avatarGrande && this.datosUsuario.firstName) {
+      avatarGrande.textContent = this.datosUsuario.firstName.charAt(0).toUpperCase();
     }
 
     // Nombre completo en header
-    const fullName = document.getElementById('profileFullName');
-    if (fullName) {
-      fullName.textContent = this.userData.name || 
-                            `${this.userData.firstName || ''} ${this.userData.lastName || ''}`.trim();
+    const nombreCompleto = document.getElementById('nombreCompletoPerfil');
+    if (nombreCompleto) {
+      nombreCompleto.textContent = this.datosUsuario.name || 
+                            `${this.datosUsuario.firstName || ''} ${this.datosUsuario.lastName || ''}`.trim();
     }
 
     // Rol
-    const role = document.getElementById('profileRole');
-    if (role && this.userData.role) {
-      const roleTranslations = {
+    const rol = document.getElementById('rolPerfil');
+    if (rol && this.datosUsuario.role) {
+      const traduccionesRol = {
         'student': 'Estudiante',
         'admin': 'Administrador',
         'teacher': 'Profesor'
       };
-      role.textContent = roleTranslations[this.userData.role] || this.userData.role;
+      rol.textContent = traduccionesRol[this.datosUsuario.role] || this.datosUsuario.role;
     }
 
     // Email en header
-    const email = document.getElementById('profileEmail');
-    if (email && this.userData.email) {
-      email.textContent = this.userData.email;
+    const correo = document.getElementById('correoPerfil');
+    if (correo && this.datosUsuario.email) {
+      correo.textContent = this.datosUsuario.email;
     }
 
     // Detalles - Nombre completo
-    const detailFullName = document.getElementById('detailFullName');
-    if (detailFullName) {
-      detailFullName.textContent = this.userData.name || 
-                                   `${this.userData.firstName || ''} ${this.userData.lastName || ''}`.trim();
+    const detalleNombreCompleto = document.getElementById('nombreCompletoDetalle');
+    if (detalleNombreCompleto) {
+      detalleNombreCompleto.textContent = this.datosUsuario.name || 
+                                   `${this.datosUsuario.firstName || ''} ${this.datosUsuario.lastName || ''}`.trim();
     }
 
     // Detalles - RUT
-    const detailRut = document.getElementById('detailRut');
-    if (detailRut && this.userData.rut) {
-      detailRut.textContent = this.userData.rut;
+    const detalleRut = document.getElementById('rutDetalle');
+    if (detalleRut && this.datosUsuario.rut) {
+      detalleRut.textContent = this.datosUsuario.rut;
     }
 
     // Detalles - Username
-    const detailUsername = document.getElementById('detailUsername');
-    if (detailUsername && this.userData.username) {
-      detailUsername.textContent = this.userData.username;
+    const detalleNombreUsuario = document.getElementById('nombreUsuarioDetalle');
+    if (detalleNombreUsuario && this.datosUsuario.username) {
+      detalleNombreUsuario.textContent = this.datosUsuario.username;
     }
 
     // Detalles - Email
-    const detailEmail = document.getElementById('detailEmail');
-    if (detailEmail && this.userData.email) {
-      detailEmail.textContent = this.userData.email;
+    const detalleCorreo = document.getElementById('correoDetalle');
+    if (detalleCorreo && this.datosUsuario.email) {
+      detalleCorreo.textContent = this.datosUsuario.email;
     }
   }
 
   // ===== BOTÓN VOLVER =====
-  setupBackButton() {
-    const backBtn = document.getElementById('backToHome');
-    if (backBtn) {
-      backBtn.addEventListener('click', () => {
+  configurarBotonVolver() {
+    const botonVolver = document.getElementById('volverInicio');
+    if (botonVolver) {
+      botonVolver.addEventListener('click', () => {
         // Disparar evento personalizado para volver al home
-        const event = new CustomEvent('navigateBack');
-        window.dispatchEvent(event);
+        const evento = new CustomEvent('navigateBack');
+        window.dispatchEvent(evento);
       });
     }
   }
 
   // ===== BOTONES DE ACCIÓN =====
-  setupActionButtons() {
-    const actionButtons = document.querySelectorAll('.action-btn');
-    actionButtons.forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const buttonText = e.currentTarget.querySelector('span').textContent;
-        this.handleAction(buttonText);
+  configurarBotonesAccion() {
+    const botonesAccion = document.querySelectorAll('.action-btn');
+    botonesAccion.forEach(boton => {
+      boton.addEventListener('click', (e) => {
+        const textoBoton = e.currentTarget.querySelector('span').textContent;
+        this.manejarAccion(textoBoton);
       });
     });
   }
 
-  handleAction(actionName) {
-    console.log('Acción seleccionada:', actionName);
+  manejarAccion(nombreAccion) {
+    console.log('Acción seleccionada:', nombreAccion);
     
     // Aquí puedes implementar las acciones específicas
-    switch (actionName) {
+    switch (nombreAccion) {
       case 'Editar Perfil':
-        this.showMessage('Función de edición de perfil próximamente', 'info');
+        this.mostrarMensaje('Función de edición de perfil próximamente', 'info');
         break;
       case 'Cambiar Contraseña':
-        this.showMessage('Función de cambio de contraseña próximamente', 'info');
+        this.mostrarMensaje('Función de cambio de contraseña próximamente', 'info');
         break;
       case 'Notificaciones':
-        this.showMessage('Configuración de notificaciones próximamente', 'info');
+        this.mostrarMensaje('Configuración de notificaciones próximamente', 'info');
         break;
       default:
         console.log('Acción no reconocida');
@@ -138,14 +138,14 @@ class UserProfileApp {
   }
 
   // ===== MENSAJES =====
-  showMessage(message, type = 'info') {
+  mostrarMensaje(mensaje, tipo = 'info') {
     // Crear elemento de notificación temporal
-    const notification = document.createElement('div');
-    notification.style.cssText = `
+    const notificacion = document.createElement('div');
+    notificacion.style.cssText = `
       position: fixed;
       top: 2rem;
       right: 2rem;
-      background: ${type === 'info' ? '#3b82f6' : '#10b981'};
+      background: ${tipo === 'info' ? '#3b82f6' : '#10b981'};
       color: white;
       padding: 1rem 1.5rem;
       border-radius: 0.5rem;
@@ -154,11 +154,11 @@ class UserProfileApp {
       animation: slideIn 0.3s ease;
       font-weight: 500;
     `;
-    notification.textContent = message;
+    notificacion.textContent = mensaje;
 
     // Agregar animación
-    const style = document.createElement('style');
-    style.textContent = `
+    const estilo = document.createElement('style');
+    estilo.textContent = `
       @keyframes slideIn {
         from {
           transform: translateX(100%);
@@ -170,25 +170,25 @@ class UserProfileApp {
         }
       }
     `;
-    document.head.appendChild(style);
+    document.head.appendChild(estilo);
 
-    document.body.appendChild(notification);
+    document.body.appendChild(notificacion);
 
     // Remover después de 3 segundos
     setTimeout(() => {
-      notification.style.animation = 'slideIn 0.3s ease reverse';
-      setTimeout(() => notification.remove(), 300);
+      notificacion.style.animation = 'slideIn 0.3s ease reverse';
+      setTimeout(() => notificacion.remove(), 300);
     }, 3000);
   }
 }
 
 // ===== INICIALIZACIÓN =====
 // Solo inicializar si estamos en el contexto del perfil cargado dinámicamente
-if (document.getElementById('profileAvatarLarge')) {
-  window.userProfileApp = new UserProfileApp();
+if (document.getElementById('avatarPerfilGrande')) {
+  window.aplicacionPerfilUsuario = new AplicacionPerfilUsuario();
 }
 
 // ===== EXPORTAR PARA TESTING =====
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { UserProfileApp, STORAGE_KEYS };
+  module.exports = { AplicacionPerfilUsuario, CLAVES_ALMACENAMIENTO };
 }

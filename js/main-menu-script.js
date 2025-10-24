@@ -1,245 +1,243 @@
 // ===== CONFIGURACIÓN Y CONSTANTES =====
-const STORAGE_KEYS = {
-  USER_DATA: 'ucn_user_data'
+const CLAVES_ALMACENAMIENTO = {
+  DATOS_USUARIO: 'ucn_user_data'
   // Solo sessionStorage para desarrollo
 };
 
 // ===== CLASE PRINCIPAL DEL MENÚ =====
 class MainMenuApp {
   constructor() {
-    this.contentArea = null;
-    this.homeContent = null;
-    this.init();
+    this.areaContenido = null;
+    this.contenidoInicio = null;
+    this.inicializar();
   }
 
   // Inicialización de la aplicación
-  init() {
-    this.contentArea = document.querySelector('.content-area');
-    if (this.contentArea) {
+  inicializar() {
+    this.areaContenido = document.querySelector('.area-contenido');
+    if (this.areaContenido) {
       // Guardar el contenido original del home
-      this.homeContent = this.contentArea.innerHTML;
+      this.contenidoInicio = this.areaContenido.innerHTML;
     }
     
-    this.loadUserData();
-    this.setupLogout();
-    this.setupSearch();
-    this.setupProfileNavigation();
-    this.setupMallaActualNavigation();
-    this.setupBackNavigation();
+    this.cargarDatosUsuario();
+    this.configurarCierreSesion();
+    this.configurarBusqueda();
+    this.configurarNavegacionPerfil();
+    this.configurarNavegacionMallaActual();
+    this.configurarNavegacionAtras();
   }
 
     // ===== CARGA DE DATOS DEL USUARIO =====
-  loadUserData() {
+  cargarDatosUsuario() {
     // Solo sessionStorage
-    const userData = sessionStorage.getItem(STORAGE_KEYS.USER_DATA);
+    const datosUsuario = sessionStorage.getItem(CLAVES_ALMACENAMIENTO.DATOS_USUARIO);
     
-    if (userData) {
+    if (datosUsuario) {
       try {
-        const user = JSON.parse(userData);
-        console.log('📥 Usuario cargado desde sessionStorage:', user);
-        this.displayUserInfo(user);
+        const usuario = JSON.parse(datosUsuario);
+  console.log('📥 Usuario cargado desde sessionStorage:', usuario);
+  this.mostrarInformacionUsuario(usuario);
       } catch (error) {
         console.error('Error al parsear datos del usuario:', error);
       }
     } else {
       console.warn('No hay datos de usuario disponibles');
-      this.redirectToLogin();
+      this.redirigirAlInicioSesion();
     }
   }
 
     // ===== VISUALIZACIÓN DE INFORMACIÓN DEL USUARIO =====
-  displayUserInfo(user) {
+  mostrarInformacionUsuario(usuario) {
     // Actualizar nombre de usuario
-    const userNameElement = document.getElementById('userName');
-    if (userNameElement && user.name) {
-      userNameElement.textContent = user.name;
+    const elementoNombreUsuario = document.getElementById('nombreUsuario');
+    if (elementoNombreUsuario && usuario.name) {
+      elementoNombreUsuario.textContent = usuario.name;
     }
     
     // Actualizar avatar con imagen o inicial
-    const avatarElement = document.getElementById('userAvatar');
-    if (avatarElement) {
-      if (user.profilePicture) {
+    const elementoAvatar = document.getElementById('avatarUsuario');
+    if (elementoAvatar) {
+      if (usuario.profilePicture) {
         // Construir ruta relativa desde html/main-menu.html
-        const imagePath = `../${user.profilePicture}`;
-        avatarElement.innerHTML = `<img src="${imagePath}" alt="${user.firstName}">`;
-      } else if (user.firstName) {
-        avatarElement.textContent = user.firstName.charAt(0).toUpperCase();
+        const rutaImagen = `../${usuario.profilePicture}`;
+        elementoAvatar.innerHTML = `<img src="${rutaImagen}" alt="${usuario.firstName}">`;
+      } else if (usuario.firstName) {
+        elementoAvatar.textContent = usuario.firstName.charAt(0).toUpperCase();
       }
     }
     
     // Actualizar email en el contenido
-    const userEmailElement = document.getElementById('userEmail');
-    if (userEmailElement && user.email) {
-      userEmailElement.textContent = user.email;
+    const elementoEmailUsuario = document.getElementById('correoUsuario');
+    if (elementoEmailUsuario && usuario.email) {
+      elementoEmailUsuario.textContent = usuario.email;
     }
   }
 
   // ===== GESTIÓN DE LOGOUT =====
-  setupLogout() {
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-      logoutBtn.addEventListener('click', () => {
-        this.performLogout();
-      });
+  configurarCierreSesion() {
+    const botonCerrarSesion = document.getElementById('botonCerrarSesion');
+    if (botonCerrarSesion) {
+      botonCerrarSesion.addEventListener('click', this.realizarCierreSesion.bind(this));
     }
   }
 
-  performLogout() {
+  realizarCierreSesion() {
     // Limpiar sessionStorage
     sessionStorage.clear();
     
     console.log('✅ Sesión cerrada exitosamente');
     
     // Redirigir al login
-    this.redirectToLogin();
+    this.redirigirAlInicioSesion();
   }
 
-  redirectToLogin() {
+  redirigirAlInicioSesion() {
     window.location.href = 'index.html';
   }
 
   // ===== FUNCIONALIDAD DE BÚSQUEDA =====
-  setupSearch() {
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-      searchInput.addEventListener('input', (e) => {
-        this.handleSearch(e.target.value);
+  configurarBusqueda() {
+    const entradaBusqueda = document.getElementById('entradaBusqueda');
+    if (entradaBusqueda) {
+      entradaBusqueda.addEventListener('input', (e) => {
+        this.manejarBusqueda(e.target.value);
       });
     }
   }
 
-  handleSearch(searchValue) {
-    const searchTerm = searchValue.toLowerCase().trim();
+  manejarBusqueda(valorBusqueda) {
+    const terminoBusqueda = valorBusqueda.toLowerCase().trim();
     
     // Obtener todos los elementos del menú
-    const menuSections = document.querySelectorAll('.menu-section');
-    const bottomItems = document.querySelectorAll('.bottom-item');
+    const seccionesMenu = document.querySelectorAll('.seccion-menu');
+    const elementosInferior = document.querySelectorAll('.elemento-inferior');
     
     // Si no hay término de búsqueda, mostrar todo
-    if (searchTerm === '') {
-      this.showAllMenuItems(menuSections, bottomItems);
+    if (terminoBusqueda === '') {
+      this.mostrarTodosLosElementosMenu(seccionesMenu, elementosInferior);
       return;
     }
     
     // Filtrar elementos del menú principal
-    this.filterMenuSections(menuSections, searchTerm);
+  this.filtrarSeccionesMenu(seccionesMenu, terminoBusqueda);
     
     // Filtrar elementos del footer (excepto logout)
-    this.filterBottomItems(bottomItems, searchTerm);
+    this.filtrarElementosInferiores(elementosInferior, terminoBusqueda);
   }
 
-  showAllMenuItems(menuSections, bottomItems) {
-    menuSections.forEach(section => {
-      section.style.display = '';
-      const menuItems = section.querySelectorAll('.menu-item');
-      menuItems.forEach(item => item.style.display = '');
+  mostrarTodosLosElementosMenu(seccionesMenu, elementosInferior) {
+    seccionesMenu.forEach(seccion => {
+      seccion.style.display = '';
+      const elementosMenu = seccion.querySelectorAll('.elemento-menu');
+      elementosMenu.forEach(elemento => elemento.style.display = '');
     });
     
-    bottomItems.forEach(item => {
-      if (!item.classList.contains('logout')) {
-        item.style.display = '';
+    elementosInferior.forEach(elemento => {
+      if (!elemento.classList.contains('cerrar-sesion')) {
+        elemento.style.display = '';
       }
     });
   }
 
-  filterMenuSections(menuSections, searchTerm) {
-    menuSections.forEach(section => {
-      const menuItems = section.querySelectorAll('.menu-item');
-      let visibleItemsCount = 0;
+  filtrarSeccionesMenu(seccionesMenu, terminoBusqueda) {
+    seccionesMenu.forEach(seccion => {
+      const elementosMenu = seccion.querySelectorAll('.elemento-menu');
+      let contadorElementosVisibles = 0;
       
-      menuItems.forEach(item => {
-        const text = item.querySelector('span').textContent.toLowerCase();
-        if (text.includes(searchTerm)) {
-          item.style.display = '';
-          visibleItemsCount++;
+      elementosMenu.forEach(elemento => {
+        const texto = elemento.querySelector('span').textContent.toLowerCase();
+        if (texto.includes(terminoBusqueda)) {
+          elemento.style.display = '';
+          contadorElementosVisibles++;
         } else {
-          item.style.display = 'none';
+          elemento.style.display = 'none';
         }
       });
       
       // Ocultar sección completa si no tiene elementos visibles
-      if (visibleItemsCount === 0) {
-        section.style.display = 'none';
+      if (contadorElementosVisibles === 0) {
+        seccion.style.display = 'none';
       } else {
-        section.style.display = '';
+        seccion.style.display = '';
       }
     });
   }
 
-  filterBottomItems(bottomItems, searchTerm) {
-    bottomItems.forEach(item => {
-      if (!item.classList.contains('logout')) {
-        const text = item.querySelector('span').textContent.toLowerCase();
-        if (text.includes(searchTerm)) {
-          item.style.display = '';
+  filtrarElementosInferiores(elementosInferior, terminoBusqueda) {
+    elementosInferior.forEach(elemento => {
+      if (!elemento.classList.contains('cerrar-sesion')) {
+        const texto = elemento.querySelector('span').textContent.toLowerCase();
+        if (texto.includes(terminoBusqueda)) {
+          elemento.style.display = '';
         } else {
-          item.style.display = 'none';
+          elemento.style.display = 'none';
         }
       }
     });
   }
 
   // ===== NAVEGACIÓN AL PERFIL =====
-  setupProfileNavigation() {
-    const userName = document.getElementById('userName');
-    const userAvatar = document.getElementById('userAvatar');
+  configurarNavegacionPerfil() {
+    const nombreUsuario = document.getElementById('nombreUsuario');
+    const avatarUsuario = document.getElementById('avatarUsuario');
     
-    if (userName) {
-      userName.addEventListener('click', () => {
-        this.loadProfile();
-        this.setActiveMenuItem('profile');
+    if (nombreUsuario) {
+      nombreUsuario.addEventListener('click', () => {
+        this.cargarPerfil();
+        this.establecerElementoMenuActivo('profile');
       });
     }
     
-    if (userAvatar) {
-      userAvatar.style.cursor = 'pointer';
-      userAvatar.title = 'Ver perfil';
-      userAvatar.addEventListener('click', () => {
-        this.loadProfile();
-        this.setActiveMenuItem('profile');
+    if (avatarUsuario) {
+      avatarUsuario.style.cursor = 'pointer';
+      avatarUsuario.title = 'Ver perfil';
+      avatarUsuario.addEventListener('click', () => {
+        this.cargarPerfil();
+        this.establecerElementoMenuActivo('profile');
       });
     }
   }
 
   // ===== NAVEGACIÓN A MALLA ACTUAL =====
-  setupMallaActualNavigation() {
-    const menuItems = document.querySelectorAll('.menu-item');
+  configurarNavegacionMallaActual() {
+    const elementosMenu = document.querySelectorAll('.elemento-menu');
     
-    menuItems.forEach(item => {
-      const itemText = item.querySelector('span')?.textContent;
-      if (itemText === 'Malla Actual') {
-        item.addEventListener('click', () => {
-          this.loadMallaActual();
-          this.setActiveMenuItem('malla-actual');
+    elementosMenu.forEach(elemento => {
+      const textoElemento = elemento.querySelector('span')?.textContent;
+      if (textoElemento === 'Malla Actual') {
+        elemento.addEventListener('click', () => {
+          this.cargarMallaActual();
+          this.establecerElementoMenuActivo('malla-actual');
         });
       }
     });
   }
 
-  async loadProfile() {
-    if (!this.contentArea) return;
+  async cargarPerfil() {
+    if (!this.areaContenido) return;
 
     try {
       // Obtener datos del usuario (SOLO sessionStorage)
-      const userData = sessionStorage.getItem(STORAGE_KEYS.USER_DATA);
+      const datosUsuario = sessionStorage.getItem(CLAVES_ALMACENAMIENTO.DATOS_USUARIO);
       
-      if (!userData) {
+      if (!datosUsuario) {
         throw new Error('No hay datos de usuario disponibles');
       }
 
-      const user = JSON.parse(userData);
-      console.log('📄 Cargando perfil para usuario:', user);
+      const usuario = JSON.parse(datosUsuario);
+      console.log('📄 Cargando perfil para usuario:', usuario);
 
       // Generar HTML del perfil directamente
-      const profileHTML = this.generateProfileHTML(user);
-      this.contentArea.innerHTML = profileHTML;
+  const htmlPerfil = this.generarHTMLPerfil(usuario);
+      this.areaContenido.innerHTML = htmlPerfil;
 
       // Configurar botón de volver
-      const backBtn = document.getElementById('backToHome');
-      if (backBtn) {
-        backBtn.addEventListener('click', () => {
-          const event = new CustomEvent('navigateBack');
-          window.dispatchEvent(event);
+      const botonVolver = document.getElementById('volverInicio');
+      if (botonVolver) {
+        botonVolver.addEventListener('click', () => {
+          const evento = new CustomEvent('navigateBack');
+          window.dispatchEvent(evento);
         });
       }
 
@@ -247,12 +245,12 @@ class MainMenuApp {
 
     } catch (error) {
       console.error('Error al cargar el perfil:', error);
-      this.contentArea.innerHTML = `
+      this.areaContenido.innerHTML = `
         <div style="padding: 2rem; text-align: center;">
           <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #ef4444; margin-bottom: 1rem;"></i>
           <h2 style="color: #1e293b; margin-bottom: 1rem;">Error al cargar el perfil</h2>
           <p style="color: #64748b; margin-bottom: 2rem;">No se pudo cargar la información del perfil.</p>
-          <button onclick="window.mainMenuApp.loadHome()" style="padding: 0.75rem 2rem; background: #667eea; color: white; border: none; border-radius: 0.5rem; cursor: pointer; font-weight: 600;">
+          <button onclick="window.mainMenuApp.cargarInicio()" style="padding: 0.75rem 2rem; background: #667eea; color: white; border: none; border-radius: 0.5rem; cursor: pointer; font-weight: 600;">
             Volver al inicio
           </button>
         </div>
@@ -261,16 +259,16 @@ class MainMenuApp {
   }
 
   // ===== NAVEGACIÓN A MALLA ACTUAL =====
-  loadMallaActual() {
-    if (!this.contentArea) return;
+  cargarMallaActual() {
+    if (!this.areaContenido) return;
 
     console.log('📊 Cargando Malla Actual...');
 
     // HTML embebido directamente (sin fetch)
-    const mallaHTML = `
-      <div class="malla-actual-container">
-        <div class="malla-header">
-          <button class="back-btn" id="backToHome">
+    const htmlMalla = `
+      <div class="contenedor-malla-actual">
+        <div class="cabecera-malla">
+          <button class="boton-volver" id="volverInicio">
             <i class="fas fa-arrow-left"></i>
             <span>Volver</span>
           </button>
@@ -280,7 +278,7 @@ class MainMenuApp {
           </div>
         </div>
 
-        <div class="malla-content">
+        <div class="contenido-malla">
           <p style="text-align: center; color: #64748b; margin-top: 2rem;">
             Contenido en desarrollo...
           </p>
@@ -288,12 +286,12 @@ class MainMenuApp {
       </div>
     `;
 
-    this.contentArea.innerHTML = mallaHTML;
+    this.areaContenido.innerHTML = htmlMalla;
 
     // Cargar el script de malla-actual
-    const existingScript = document.getElementById('malla-actual-script');
-    if (existingScript) {
-      existingScript.remove();
+    const scriptExistente = document.getElementById('malla-actual-script');
+    if (scriptExistente) {
+      scriptExistente.remove();
     }
 
     const script = document.createElement('script');
@@ -304,62 +302,62 @@ class MainMenuApp {
     console.log('✅ Malla Actual cargada exitosamente');
   }
 
-  generateProfileHTML(user) {
+  generarHTMLPerfil(usuario) {
     // 🔍 DEBUG: Ver qué datos llegan
-    console.log('🔍 DEBUG - Datos del usuario:', user);
-    console.log('🔍 DEBUG - academicInfo:', user.academicInfo);
+    console.log('🔍 DEBUG - Datos del usuario:', usuario);
+    console.log('🔍 DEBUG - academicInfo:', usuario.academicInfo);
     
-    const fullName = user.name || `${user.firstName || ''} ${user.lastName || ''}`.trim();
-    const firstName = user.firstName || 'Usuario';
-    const avatar = firstName.charAt(0).toUpperCase();
-    const role = user.role === 'student' ? 'Estudiante' : user.role === 'admin' ? 'Administrador' : 'Usuario';
-    const email = user.email || 'No disponible';
-    const username = user.username || 'No disponible';
-    const rut = user.rut || 'No disponible';
+    const nombreCompleto = usuario.name || `${usuario.firstName || ''} ${usuario.lastName || ''}`.trim();
+    const nombre = usuario.firstName || 'Usuario';
+    const avatar = nombre.charAt(0).toUpperCase();
+    const rol = usuario.role === 'student' ? 'Estudiante' : usuario.role === 'admin' ? 'Administrador' : 'Usuario';
+    const correo = usuario.email || 'No disponible';
+    const nombreUsuario = usuario.username || 'No disponible';
+    const rut = usuario.rut || 'No disponible';
     
     // ✅ Imagen de perfil o fallback a inicial
-    const profilePicture = user.profilePicture;
+    const fotoPerfil = usuario.profilePicture;
     // Construir ruta relativa desde html/main-menu.html (o donde se cargue el perfil)
-    const imagePath = profilePicture ? `../${profilePicture}` : null;
-    const avatarContent = imagePath 
-      ? `<img src="${imagePath}" alt="${firstName}">` 
+    const rutaImagen = fotoPerfil ? `../${fotoPerfil}` : null;
+    const contenidoAvatar = rutaImagen 
+      ? `<img src="${rutaImagen}" alt="${nombre}">` 
       : avatar;
     
     // Datos académicos (con valores por defecto si no existen)
-    const academicInfo = user.academicInfo || {};
-    const career = academicInfo.career || 'No especificada';
-    const generation = academicInfo.generation || 'No especificada';
-    const currentSemester = academicInfo.currentSemester || 0;
-    const totalSemesters = academicInfo.totalSemesters || 10;
-    const gpa = academicInfo.gpa || 0;
-    const approvedCourses = academicInfo.approvedCourses || 0;
-    const currentCourses = academicInfo.currentCourses || 0;
+    const informacionAcademica = usuario.academicInfo || {};
+    const carrera = informacionAcademica.career || 'No especificada';
+    const generacion = informacionAcademica.generation || 'No especificada';
+    const semestreActual = informacionAcademica.currentSemester || 0;
+    const semestresTotales = informacionAcademica.totalSemesters || 10;
+    const promedio = informacionAcademica.gpa || 0;
+    const ramosAprobados = informacionAcademica.approvedCourses || 0;
+    const ramosActuales = informacionAcademica.currentCourses || 0;
     
     // ✅ Cálculo DINÁMICO del avance curricular basado en semestres
-    const curriculumProgress = totalSemesters > 0 
-      ? Math.round((currentSemester / totalSemesters) * 100) 
+    const progresoCurricular = semestresTotales > 0 
+      ? Math.round((semestreActual / semestresTotales) * 100) 
       : 0;
     
     // Cálculo dinámico de semestres restantes
-    const remainingSemesters = Math.max(0, totalSemesters - currentSemester);
+    const semestresRestantes = Math.max(0, semestresTotales - semestreActual);
     
     // 🔍 DEBUG: Ver valores calculados
     console.log('🔍 DEBUG - Valores calculados:', {
-      career,
-      generation,
-      currentSemester,
-      gpa,
-      approvedCourses,
-      currentCourses,
-      curriculumProgress,
-      remainingSemesters
+      carrera,
+      generacion,
+      semestreActual,
+      promedio,
+      ramosAprobados,
+      ramosActuales,
+      progresoCurricular,
+      semestresRestantes
     });
 
     return `
-      <div class="profile-container">
+      <div class="contenedor-perfil">
         <!-- Header del perfil -->
-        <div class="profile-header">
-          <button class="back-btn" id="backToHome">
+        <div class="cabecera-perfil">
+          <button class="boton-volver" id="volverInicio">
             <i class="fas fa-arrow-left"></i>
             <span>Volver</span>
           </button>
@@ -367,108 +365,108 @@ class MainMenuApp {
         </div>
 
         <!-- Información principal del usuario -->
-        <div class="profile-main">
-          <div class="profile-card">
-            <div class="profile-avatar-section">
-              <div class="profile-avatar-large">${avatarContent}</div>
-              <button class="change-avatar-btn">
+        <div class="perfil-principal">
+          <div class="tarjeta-perfil">
+            <div class="seccion-avatar-perfil">
+              <div class="avatar-perfil-grande">${contenidoAvatar}</div>
+              <button class="boton-cambiar-avatar">
                 <i class="fas fa-camera"></i>
               </button>
             </div>
             
-            <div class="profile-info-section">
-              <h2>${fullName}</h2>
-              <p class="profile-role">${role}</p>
-              <p class="profile-email">${email}</p>
+            <div class="seccion-informacion-perfil">
+              <h2>${nombreCompleto}</h2>
+              <p class="rol-perfil">${rol}</p>
+              <p class="correo-perfil">${correo}</p>
             </div>
           </div>
         </div>
 
         <!-- Detalles del usuario en cards -->
-        <div class="profile-details">
-          <div class="detail-card">
-            <div class="detail-card-header">
+        <div class="detalles-perfil">
+          <div class="tarjeta-detalle">
+            <div class="cabecera-tarjeta-detalle">
               <i class="fas fa-user"></i>
               <h3>Información Personal</h3>
             </div>
-            <div class="detail-card-body">
-              <div class="detail-row">
-                <span class="detail-label">Nombre completo:</span>
-                <span class="detail-value">${fullName}</span>
+            <div class="cuerpo-tarjeta-detalle">
+              <div class="fila-detalle">
+                <span class="etiqueta-detalle">Nombre completo:</span>
+                <span class="valor-detalle">${nombreCompleto}</span>
               </div>
-              <div class="detail-row">
-                <span class="detail-label">RUT:</span>
-                <span class="detail-value">${rut}</span>
+              <div class="fila-detalle">
+                <span class="etiqueta-detalle">RUT:</span>
+                <span class="valor-detalle">${rut}</span>
               </div>
-              <div class="detail-row">
-                <span class="detail-label">Nombre de usuario:</span>
-                <span class="detail-value">${username}</span>
+              <div class="fila-detalle">
+                <span class="etiqueta-detalle">Nombre de usuario:</span>
+                <span class="valor-detalle">${nombreUsuario}</span>
               </div>
-              <div class="detail-row">
-                <span class="detail-label">Correo electrónico:</span>
-                <span class="detail-value">${email}</span>
+              <div class="fila-detalle">
+                <span class="etiqueta-detalle">Correo electrónico:</span>
+                <span class="valor-detalle">${correo}</span>
               </div>
             </div>
           </div>
 
-          <div class="detail-card">
-            <div class="detail-card-header">
+          <div class="tarjeta-detalle">
+            <div class="cabecera-tarjeta-detalle">
               <i class="fas fa-graduation-cap"></i>
               <h3>Información Académica</h3>
             </div>
-            <div class="detail-card-body">
-              <div class="detail-row">
-                <span class="detail-label">Carrera:</span>
-                <span class="detail-value">${career}</span>
+            <div class="cuerpo-tarjeta-detalle">
+              <div class="fila-detalle">
+                <span class="etiqueta-detalle">Carrera:</span>
+                <span class="valor-detalle">${carrera}</span>
               </div>
-              <div class="detail-row">
-                <span class="detail-label">Generación:</span>
-                <span class="detail-value">${generation}</span>
+              <div class="fila-detalle">
+                <span class="etiqueta-detalle">Generación:</span>
+                <span class="valor-detalle">${generacion}</span>
               </div>
-              <div class="detail-row">
-                <span class="detail-label">Nivel actual:</span>
-                <span class="detail-value">${currentSemester}° Semestre</span>
+              <div class="fila-detalle">
+                <span class="etiqueta-detalle">Nivel actual:</span>
+                <span class="valor-detalle">${semestreActual}° Semestre</span>
               </div>
-              <div class="detail-row">
-                <span class="detail-label">Promedio:</span>
-                <span class="detail-value">${gpa.toFixed(1)}</span>
+              <div class="fila-detalle">
+                <span class="etiqueta-detalle">Promedio:</span>
+                <span class="valor-detalle">${promedio.toFixed(1)}</span>
               </div>
             </div>
           </div>
 
-          <div class="detail-card">
-            <div class="detail-card-header">
+          <div class="tarjeta-detalle">
+            <div class="cabecera-tarjeta-detalle">
               <i class="fas fa-chart-line"></i>
               <h3>Estadísticas</h3>
             </div>
-            <div class="detail-card-body">
-              <div class="stats-grid">
-                <div class="stat-item">
+            <div class="cuerpo-tarjeta-detalle">
+              <div class="cuadricula-estadisticas">
+                <div class="elemento-estadistica">
                   <i class="fas fa-book"></i>
-                  <div class="stat-content">
-                    <span class="stat-number">${approvedCourses}</span>
-                    <span class="stat-label">Ramos aprobados</span>
+                  <div class="contenido-estadistica">
+                    <span class="numero-estadistica">${ramosAprobados}</span>
+                    <span class="etiqueta-estadistica">Ramos aprobados</span>
                   </div>
                 </div>
-                <div class="stat-item">
+                <div class="elemento-estadistica">
                   <i class="fas fa-clock"></i>
-                  <div class="stat-content">
-                    <span class="stat-number">${currentCourses}</span>
-                    <span class="stat-label">Ramos actuales</span>
+                  <div class="contenido-estadistica">
+                    <span class="numero-estadistica">${ramosActuales}</span>
+                    <span class="etiqueta-estadistica">Ramos actuales</span>
                   </div>
                 </div>
-                <div class="stat-item">
+                <div class="elemento-estadistica">
                   <i class="fas fa-trophy"></i>
-                  <div class="stat-content">
-                    <span class="stat-number">${curriculumProgress}%</span>
-                    <span class="stat-label">Avance curricular</span>
+                  <div class="contenido-estadistica">
+                    <span class="numero-estadistica">${progresoCurricular}%</span>
+                    <span class="etiqueta-estadistica">Avance curricular</span>
                   </div>
                 </div>
-                <div class="stat-item">
+                <div class="elemento-estadistica">
                   <i class="fas fa-calendar-check"></i>
-                  <div class="stat-content">
-                    <span class="stat-number">${remainingSemesters}</span>
-                    <span class="stat-label">Semestres restantes</span>
+                  <div class="contenido-estadistica">
+                    <span class="numero-estadistica">${semestresRestantes}</span>
+                    <span class="etiqueta-estadistica">Semestres restantes</span>
                   </div>
                 </div>
               </div>
@@ -477,16 +475,16 @@ class MainMenuApp {
         </div>
 
         <!-- Acciones del perfil -->
-        <div class="profile-actions">
-          <button class="action-btn primary" onclick="alert('Función de edición de perfil próximamente')">
+        <div class="acciones-perfil">
+          <button class="boton-accion primario" onclick="alert('Función de edición de perfil próximamente')">
             <i class="fas fa-edit"></i>
             <span>Editar Perfil</span>
           </button>
-          <button class="action-btn secondary" onclick="alert('Función de cambio de contraseña próximamente')">
+          <button class="boton-accion secundario" onclick="alert('Función de cambio de contraseña próximamente')">
             <i class="fas fa-key"></i>
             <span>Cambiar Contraseña</span>
           </button>
-          <button class="action-btn secondary" onclick="alert('Configuración de notificaciones próximamente')">
+          <button class="boton-accion secundario" onclick="alert('Configuración de notificaciones próximamente')">
             <i class="fas fa-bell"></i>
             <span>Notificaciones</span>
           </button>
@@ -495,56 +493,56 @@ class MainMenuApp {
     `;
   }
 
-  setupBackNavigation() {
+  configurarNavegacionAtras() {
     // Escuchar evento de navegación hacia atrás
     window.addEventListener('navigateBack', () => {
-      this.loadHome();
+      this.cargarInicio();
     });
   }
 
-  loadHome() {
-    if (!this.contentArea || !this.homeContent) return;
+  cargarInicio() {
+    if (!this.areaContenido || !this.contenidoInicio) return;
     
-    this.contentArea.innerHTML = this.homeContent;
+    this.areaContenido.innerHTML = this.contenidoInicio;
     
     // Restaurar highlight a "Malla Actual"
-    this.setActiveMenuItem('home');
+    this.establecerElementoMenuActivo('home');
     
     console.log('✅ Volviendo al home');
   }
 
-  setActiveMenuItem(itemType) {
+  establecerElementoMenuActivo(tipoElemento) {
     // Remover clase active de todos los menu-items
-    const allMenuItems = document.querySelectorAll('.menu-item');
-    allMenuItems.forEach(item => item.classList.remove('active'));
+    const todosElementosMenu = document.querySelectorAll('.elemento-menu');
+    todosElementosMenu.forEach(elemento => elemento.classList.remove('active'));
     
     // Remover clase active del nombre de usuario
-    const userName = document.getElementById('userName');
-    if (userName) {
-      userName.classList.remove('active');
+    const nombreUsuario = document.getElementById('nombreUsuario');
+    if (nombreUsuario) {
+      nombreUsuario.classList.remove('active');
     }
     
     // Agregar clase active según el tipo
-    if (itemType === 'profile') {
-      if (userName) {
-        userName.classList.add('active');
+    if (tipoElemento === 'profile') {
+      if (nombreUsuario) {
+        nombreUsuario.classList.add('active');
       }
-    } else if (itemType === 'home') {
+    } else if (tipoElemento === 'home') {
       // Buscar el menu-item que contiene "Malla Actual" y activarlo
-      const menuItems = document.querySelectorAll('.menu-item');
-      menuItems.forEach(item => {
-        const span = item.querySelector('span');
+      const elementosMenu = document.querySelectorAll('.elemento-menu');
+      elementosMenu.forEach(elemento => {
+        const span = elemento.querySelector('span');
         if (span && span.textContent.includes('Malla Actual')) {
-          item.classList.add('active');
+          elemento.classList.add('active');
         }
       });
-    } else if (itemType === 'malla-actual') {
+    } else if (tipoElemento === 'malla-actual') {
       // Buscar el menu-item que contiene "Malla Actual" y activarlo
-      const menuItems = document.querySelectorAll('.menu-item');
-      menuItems.forEach(item => {
-        const span = item.querySelector('span');
+      const elementosMenu = document.querySelectorAll('.elemento-menu');
+      elementosMenu.forEach(elemento => {
+        const span = elemento.querySelector('span');
         if (span && span.textContent.includes('Malla Actual')) {
-          item.classList.add('active');
+          elemento.classList.add('active');
         }
       });
     }
@@ -563,5 +561,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ===== EXPORTAR PARA TESTING =====
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { MainMenuApp, STORAGE_KEYS };
+  module.exports = { MainMenuApp, CLAVES_ALMACENAMIENTO };
 }

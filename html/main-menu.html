@@ -11,62 +11,62 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <aside class="sidebar">
-    <div class="sidebar-top">
-      <div class="user-short">
-        <div class="avatar" id="userAvatar">?</div>
-        <div class="user-info">
-          <div class="user-name" id="userName" title="Ver perfil">Cargando...</div>
+  <aside class="barra-lateral">
+    <div class="parte-superior-barra">
+      <div class="usuario-corto">
+        <div class="avatar" id="avatarUsuario">?</div>
+        <div class="informacion-usuario">
+          <div class="nombre-usuario" id="nombreUsuario" title="Ver perfil">Cargando...</div>
         </div>
       </div>
 
-      <div class="search">
+      <div class="busqueda">
         <i class="fa fa-search"></i>
-        <input type="search" id="searchInput" placeholder="Buscar" aria-label="Buscar">
+        <input type="search" id="entradaBusqueda" placeholder="Buscar" aria-label="Buscar">
       </div>
 
       <nav class="menu">
-        <div class="menu-section">
-          <div class="section-title">DASHBOARD - MI CARRERA</div>
+        <div class="seccion-menu">
+          <div class="titulo-seccion">DASHBOARD - MI CARRERA</div>
           <ul>
-            <li class="menu-item"><i class="fa-regular fa-grid-2"></i><span>ICCI - Gen 2021</span></li>
-            <li class="menu-item"><i class="fa-solid fa-gear"></i><span>Prioridades</span></li>
-            <li class="menu-item"><i class="fa-regular fa-user"></i><span>Malla Actual</span></li>
-            <li class="menu-item"><i class="fa-solid fa-check-double"></i><span>Toma de ramos Óptima</span></li>
-            <li class="menu-item"><i class="fa-regular fa-chart-bar"></i><span>Estadísticas - Histórico</span></li>
+            <li class="elemento-menu"><i class="fa-regular fa-grid-2"></i><span>ICCI - Gen 2021</span></li>
+            <li class="elemento-menu"><i class="fa-solid fa-gear"></i><span>Prioridades</span></li>
+            <li class="elemento-menu"><i class="fa-regular fa-user"></i><span>Malla Actual</span></li>
+            <li class="elemento-menu"><i class="fa-solid fa-check-double"></i><span>Toma de ramos Óptima</span></li>
+            <li class="elemento-menu"><i class="fa-regular fa-chart-bar"></i><span>Estadísticas - Histórico</span></li>
           </ul>
         </div>
 
-        <div class="menu-section">
-          <div class="section-title">OTROS</div>
+        <div class="seccion-menu">
+          <div class="titulo-seccion">OTROS</div>
           <ul>
-            <li class="menu-item"><i class="fa-regular fa-message"></i><span>Feedback - Soporte</span></li>
-            <li class="menu-item"><i class="fa-solid fa-award"></i><span>Capstone Project</span></li>
+            <li class="elemento-menu"><i class="fa-regular fa-message"></i><span>Feedback - Soporte</span></li>
+            <li class="elemento-menu"><i class="fa-solid fa-award"></i><span>Capstone Project</span></li>
           </ul>
         </div>
 
-        <div class="menu-section">
-          <div class="section-title">SETTINGS</div>
+        <div class="seccion-menu">
+          <div class="titulo-seccion">SETTINGS</div>
           <ul>
-            <li class="menu-item"><i class="fa-solid fa-sliders"></i><span>Ajustes</span></li>
+            <li class="elemento-menu"><i class="fa-solid fa-sliders"></i><span>Ajustes</span></li>
           </ul>
         </div>
       </nav>
     </div>
 
-    <div class="sidebar-bottom">
+    <div class="parte-inferior-barra">
       <ul>
-        <li class="bottom-item"><i class="fa-regular fa-circle-question"></i><span>Ayuda</span></li>
-        <li class="bottom-item logout" id="logoutBtn"><i class="fa-solid fa-right-from-bracket"></i><span>Cerrar Sesión</span></li>
+        <li class="elemento-inferior"><i class="fa-regular fa-circle-question"></i><span>Ayuda</span></li>
+        <li class="elemento-inferior cerrar-sesion" id="botonCerrarSesion"><i class="fa-solid fa-right-from-bracket"></i><span>Cerrar Sesión</span></li>
       </ul>
     </div>
   </aside>
 
-  <main class="content-area">
+  <main class="area-contenido">
     <div style="padding: 2rem; text-align: center;">
       <h1>¡Bienvenido a PredictClass!</h1>
       <p style="margin-top: 1rem; color: #64748b;">Has iniciado sesión exitosamente.</p>
-      <p style="margin-top: 0.5rem; color: #64748b;">Usuario: <strong id="userEmail">...</strong></p>
+      <p style="margin-top: 0.5rem; color: #64748b;">Usuario: <strong id="correoUsuario">...</strong></p>
     </div>
   </main>
 

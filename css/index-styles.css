@@ -1,4 +1,3 @@
-/* ===== VARIABLES CSS ===== */
 :root {
   /* Colores primarios */
   --primary-color: #1e40af;
@@ -86,14 +85,14 @@ body {
 }
 
 /* ===== CONTENEDOR PRINCIPAL ===== */
-.main-container {
+.contenedor-principal {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
 
 /* ===== NAVEGACIÓN ===== */
-.navbar {
+.barra-navegacion {
   background: var(--white);
   border-bottom: 1px solid var(--gray-200);
   box-shadow: var(--shadow-sm);
@@ -102,7 +101,7 @@ body {
   z-index: 100;
 }
 
-.nav-container {
+.contenedor-navegacion {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 var(--spacing-md);
@@ -112,7 +111,7 @@ body {
   height: 4rem;
 }
 
-.nav-logo {
+.logo-navegacion {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
@@ -121,16 +120,16 @@ body {
   color: var(--primary-color);
 }
 
-.nav-logo i {
+.logo-navegacion i {
   font-size: 1.5rem;
 }
 
-.nav-links {
+.enlaces-navegacion {
   display: flex;
   gap: var(--spacing-xl);
 }
 
-.nav-link {
+.enlace-navegacion {
   text-decoration: none;
   color: var(--gray-600);
   font-weight: var(--font-weight-medium);
@@ -138,11 +137,11 @@ body {
   position: relative;
 }
 
-.nav-link:hover {
+.enlace-navegacion:hover {
   color: var(--primary-color);
 }
 
-.nav-link::after {
+.enlace-navegacion::after {
   content: '';
   position: absolute;
   bottom: -0.5rem;
@@ -153,11 +152,11 @@ body {
   transition: width var(--transition-normal);
 }
 
-.nav-link:hover::after {
+.enlace-navegacion:hover::after {
   width: 100%;
 }
 
-.mobile-menu-btn {
+.boton-menu-movil {
   display: none;
   cursor: pointer;
   padding: var(--spacing-sm);
@@ -166,7 +165,7 @@ body {
 }
 
 /* ===== CONTENIDO PRINCIPAL ===== */
-.main-content {
+.contenido-principal {
   flex: 1;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -174,7 +173,7 @@ body {
 }
 
 /* ===== SECCIÓN DE INFORMACIÓN ===== */
-.info-section {
+.seccion-informacion {
   background: url('../images/coquimbo.jpg') center/cover no-repeat;
   display: flex;
   align-items: center;
@@ -185,7 +184,7 @@ body {
 
 /* Overlay de cuadrícula removido para mostrar la imagen de fondo en plenitud */
 
-.info-content {
+.contenido-informacion {
   position: relative;
   z-index: 2;
   color: var(--white);
@@ -194,12 +193,12 @@ body {
   text-align: center;
 }
 
-.university-branding {
+.marca-universidad {
   margin-bottom: var(--spacing-3xl);
   text-align: center;
 }
 
-.university-logo {
+.logo-universidad {
   background: rgba(255, 255, 255, 0.9);
   width: 5rem;
   height: 5rem;
@@ -213,18 +212,18 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.university-logo i {
+.logo-universidad i {
   font-size: 2.5rem;
 }
 
-.ucn-logo-img {
+.imagen-logo-ucn {
   width: 100%;
   height: 100%;
   object-fit: contain;
   /* Removido el filtro para mostrar el logo en sus colores originales */
 }
 
-.university-branding h1 {
+.marca-universidad h1 {
   font-size: 2rem;
   font-weight: var(--font-weight-bold);
   margin-bottom: var(--spacing-sm);
@@ -232,21 +231,21 @@ body {
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
-.university-subtitle {
+.subtitulo-universidad {
   font-size: 1.125rem;
   opacity: 0.95;
   font-weight: var(--font-weight-medium);
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7);
 }
 
-.features-list {
+.lista-caracteristicas {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
   margin-bottom: var(--spacing-3xl);
 }
 
-.feature-item {
+.elemento-caracteristica {
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -256,13 +255,13 @@ body {
   text-align: left;
 }
 
-.feature-item i {
+.elemento-caracteristica i {
   color: var(--success-color);
   font-size: 1.25rem;
   flex-shrink: 0;
 }
 
-.contact-info {
+.informacion-contacto {
   padding: var(--spacing-lg);
   background: rgba(255, 255, 255, 0.1);
   border-radius: var(--border-radius-lg);
@@ -270,18 +269,18 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.contact-info p {
+.informacion-contacto p {
   margin-bottom: var(--spacing-md);
   font-weight: var(--font-weight-medium);
 }
 
-.contact-methods {
+.metodos-contacto {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
 }
 
-.contact-methods span {
+.metodos-contacto span {
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -293,7 +292,7 @@ body {
 }
 
 /* ===== SECCIÓN DE LOGIN ===== */
-.login-section {
+.seccion-login {
   background: var(--white);
   display: flex;
   align-items: center;
@@ -301,42 +300,42 @@ body {
   padding: var(--spacing-xl);
 }
 
-.login-container {
+.contenedor-login {
   width: 100%;
   max-width: 400px;
 }
 
-.login-header {
+.cabecera-login {
   text-align: center;
   margin-bottom: var(--spacing-2xl);
 }
 
-.login-header h2 {
+.cabecera-login h2 {
   font-size: 1.875rem;
   font-weight: var(--font-weight-bold);
   color: var(--gray-900);
   margin-bottom: var(--spacing-sm);
 }
 
-.login-header p {
+.cabecera-login p {
   color: var(--gray-600);
   font-size: 0.875rem;
 }
 
 /* ===== FORMULARIO ===== */
-.login-form {
+.formulario-login {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
 }
 
-.form-group {
+.grupo-formulario {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
 }
 
-.form-label {
+.etiqueta-formulario {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
@@ -345,7 +344,7 @@ body {
   font-size: 0.875rem;
 }
 
-.form-input {
+.entrada-formulario {
   width: 100%;
   padding: 0.875rem var(--spacing-md);
   border: 2px solid var(--gray-200);
@@ -359,31 +358,31 @@ body {
   height: 3rem;
 }
 
-.form-input::placeholder {
+.entrada-formulario::placeholder {
   color: var(--gray-400);
   opacity: 1;
 }
 
-.form-input:focus {
+.entrada-formulario:focus {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
-.form-input:invalid:not(:placeholder-shown) {
+.entrada-formulario:invalid:not(:placeholder-shown) {
   border-color: var(--error-color);
 }
 
-.password-input-container {
+.contenedor-entrada-contrasena {
   position: relative;
   width: 100%;
 }
 
-.password-input-container .form-input {
+.contenedor-entrada-contrasena .entrada-formulario {
   padding-right: 3rem;
 }
 
-.password-toggle {
+.alternar-contrasena {
   position: absolute;
   right: 0.75rem;
   top: 50%;
@@ -403,27 +402,27 @@ body {
   border-radius: var(--border-radius-sm);
 }
 
-.password-toggle:hover {
+.alternar-contrasena:hover {
   color: var(--primary-color);
   background: var(--gray-50);
 }
 
-.password-toggle:active {
+.alternar-contrasena:active {
   transform: translateY(-50%) scale(0.95);
 }
 
-.error-message {
+.mensaje-error {
   color: var(--error-color);
   font-size: 0.75rem;
   font-weight: var(--font-weight-medium);
   display: none;
 }
 
-.error-message.show {
+.mensaje-error.show {
   display: block;
 }
 
-.form-options {
+.opciones-formulario {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -431,7 +430,7 @@ body {
   gap: var(--spacing-sm);
 }
 
-.checkbox-container {
+.contenedor-casilla {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
@@ -441,11 +440,11 @@ body {
   user-select: none;
 }
 
-.checkbox-container input {
+.contenedor-casilla input {
   display: none;
 }
 
-.checkmark {
+.marca-verificacion {
   width: 1rem;
   height: 1rem;
   border: 2px solid var(--gray-300);
@@ -456,19 +455,19 @@ body {
   transition: all var(--transition-fast);
 }
 
-.checkbox-container input:checked + .checkmark {
+.contenedor-casilla input:checked + .marca-verificacion {
   background: var(--primary-color);
   border-color: var(--primary-color);
 }
 
-.checkbox-container input:checked + .checkmark::after {
+.contenedor-casilla input:checked + .marca-verificacion::after {
   content: '✓';
   color: var(--white);
   font-size: 0.75rem;
   font-weight: var(--font-weight-bold);
 }
 
-.forgot-password {
+.contrasena-olvidada {
   color: var(--primary-color);
   text-decoration: none;
   font-size: 0.875rem;
@@ -476,12 +475,12 @@ body {
   transition: color var(--transition-fast);
 }
 
-.forgot-password:hover {
+.contrasena-olvidada:hover {
   color: var(--primary-dark);
   text-decoration: underline;
 }
 
-.login-btn {
+.boton-login {
   width: 100%;
   padding: 0.875rem var(--spacing-lg);
   background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-light) 100%);
@@ -497,34 +496,34 @@ body {
   overflow: hidden;
 }
 
-.login-btn:hover:not(:disabled) {
+.boton-login:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: var(--shadow-lg);
 }
 
-.login-btn:active {
+.boton-login:active {
   transform: translateY(0);
 }
 
-.login-btn:disabled {
+.boton-login:disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }
 
-.btn-loading {
+.carga-boton {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: var(--spacing-sm);
 }
 
-.form-divider {
+.divisor-formulario {
   position: relative;
   text-align: center;
   margin: var(--spacing-lg) 0;
 }
 
-.form-divider::before {
+.divisor-formulario::before {
   content: '';
   position: absolute;
   top: 50%;
@@ -534,20 +533,20 @@ body {
   background: var(--gray-200);
 }
 
-.form-divider span {
+.divisor-formulario span {
   background: var(--white);
   padding: 0 var(--spacing-md);
   color: var(--gray-500);
   font-size: 0.875rem;
 }
 
-.alternative-login {
+.login-alternativo {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
 }
 
-.alt-login-btn {
+.boton-login-alternativo {
   width: 100%;
   padding: 0.75rem var(--spacing-lg);
   border: 2px solid var(--gray-200);
@@ -564,88 +563,88 @@ body {
   gap: var(--spacing-sm);
 }
 
-.alt-login-btn:hover {
+.boton-login-alternativo:hover {
   border-color: var(--gray-300);
   background: var(--gray-50);
   transform: translateY(-1px);
   box-shadow: var(--shadow-sm);
 }
 
-.google-login i {
+.login-google i {
   color: #ea4335;
 }
 
-.microsoft-login i {
+.login-microsoft i {
   color: #00a4ef;
 }
 
-.additional-links {
+.enlaces-adicionales {
   text-align: center;
   margin-top: var(--spacing-lg);
 }
 
-.additional-links p {
+.enlaces-adicionales p {
   margin-bottom: var(--spacing-sm);
   font-size: 0.875rem;
   color: var(--gray-600);
 }
 
-.additional-links a {
+.enlaces-adicionales a {
   color: var(--primary-color);
   text-decoration: none;
   font-weight: var(--font-weight-medium);
   transition: color var(--transition-fast);
 }
 
-.additional-links a:hover {
+.enlaces-adicionales a:hover {
   color: var(--primary-dark);
   text-decoration: underline;
 }
 
 /* ===== MENSAJE DE ESTADO ===== */
-.status-message {
+.mensaje-estado {
   margin-top: var(--spacing-lg);
   padding: var(--spacing-md);
   border-radius: var(--border-radius-md);
   border-left: 4px solid;
 }
 
-.status-message.success {
+.mensaje-estado.success {
   background: rgba(16, 185, 129, 0.1);
   border-color: var(--success-color);
   color: var(--success-color);
 }
 
-.status-message.error {
+.mensaje-estado.error {
   background: rgba(239, 68, 68, 0.1);
   border-color: var(--error-color);
   color: var(--error-color);
 }
 
-.status-message.warning {
+.mensaje-estado.warning {
   background: rgba(245, 158, 11, 0.1);
   border-color: var(--warning-color);
   color: var(--warning-color);
 }
 
-.status-content {
+.contenido-estado {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
 }
 
-.status-icon {
+.icono-estado {
   font-size: 1.125rem;
 }
 
 /* ===== FOOTER ===== */
-.footer {
+.pie-pagina {
   background: var(--white);
   border-top: 1px solid var(--gray-200);
   padding: var(--spacing-lg) 0;
 }
 
-.footer-content {
+.contenido-pie {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 var(--spacing-md);
@@ -656,36 +655,36 @@ body {
   gap: var(--spacing-md);
 }
 
-.footer-info p {
+.informacion-pie p {
   color: var(--gray-600);
   font-size: 0.875rem;
   margin-bottom: var(--spacing-sm);
 }
 
-.footer-links {
+.enlaces-pie {
   display: flex;
   gap: var(--spacing-lg);
 }
 
-.footer-links a {
+.enlaces-pie a {
   color: var(--gray-500);
   text-decoration: none;
   font-size: 0.875rem;
   transition: color var(--transition-fast);
 }
 
-.footer-links a:hover {
+.enlaces-pie a:hover {
   color: var(--primary-color);
 }
 
-.footer-version {
+.version-pie {
   color: var(--gray-500);
   font-size: 0.75rem;
   font-weight: var(--font-weight-medium);
 }
 
 /* ===== OVERLAY DE CARGA ===== */
-.loading-overlay {
+.superposicion-carga {
   position: fixed;
   top: 0;
   left: 0;
@@ -699,7 +698,7 @@ body {
   z-index: 1000;
 }
 
-.loading-spinner {
+.spinner-carga {
   background: var(--white);
   padding: var(--spacing-2xl);
   border-radius: var(--border-radius-lg);
@@ -722,109 +721,109 @@ body {
   100% { transform: rotate(360deg); }
 }
 
-.loading-spinner p {
+.spinner-carga p {
   color: var(--gray-600);
   font-weight: var(--font-weight-medium);
 }
 
 /* ===== RESPONSIVIDAD PARA TABLET ===== */
 @media (max-width: 1024px) {
-  .main-content {
+  .contenido-principal {
     grid-template-columns: 1fr;
   }
   
-  .info-section {
+  .seccion-informacion {
     padding: var(--spacing-2xl) var(--spacing-lg);
     min-height: 60vh;
   }
   
-  .university-branding h1 {
+  .marca-universidad h1 {
     font-size: 1.75rem;
   }
   
-  .login-container {
+  .contenedor-login {
     max-width: 500px;
   }
 }
 
 /* ===== RESPONSIVIDAD PARA MÓVIL ===== */
 @media (max-width: 768px) {
-  .nav-links {
+  .enlaces-navegacion {
     display: none;
   }
   
-  .mobile-menu-btn {
+  .boton-menu-movil {
     display: block;
   }
   
-  .nav-container {
+  .contenedor-navegacion {
     padding: 0 var(--spacing-lg);
   }
   
-  .main-content {
+  .contenido-principal {
     min-height: calc(100vh - 4rem - 4rem);
   }
   
-  .info-section {
+  .seccion-informacion {
     padding: var(--spacing-xl) var(--spacing-lg);
     text-align: center;
     min-height: 50vh;
   }
   
-  .university-branding {
+  .marca-universidad {
     margin-bottom: var(--spacing-xl);
   }
   
-  .university-branding h1 {
+  .marca-universidad h1 {
     font-size: 1.5rem;
   }
   
-  .university-subtitle {
+  .subtitulo-universidad {
     font-size: 1rem;
   }
   
-  .features-list {
+  .lista-caracteristicas {
     gap: var(--spacing-md);
   }
   
-  .feature-item {
+  .elemento-caracteristica {
     justify-content: center;
     text-align: left;
   }
   
-  .login-section {
+  .seccion-login {
     padding: var(--spacing-lg);
   }
   
-  .login-container {
+  .contenedor-login {
     max-width: 100%;
   }
   
-  .login-header h2 {
+  .cabecera-login h2 {
     font-size: 1.5rem;
   }
   
-  .form-options {
+  .opciones-formulario {
     flex-direction: column;
     align-items: stretch;
     gap: var(--spacing-md);
   }
   
-  .forgot-password {
+  .contrasena-olvidada {
     text-align: center;
   }
   
-  .alternative-login {
+  .login-alternativo {
     gap: var(--spacing-sm);
   }
   
-  .footer-content {
+  .contenido-pie {
     flex-direction: column;
     text-align: center;
     gap: var(--spacing-lg);
   }
   
-  .footer-links {
+  .enlaces-pie {
     flex-wrap: wrap;
     justify-content: center;
   }
@@ -832,53 +831,53 @@ body {
 
 /* ===== RESPONSIVIDAD PARA MÓVIL PEQUEÑO ===== */
 @media (max-width: 480px) {
-  .nav-container {
+  .contenedor-navegacion {
     padding: 0 var(--spacing-md);
   }
   
-  .info-section {
+  .seccion-informacion {
     padding: var(--spacing-lg) var(--spacing-md);
   }
   
-  .university-logo {
+  .logo-universidad {
     width: 4rem;
     height: 4rem;
   }
   
-  .university-logo i {
+  .logo-universidad i {
     font-size: 2rem;
   }
 
-  .ucn-logo-img {
+  .imagen-logo-ucn {
     width: 100%;
     height: 100%;
   }
   
-  .university-branding h1 {
+  .marca-universidad h1 {
     font-size: 1.25rem;
   }
   
-  .contact-info {
+  .informacion-contacto {
     padding: var(--spacing-md);
   }
   
-  .login-section {
+  .seccion-login {
     padding: var(--spacing-md);
   }
   
-  .login-header h2 {
+  .cabecera-login h2 {
     font-size: 1.375rem;
   }
   
-  .form-input {
+  .entrada-formulario {
     padding: 0.625rem var(--spacing-sm);
   }
   
-  .login-btn {
+  .boton-login {
     padding: 0.75rem var(--spacing-md);
   }
   
-  .alt-login-btn {
+  .boton-login-alternativo {
     padding: 0.625rem var(--spacing-md);
     font-size: 0.8125rem;
   }
@@ -918,22 +917,22 @@ body {
   }
 }
 
-.info-content {
+.contenido-informacion {
   animation: slideInFromRight 0.8s ease-out;
 }
 
-.login-container {
+.contenedor-login {
   animation: slideInFromLeft 0.8s ease-out;
 }
 
-.feature-item {
+.elemento-caracteristica {
   animation: fadeIn 0.6s ease-out;
 }
 
-.feature-item:nth-child(1) { animation-delay: 0.1s; }
-.feature-item:nth-child(2) { animation-delay: 0.2s; }
-.feature-item:nth-child(3) { animation-delay: 0.3s; }
-.feature-item:nth-child(4) { animation-delay: 0.4s; }
+.elemento-caracteristica:nth-child(1) { animation-delay: 0.1s; }
+.elemento-caracteristica:nth-child(2) { animation-delay: 0.2s; }
+.elemento-caracteristica:nth-child(3) { animation-delay: 0.3s; }
+.elemento-caracteristica:nth-child(4) { animation-delay: 0.4s; }
 
 /* ===== ACCESIBILIDAD ===== */
 @media (prefers-reduced-motion: reduce) {
@@ -948,11 +947,11 @@ body {
 }
 
 /* Focus visible para navegación por teclado */
-.form-input:focus-visible,
-.login-btn:focus-visible,
-.alt-login-btn:focus-visible,
-.nav-link:focus-visible,
-.forgot-password:focus-visible {
+.entrada-formulario:focus-visible,
+.boton-login:focus-visible,
+.boton-login-alternativo:focus-visible,
+.enlace-navegacion:focus-visible,
+.contrasena-olvidada:focus-visible {
   outline: 2px solid var(--primary-color);
   outline-offset: 2px;
 }
@@ -983,7 +982,7 @@ body {
   }
   
   /* Mejorar scrolling en móviles */
-  .main-content {
+  .contenido-principal {
     -webkit-overflow-scrolling: touch;
   }
   
@@ -1104,11 +1103,11 @@ body {
 
 /* Optimización para dispositivos con notch */
 @supports (padding-top: env(safe-area-inset-top)) {
-  .navbar {
+  .barra-navegacion {
     padding-top: env(safe-area-inset-top);
   }
   
-  .main-content {
+  .contenido-principal {
     min-height: calc(100vh - 4rem - 5rem - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   }
 }
@@ -1125,19 +1124,19 @@ body {
 
 /* ===== IMPRESIÓN ===== */
 @media print {
-  .navbar,
-  .footer,
-  .alternative-login,
-  .additional-links,
-  .mobile-menu-btn {
+  .barra-navegacion,
+  .pie-pagina,
+  .login-alternativo,
+  .enlaces-adicionales,
+  .boton-menu-movil {
     display: none !important;
   }
   
-  .main-content {
+  .contenido-principal {
     grid-template-columns: 1fr;
   }
   
-  .info-section {
+  .seccion-informacion {
     background: var(--white) !important;
     color: var(--gray-900) !important;
   }

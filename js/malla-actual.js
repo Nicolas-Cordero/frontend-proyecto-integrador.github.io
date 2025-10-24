@@ -2,22 +2,22 @@
 
 class MallaActualApp {
   constructor() {
-    this.init();
+    this.inicializar();
   }
 
-  init() {
+  inicializar() {
     console.log('Malla Actual inicializada (placeholder)');
-    this.setupBackButton();
+    this.configurarBotonVolver();
     // TODO: Implementar funcionalidad de malla curricular
   }
 
-  setupBackButton() {
-    const backBtn = document.getElementById('backToHome');
-    if (backBtn) {
-      backBtn.addEventListener('click', () => {
+  configurarBotonVolver() {
+    const botonVolver = document.getElementById('volverInicio');
+    if (botonVolver) {
+      botonVolver.addEventListener('click', () => {
         // Disparar evento de navegación de vuelta
-        const event = new CustomEvent('navigateBack');
-        window.dispatchEvent(event);
+        const evento = new CustomEvent('navigateBack');
+        window.dispatchEvent(evento);
       });
     }
   }

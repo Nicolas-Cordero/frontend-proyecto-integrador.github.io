@@ -8,35 +8,14 @@ Esta carpeta contiene todos los archivos JavaScript del proyecto PredictClass.
 **Archivo de datos de prueba (mockups) hardcodeados.**
 
 - **Propósito:** Centraliza todos los datos de usuarios de prueba
-- **Exporta:** `MOCK_USERS` - Array de usuarios con información completa
+- **Exporta:** `USUARIOS_MOCK` - Array de usuarios con información completa
 - **Carga:** Debe incluirse ANTES de cualquier script que lo use
 - **Versión:** 2025102304
 
 **Estructura de datos:**
 ```javascript
-const MOCK_USERS = [
-  {
-    id: number,
-    username: string,
-    email: string,
-    password: string,
-    firstName: string,
-    lastName: string,
-    rut: string,
-    role: string,
-    academicInfo: {
-      career: string,
-      generation: number,
-      currentSemester: number,
-      totalSemesters: number,
-      gpa: number,
-      approvedCourses: number,
-      currentCourses: number
-      // ⚠️ curriculumProgress: Se calcula DINÁMICAMENTE
-      // Fórmula: (currentSemester / totalSemesters) * 100
-      // NO incluir este campo en los datos
-    }
-  }
+const USUARIOS_MOCK = [
+  {/* Lines 19-39 omitted */}
 ];
 ```
 
@@ -108,9 +87,9 @@ Es **crítico** que los scripts se carguen en el siguiente orden:
 
 ### ¿Por qué este orden?
 
-- `mockups.js` define `MOCK_USERS` como variable global
-- `index-script.js` usa `MOCK_USERS` para autenticación
-- Si se invierte el orden, `MOCK_USERS` será `undefined`
+- `mockups.js` define `USUARIOS_MOCK` como variable global
+- `index-script.js` usa `USUARIOS_MOCK` para autenticación
+- Si se invierte el orden, `USUARIOS_MOCK` será `undefined`
 
 ---
 
@@ -120,7 +99,9 @@ Algunos valores se calculan automáticamente en tiempo de ejecución para manten
 
 ### Avance Curricular
 ```javascript
-curriculumProgress = Math.round((currentSemester / totalSemesters) * 100)
+progresoCurricular = semestresTotales > 0 
+  ? Math.round((semestreActual / semestresTotales) * 100) 
+  : 0;
 ```
 
 **Ejemplos:**
@@ -130,7 +111,7 @@ curriculumProgress = Math.round((currentSemester / totalSemesters) * 100)
 
 ### Semestres Restantes
 ```javascript
-remainingSemesters = Math.max(0, totalSemesters - currentSemester)
+semestresRestantes = Math.max(0, semestresTotales - semestreActual);
 ```
 
 **Ejemplos:**
@@ -138,7 +119,7 @@ remainingSemesters = Math.max(0, totalSemesters - currentSemester)
 - Branco: 10 - 6 = **4 semestres**
 - Maximiliano: 10 - 6 = **4 semestres**
 
-> ⚠️ **Importante:** No incluyas `curriculumProgress` en los datos de `mockups.js`. Se calcula automáticamente basándose en `currentSemester` y `totalSemesters`.
+> ⚠️ **Importante:** No incluyas `progresoCurricular` en los datos de `mockups.js`. Se calcula automáticamente basándose en `semestreActual` y `semestresTotales`.
 
 ---
 

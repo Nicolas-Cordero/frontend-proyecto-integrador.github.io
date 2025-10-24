@@ -10,145 +10,145 @@
 </head>
 <body>
     <!-- Contenedor principal -->
-    <div class="main-container">
+    <div class="contenedor-principal">
         <!-- Navegación superior -->
-        <nav class="navbar">
-            <div class="nav-container">
-                <div class="nav-logo">
+        <nav class="barra-navegacion">
+            <div class="contenedor-navegacion">
+                <div class="logo-navegacion">
                     <i class="fas fa-graduation-cap"></i>
                     <span>PredictClass</span>
                 </div>
-                <div class="nav-links">
-                    <a href="https://github.com/Nicolas-Cordero/frontend-proyecto-integrador" class="nav-link" target="_blank">Repositorio</a>
-                    <a href="https://nicolas-cordero.github.io/frontend-proyecto-integrador/" class="nav-link" target="_blank">Github Pages</a>
+                <div class="enlaces-navegacion">
+                    <a href="https://github.com/Nicolas-Cordero/frontend-proyecto-integrador" class="enlace-navegacion" target="_blank">Repositorio</a>
+                    <a href="https://nicolas-cordero.github.io/frontend-proyecto-integrador/" class="enlace-navegacion" target="_blank">Github Pages</a>
                 </div>
-                <div class="mobile-menu-btn">
+                <div class="boton-menu-movil">
                     <i class="fas fa-bars"></i>
                 </div>
             </div>
         </nav>
 
         <!-- Contenido principal -->
-        <main class="main-content">
+        <main class="contenido-principal">
             <!-- Sección izquierda - Formulario de login -->
-            <section class="login-section">
-                <div class="login-container">
-                    <div class="login-header">
+            <section class="seccion-login">
+                <div class="contenedor-login">
+                    <div class="cabecera-login">
                         <h2>Iniciar Sesión</h2>
                         <p>Ingresa tus credenciales para acceder al sistema</p>
                     </div>
 
                     <!-- Formulario de login -->
-                    <form class="login-form" id="loginForm">
-                        <div class="form-group">
-                            <label for="username" class="form-label">
+                    <form class="formulario-login" id="loginForm">
+                        <div class="grupo-formulario">
+                            <label for="usuario" class="etiqueta-formulario">
                                 <i class="fas fa-user"></i>
                                 Usuario o Email
                             </label>
                             <input 
                                 type="text" 
-                                id="username" 
-                                name="username"
-                                class="form-input"
+                                id="usuario" 
+                                name="usuario"
+                                class="entrada-formulario"
                                 placeholder="Ingresa tu usuario o email"
                                 required
-                                autocomplete="username"
+                                autocomplete="usuario"
                             >
-                            <div class="error-message" id="usernameError"></div>
+                            <div class="mensaje-error" id="errorUsuario"></div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="password" class="form-label">
+                        <div class="grupo-formulario">
+                            <label for="contrasena" class="etiqueta-formulario">
                                 <i class="fas fa-lock"></i>
                                 Contraseña
                             </label>
-                            <div class="password-input-container">
+                            <div class="contenedor-entrada-contrasena">
                                 <input 
                                     type="password" 
-                                    id="password" 
-                                    name="password" 
-                                    class="form-input"
+                                    id="contrasena" 
+                                    name="contrasena" 
+                                    class="entrada-formulario"
                                     placeholder="Ingresa tu contraseña"
                                     required 
                                     minlength="3"
                                 >
-                                <button type="button" id="passwordToggle" class="password-toggle" aria-label="Mostrar contraseña">
+                                <button type="button" id="alternarContrasena" class="alternar-contrasena" aria-label="Mostrar contraseña">
                                     <i class="fas fa-eye"></i>
                                 </button>
                             </div>
-                            <div class="error-message" id="passwordError"></div>
+                            <div class="mensaje-error" id="errorContrasena"></div>
                         </div>
 
                                                 <!-- Opciones de formulario removidas para desarrollo -->
 
-                        <button type="submit" class="login-btn" id="loginBtn">
-                            <span class="btn-text">Iniciar Sesión</span>
-                            <div class="btn-loading" style="display: none;">
+                        <button type="submit" class="boton-login" id="botonLogin">
+                            <span class="texto-boton">Iniciar Sesión</span>
+                            <div class="carga-boton" style="display: none;">
                                 <i class="fas fa-spinner fa-spin"></i>
                             </div>
                         </button>
 
-                        <div class="form-divider">
+                        <div class="divisor-formulario">
                             <span>o</span>
                         </div>
 
                         <!-- Opciones adicionales de acceso -->
-                        <div class="alternative-login">
-                            <button type="button" class="alt-login-btn google-login">
+                        <div class="login-alternativo">
+                            <button type="button" class="boton-login-alternativo google-login">
                                 <i class="fab fa-google"></i>
                                 Continuar con Google
                             </button>
                         </div>
 
                         <!-- Enlaces adicionales -->
-                        <div class="additional-links">
-                            <p>¿Necesitas ayuda? <a href="mailto:soporte@ucn.cl" class="register-link">Contacta soporte</a></p>
+                        <div class="enlaces-adicionales">
+                            <p>¿Necesitas ayuda? <a href="mailto:soporte@ucn.cl" class="enlace-registro">Contacta soporte</a></p>
                         </div>
                     </form>
 
                     <!-- Mensaje de estado -->
-                    <div class="status-message" id="statusMessage" style="display: none;">
-                        <div class="status-content">
-                            <i class="status-icon"></i>
-                            <span class="status-text"></span>
+                    <div class="mensaje-estado" id="mensajeEstado" style="display: none;">
+                        <div class="contenido-estado">
+                            <i class="icono-estado"></i>
+                            <span class="texto-estado"></span>
                         </div>
                     </div>
                 </div>
             </section>
 
             <!-- Sección derecha - Información -->
-            <section class="info-section">
-                <div class="info-content">
-                    <div class="university-branding">
-                        <div class="university-logo">
-                            <img src="../images/ucn-logo.png" alt="UCN Logo" class="ucn-logo-img">
+            <section class="seccion-informacion">
+                <div class="contenido-informacion">
+                    <div class="marca-universidad">
+                        <div class="logo-universidad">
+                            <img src="../images/ucn-logo.png" alt="UCN Logo" class="imagen-logo-ucn">
                         </div>
                         <h1>Universidad Católica del Norte</h1>
-                        <p class="university-subtitle">PredictClass</p>
+                        <p class="subtitulo-universidad">PredictClass</p>
                     </div>
                     
-                    <div class="features-list">
-                        <div class="feature-item">
+                    <div class="lista-caracteristicas">
+                        <div class="elemento-caracteristica">
                             <i class="fas fa-check-circle"></i>
                             <span>Sistema inteligente de proyección académica</span>
                         </div>
-                        <div class="feature-item">
+                        <div class="elemento-caracteristica">
                             <i class="fas fa-check-circle"></i>
                             <span>Optimización de trayectoria universitaria</span>
                         </div>
-                        <div class="feature-item">
+                        <div class="elemento-caracteristica">
                             <i class="fas fa-check-circle"></i>
                             <span>Algoritmos de combinación de ramos</span>
                         </div>
-                        <div class="feature-item">
+                        <div class="elemento-caracteristica">
                             <i class="fas fa-check-circle"></i>
                             <span>Minimización del tiempo de titulación</span>
                         </div>
                     </div>
 
-                    <div class="contact-info">
+                    <div class="informacion-contacto">
                         <p>Desarrollado por:</p>
-                        <div class="contact-methods">
+                        <div class="metodos-contacto">
                             <span><i class="fas fa-user-graduate"></i> Branco Abalos Ortiz - RUT: 21.619.393-8</span>
                             <span><i class="fas fa-user-graduate"></i> Nicolás Cordero Varas - RUT: 20.543.155-1</span>
                             <span><i class="fas fa-user-graduate"></i> Maximiliano Urrutia Araya - RUT: 21.573.565-6</span>
@@ -159,17 +159,17 @@
         </main>
 
         <!-- Footer -->
-        <footer class="footer">
-            <div class="footer-content">
-                <div class="footer-info">
+        <footer class="pie-pagina">
+            <div class="contenido-pie">
+                <div class="informacion-pie">
                     <p>&copy; 2025 Universidad Católica del Norte. Todos los derechos reservados.</p>
-                    <div class="footer-links">
+                    <div class="enlaces-pie">
                         <a href="#">Términos de Servicio</a>
                         <a href="#">Política de Privacidad</a>
                         <a href="#">Soporte Técnico</a>
                     </div>
                 </div>
-                <div class="footer-version">
+                <div class="version-pie">
                     <span>Versión 1.0.1</span>
                 </div>
             </div>
@@ -177,8 +177,8 @@
     </div>
 
     <!-- Modal de carga -->
-    <div class="loading-overlay" id="loadingOverlay" style="display: none;">
-        <div class="loading-spinner">
+    <div class="superposicion-carga" id="superposicionCarga" style="display: none;">
+        <div class="spinner-carga">
             <div class="spinner"></div>
             <p>Verificando credenciales...</p>
         </div>

@@ -1,19 +1,19 @@
 /* ===== MALLA ACTUAL - ESTILOS (PLACEHOLDER) ===== */
 
-.malla-actual-container {
+.contenedor-malla-actual {
   padding: 2rem;
   max-width: 1400px;
   margin: 0 auto;
 }
 
-.malla-header {
+.cabecera-malla {
   display: flex;
   align-items: center;
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
 
-.back-btn {
+.boton-volver {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -28,29 +28,29 @@
   transition: all 0.2s ease;
 }
 
-.back-btn:hover {
+.boton-volver:hover {
   background: var(--gray-200, #e2e8f0);
   transform: translateX(-2px);
 }
 
-.back-btn i {
+.boton-volver i {
   font-size: 1rem;
 }
 
-.malla-header h1 {
+.cabecera-malla h1 {
   color: var(--gray-800, #1e293b);
   font-size: 2rem;
   font-weight: 700;
   margin: 0 0 0.5rem 0;
 }
 
-.malla-header p {
+.cabecera-malla p {
   color: var(--gray-600, #475569);
   font-size: 1rem;
   margin: 0;
 }
 
-.malla-content {
+.contenido-malla {
   background: white;
   border-radius: 1rem;
   padding: 3rem;
