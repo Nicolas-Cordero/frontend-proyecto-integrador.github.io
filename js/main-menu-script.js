@@ -208,7 +208,7 @@ class MainMenuApp {
       if (textoElemento === 'Malla Actual') {
         elemento.addEventListener('click', () => {
           this.cargarMallaActual();
-          this.establecerElementoMenuActivo('malla-actual');
+          this.establecerElementoMenuActivo('mallas (urr)');
         });
       }
     });
@@ -266,24 +266,16 @@ class MainMenuApp {
 
     // HTML embebido directamente (sin fetch)
     const htmlMalla = `
-      <div class="contenedor-malla-actual">
-        <div class="cabecera-malla">
-          <button class="boton-volver" id="volverInicio">
-            <i class="fas fa-arrow-left"></i>
-            <span>Volver</span>
-          </button>
-          <div>
-            <h1>Malla Curricular Actual</h1>
-            <p>Visualiza tu progreso académico y planifica tus próximos semestres</p>
-          </div>
-        </div>
+      <div>
+        <header>
+          <h1>Malla Curricular - Ingeniería Civil en Computación e Informática</h1>
+        </header>
 
-        <div class="contenido-malla">
-          <p style="text-align: center; color: #64748b; margin-top: 2rem;">
-            Contenido en desarrollo...
-          </p>
-        </div>
+        <main id="contenedorMalla"></main>
+
+        <script src="../js/mallas.js"></script>
       </div>
+
     `;
 
     this.areaContenido.innerHTML = htmlMalla;
@@ -296,7 +288,7 @@ class MainMenuApp {
 
     const script = document.createElement('script');
     script.id = 'malla-actual-script';
-    script.src = '../js/malla-actual.js?v=' + Date.now();
+    script.src = '../js/mallas.js?v=' + Date.now();
     document.body.appendChild(script);
 
     console.log('✅ Malla Actual cargada exitosamente');
