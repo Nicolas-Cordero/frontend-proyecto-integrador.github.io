@@ -1,0 +1,59 @@
+/* ===== MALLA ACTUAL - ESTILOS (PLACEHOLDER) ===== */
+
+.malla-actual-container {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.malla-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  background: var(--gray-100, #f1f5f9);
+  border: none;
+  border-radius: 0.5rem;
+  color: var(--gray-700, #334155);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+  background: var(--gray-200, #e2e8f0);
+  transform: translateX(-2px);
+}
+
+.back-btn i {
+  font-size: 1rem;
+}
+
+.malla-header h1 {
+  color: var(--gray-800, #1e293b);
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+}
+
+.malla-header p {
+  color: var(--gray-600, #475569);
+  font-size: 1rem;
+  margin: 0;
+}
+
+.malla-content {
+  background: white;
+  border-radius: 1rem;
+  padding: 3rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  min-height: 400px;
+}

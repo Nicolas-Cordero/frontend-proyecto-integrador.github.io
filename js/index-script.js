@@ -7,25 +7,22 @@ const CONFIG = {
     REFRESH: '/auth/refresh'
   },
   STORAGE_KEYS: {
-    TOKEN: 'ucn_auth_token',
-    REFRESH_TOKEN: 'ucn_refresh_token',
-    USER_DATA: 'ucn_user_data',
-    REMEMBER_ME: 'ucn_remember_me'
+    USER_DATA: 'ucn_user_data'
+    // Solo sessionStorage para desarrollo
   },
   VALIDATION: {
-    MIN_PASSWORD_LENGTH: 6,
+    MIN_PASSWORD_LENGTH: 3,
     MAX_LOGIN_ATTEMPTS: 3,
     LOCKOUT_DURATION: 300000 // 5 minutos en milisegundos
   }
 };
 
+// NOTA: Los datos de MOCK_USERS ahora se cargan desde mockups.js
+// Ese archivo debe ser incluido antes de este script en el HTML
+
 // ===== CLASE PRINCIPAL DE LA APLICACIÓN =====
 class LoginApp {
   constructor() {
-    this.loginAttempts = 0;
-    this.isLocked = false;
-    this.lockoutTimer = null;
-    
     this.init();
   }
 
@@ -34,7 +31,6 @@ class LoginApp {
     this.bindEvents();
     this.checkExistingSession();
     this.setupFormValidation();
-    this.checkLockoutStatus();
   }
 
   // ===== MANEJO DE EVENTOS =====
@@ -198,17 +194,10 @@ class LoginApp {
   async handleLogin(event) {
     event.preventDefault();
 
-    // Verificar si está bloqueado
-    if (this.isLocked) {
-      this.showStatusMessage('error', 'Demasiados intentos fallidos. Intenta nuevamente más tarde.');
-      return;
-    }
-
     const formData = new FormData(event.target);
     const loginData = {
       username: formData.get('username')?.trim(),
-      password: formData.get('password'),
-      rememberMe: formData.get('rememberMe') === 'on'
+      password: formData.get('password')
     };
 
     // Validar campos
@@ -216,22 +205,22 @@ class LoginApp {
     const isPasswordValid = this.validateField('password');
 
     if (!isUsernameValid || !isPasswordValid) {
-      this.showStatusMessage('error', 'Por favor corrige los errores en el formulario');
+      this.showStatusMessage('error', 'Por favor corrige los errores antes de continuar');
       return;
     }
 
     try {
       this.showLoading(true);
+      
       const result = await this.performLogin(loginData);
       
       if (result.success) {
-        this.handleLoginSuccess(result.data, loginData.rememberMe);
+        this.handleLoginSuccess(result.data);
       } else {
         this.handleLoginError(result.error);
       }
     } catch (error) {
-      console.error('Error durante el login:', error);
-      this.handleLoginError('Error de conexión. Verifica tu conexión a internet.');
+      this.handleLoginError('Error al procesar la solicitud');
     } finally {
       this.showLoading(false);
     }
@@ -262,26 +251,40 @@ class LoginApp {
         };
       }
     } catch (error) {
-      // Simulación temporal para desarrollo
-      console.warn('API no disponible, usando modo de desarrollo');
+      // Modo desarrollo: usar mockups hardcodeados
+      console.warn('🔧 API no disponible, usando modo desarrollo');
       
-      // Simular respuesta exitosa para pruebas
-      if (loginData.username === 'demo' && loginData.password === 'demo123') {
+      // Buscar usuario en MOCK_USERS (datos hardcodeados)
+      const user = MOCK_USERS.find(u => 
+        (u.username === loginData.username || u.email === loginData.username) && 
+        u.password === loginData.password
+      );
+
+      if (user) {
+        console.log('✅ Usuario encontrado en mockups:', user.username);
+        console.log('📊 academicInfo disponible:', user.academicInfo);
+        
         return {
           success: true,
           data: {
-            token: 'demo_token_123',
-            refreshToken: 'demo_refresh_456',
+            token: `mock_token_${user.id}_${Date.now()}`,
+            refreshToken: `mock_refresh_${user.id}_${Date.now()}`,
             user: {
-              id: 1,
-              username: loginData.username,
-              email: 'demo@ucn.cl',
-              name: 'Usuario Demo',
-              role: 'student'
+              id: user.id,
+              username: user.username,
+              email: user.email,
+              name: `${user.firstName} ${user.lastName}`.trim(),
+              firstName: user.firstName,
+              lastName: user.lastName,
+              rut: user.rut,
+              role: user.role,
+              profilePicture: user.profilePicture,  // ✅ Incluir profilePicture
+              academicInfo: user.academicInfo  // ✅ Incluir academicInfo completo
             }
           }
         };
       } else {
+        console.error('❌ Credenciales incorrectas');
         return {
           success: false,
           error: 'Credenciales incorrectas'
@@ -290,34 +293,24 @@ class LoginApp {
     }
   }
 
-  handleLoginSuccess(data, rememberMe) {
-    // Resetear intentos de login
-    this.loginAttempts = 0;
-    this.clearLockout();
-
-    // Guardar datos de sesión
-    this.saveSessionData(data, rememberMe);
+  handleLoginSuccess(data) {
+    console.log('✅ Login exitoso, datos del usuario:', data.user);
+    console.log('📊 academicInfo recibido:', data.user.academicInfo);
+    
+    // Guardar SOLO en sessionStorage
+    this.saveSessionData(data);
 
     // Mostrar mensaje de éxito
     this.showStatusMessage('success', '¡Inicio de sesión exitoso! Redirigiendo...');
 
-    // Simular redirección (en producción, redireccionar a dashboard)
+    // Redirigir al menú principal después de 1.5 segundos
     setTimeout(() => {
-      console.log('Redirigiendo al dashboard...');
-      // window.location.href = '/dashboard';
+      window.location.href = 'main-menu.html';
     }, 1500);
   }
 
   handleLoginError(errorMessage) {
-    this.loginAttempts++;
-    
-    if (this.loginAttempts >= CONFIG.VALIDATION.MAX_LOGIN_ATTEMPTS) {
-      this.lockAccount();
-      this.showStatusMessage('error', 'Demasiados intentos fallidos. Cuenta bloqueada temporalmente.');
-    } else {
-      const remainingAttempts = CONFIG.VALIDATION.MAX_LOGIN_ATTEMPTS - this.loginAttempts;
-      this.showStatusMessage('error', `${errorMessage}. Intentos restantes: ${remainingAttempts}`);
-    }
+    this.showStatusMessage('error', errorMessage);
 
     // Limpiar contraseña
     const passwordInput = document.getElementById('password');
@@ -327,99 +320,27 @@ class LoginApp {
   }
 
   // ===== GESTIÓN DE SESIÓN =====
-  saveSessionData(data, rememberMe) {
-    const storage = rememberMe ? localStorage : sessionStorage;
-    
-    storage.setItem(CONFIG.STORAGE_KEYS.TOKEN, data.token);
-    if (data.refreshToken) {
-      storage.setItem(CONFIG.STORAGE_KEYS.REFRESH_TOKEN, data.refreshToken);
-    }
+  saveSessionData(data) {
+    // SOLO sessionStorage para desarrollo
     if (data.user) {
-      storage.setItem(CONFIG.STORAGE_KEYS.USER_DATA, JSON.stringify(data.user));
+      sessionStorage.setItem(CONFIG.STORAGE_KEYS.USER_DATA, JSON.stringify(data.user));
+      console.log('✅ Usuario guardado en sessionStorage:', data.user);
     }
-    
-    localStorage.setItem(CONFIG.STORAGE_KEYS.REMEMBER_ME, rememberMe.toString());
   }
 
   checkExistingSession() {
-    const token = localStorage.getItem(CONFIG.STORAGE_KEYS.TOKEN) || 
-                  sessionStorage.getItem(CONFIG.STORAGE_KEYS.TOKEN);
+    const userData = sessionStorage.getItem(CONFIG.STORAGE_KEYS.USER_DATA);
     
-    if (token) {
-      // Verificar si el token es válido
-      this.validateToken(token);
-    }
-  }
-
-  async validateToken(token) {
-    try {
-      const response = await fetch(`${CONFIG.API_BASE_URL}${CONFIG.ENDPOINTS.VALIDATE}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        console.log('Sesión válida encontrada');
-        // Redirigir al dashboard si hay sesión válida
-        // window.location.href = '/dashboard';
-      }
-    } catch (error) {
-      console.log('No hay sesión válida o error al validar');
-      this.clearSessionData();
+    if (userData) {
+      console.log('Sesión existente encontrada');
+      // Opcional: redirigir automáticamente
+      // window.location.href = 'main-menu.html';
     }
   }
 
   clearSessionData() {
-    localStorage.removeItem(CONFIG.STORAGE_KEYS.TOKEN);
-    localStorage.removeItem(CONFIG.STORAGE_KEYS.REFRESH_TOKEN);
-    localStorage.removeItem(CONFIG.STORAGE_KEYS.USER_DATA);
-    sessionStorage.removeItem(CONFIG.STORAGE_KEYS.TOKEN);
-    sessionStorage.removeItem(CONFIG.STORAGE_KEYS.REFRESH_TOKEN);
-    sessionStorage.removeItem(CONFIG.STORAGE_KEYS.USER_DATA);
-  }
-
-  // ===== BLOQUEO DE CUENTA =====
-  lockAccount() {
-    this.isLocked = true;
-    const lockoutEndTime = Date.now() + CONFIG.VALIDATION.LOCKOUT_DURATION;
-    localStorage.setItem('lockout_end', lockoutEndTime.toString());
-    
-    this.startLockoutTimer(CONFIG.VALIDATION.LOCKOUT_DURATION);
-  }
-
-  checkLockoutStatus() {
-    const lockoutEnd = localStorage.getItem('lockout_end');
-    if (lockoutEnd) {
-      const endTime = parseInt(lockoutEnd);
-      const now = Date.now();
-      
-      if (now < endTime) {
-        this.isLocked = true;
-        this.startLockoutTimer(endTime - now);
-      } else {
-        this.clearLockout();
-      }
-    }
-  }
-
-  startLockoutTimer(duration) {
-    this.lockoutTimer = setTimeout(() => {
-      this.clearLockout();
-    }, duration);
-  }
-
-  clearLockout() {
-    this.isLocked = false;
-    this.loginAttempts = 0;
-    localStorage.removeItem('lockout_end');
-    
-    if (this.lockoutTimer) {
-      clearTimeout(this.lockoutTimer);
-      this.lockoutTimer = null;
-    }
+    sessionStorage.clear();
+    console.log('✅ SessionStorage limpiado');
   }
 
   // ===== FUNCIONALIDADES ADICIONALES =====

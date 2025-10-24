@@ -175,7 +175,7 @@ body {
 
 /* ===== SECCIÓN DE INFORMACIÓN ===== */
 .info-section {
-  background: url('images/coquimbo.jpg') center/cover no-repeat;
+  background: url('../images/coquimbo.jpg') center/cover no-repeat;
   display: flex;
   align-items: center;
   padding: var(--spacing-3xl) var(--spacing-xl);
@@ -347,12 +347,21 @@ body {
 
 .form-input {
   width: 100%;
-  padding: 0.75rem var(--spacing-md);
+  padding: 0.875rem var(--spacing-md);
   border: 2px solid var(--gray-200);
   border-radius: var(--border-radius-md);
   font-size: 1rem;
+  font-family: var(--font-primary);
+  line-height: 1.5;
   transition: all var(--transition-fast);
   background: var(--white);
+  color: var(--gray-800);
+  height: 3rem;
+}
+
+.form-input::placeholder {
+  color: var(--gray-400);
+  opacity: 1;
 }
 
 .form-input:focus {
@@ -367,24 +376,40 @@ body {
 
 .password-input-container {
   position: relative;
+  width: 100%;
+}
+
+.password-input-container .form-input {
+  padding-right: 3rem;
 }
 
 .password-toggle {
   position: absolute;
-  right: var(--spacing-md);
+  right: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
-  background: none;
+  background: transparent;
   border: none;
   cursor: pointer;
   color: var(--gray-400);
-  padding: var(--spacing-xs);
-  font-size: 1rem;
-  transition: color var(--transition-fast);
+  padding: 0.5rem;
+  font-size: 1.125rem;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--border-radius-sm);
 }
 
 .password-toggle:hover {
-  color: var(--gray-600);
+  color: var(--primary-color);
+  background: var(--gray-50);
+}
+
+.password-toggle:active {
+  transform: translateY(-50%) scale(0.95);
 }
 
 .error-message {
@@ -938,6 +963,7 @@ body {
   .form-input {
     min-height: 48px; /* Mínimo recomendado para touch targets */
     font-size: 16px; /* Previene zoom en iOS */
+    height: 3rem;
   }
   
   .login-btn,

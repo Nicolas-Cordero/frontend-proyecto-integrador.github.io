@@ -8,7 +8,7 @@
 [![Sprint](https://img.shields.io/badge/Sprint%20Actual-2%2F7-green?style=for-the-badge)]()
 [![Metodología](https://img.shields.io/badge/Metodología-Scrum-orange?style=for-the-badge)]()
 
-![UCN Logo](./assets/images/ucn-logo.png)
+![UCN Logo](./images/ucn-logo.png)
 
 *Proyecto Integrador Software- Ingeniería Civil en Computación e Informática*  
 *Semestre VI - 2025*
@@ -147,7 +147,7 @@ Desarrollar un **sitio web integral** donde los estudiantes puedan revisar su tr
 
 <div align="center">
 
-![Arquitectura del Sistema](./arquitectura.png)
+![Arquitectura del Sistema](./images/arquitectura.png)
 
 </div>
 
@@ -210,15 +210,20 @@ npm run dev
 ```
 frontend-proyecto-integrador/
 ├── 📁 .git/                  # Control de versiones Git
+├── 📁 html/                  # Páginas HTML (vistas)
+│   ├── index.html           # Página principal del login
+│   └── main-menu.html       # Demo: navbar vertical (sidebar)
+├── 📁 css/                   # Hojas de estilo
+│   ├── index-styles.css     # Estilos principales del login
+│   └── main-menu.css        # Estilos del demo del menú
+├── 📁 js/                    # Lógica JavaScript
+│   └── index-script.js      # Lógica principal del login
 ├── 📁 images/                # Recursos gráficos del proyecto
-│   ├── �️ arquitectura.png   # Diagrama de arquitectura del sistema
-│   ├── 🏞️ coquimbo.jpg       # Imagen de fondo de Coquimbo
-│   ├── 🏛️ ucn-logo.png       # Logo oficial de UCN
-│   └── 🏛️ ucn-name.png       # Nombre institucional UCN
-├── � .gitattributes        # Configuración de Git
-├── � index.html            # Página principal del login
-├── 📄 script.js             # Lógica JavaScript del frontend
-├── 📄 styles.css            # Estilos CSS del sistema
+│   ├── arquitectura.png     # Diagrama de arquitectura del sistema
+│   ├── coquimbo.jpg         # Imagen de fondo de Coquimbo
+│   ├── ucn-logo.png         # Logo oficial de UCN
+│   └── ucn-name.png         # Nombre institucional UCN
+├── � .gitattributes         # Configuración de Git
 ├── 📄 README.md             # Este archivo de documentación
 └── 📄 Guía_Documento_Inicial.pdf  # Documentación oficial del proyecto
 ```
