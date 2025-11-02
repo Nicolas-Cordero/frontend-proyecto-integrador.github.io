@@ -25,6 +25,7 @@ class MainMenuApp {
     this.configurarBusqueda();
     this.configurarNavegacionPerfil();
     this.configurarNavegacionMallaActual();
+    this.configurarNavegacionHistorico();
     this.configurarNavegacionAtras();
   }
 
@@ -214,6 +215,32 @@ class MainMenuApp {
     });
   }
 
+  // ===== NAVEGACIÓN A HISTÓRICO =====
+  configurarNavegacionHistorico() {
+    const elementosMenu = document.querySelectorAll('.elemento-menu');
+
+    elementosMenu.forEach(elemento => {
+      const textoElemento = elemento.querySelector('span')?.textContent?.trim();
+      if (textoElemento === 'Estadísticas - Histórico') {
+        // Si el elemento contiene un <a>, interceptamos su click para evitar navegación
+        const enlace = elemento.querySelector('a');
+        if (enlace) {
+          enlace.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.cargarHistorico();
+            this.establecerElementoMenuActivo('historico');
+          });
+        } else {
+          elemento.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.cargarHistorico();
+            this.establecerElementoMenuActivo('historico');
+          });
+        }
+      }
+    });
+  }
+
   async cargarPerfil() {
     if (!this.areaContenido) return;
 
@@ -261,6 +288,9 @@ class MainMenuApp {
   // ===== NAVEGACIÓN A MALLA ACTUAL =====
   cargarMallaActual() {
     if (!this.areaContenido) return;
+  // Asegurar que no quede cargado el CSS específico de histórico (scoped)
+  const estiloHistoricoExistente = document.getElementById('historico-scoped-style');
+  if (estiloHistoricoExistente) estiloHistoricoExistente.remove();
 
     console.log('📊 Cargando Malla Actual...');
 
@@ -292,6 +322,58 @@ class MainMenuApp {
     document.body.appendChild(script);
 
     console.log('✅ Malla Actual cargada exitosamente');
+  }
+
+  // ===== CARGAR VISTA DE HISTÓRICO DENTRO DEL ÁREA DE CONTENIDO =====
+  cargarHistorico() {
+    if (!this.areaContenido) return;
+
+    console.log('📥 Cargando vista de Histórico en area-contenido...');
+    // Inyectar stylesheet acotado para la vista histórico (no altera layout global)
+    const head = document.head || document.getElementsByTagName('head')[0];
+    const estiloId = 'historico-scoped-style';
+    const existenteEstilo = document.getElementById(estiloId);
+    if (existenteEstilo) {
+      existenteEstilo.href = '../css/historico-scoped.css?v=' + Date.now();
+    } else {
+      const link = document.createElement('link');
+      link.id = estiloId;
+      link.rel = 'stylesheet';
+      link.href = '../css/historico-scoped.css?v=' + Date.now();
+      head.appendChild(link);
+    }
+    const htmlHistorico = `
+      <div>
+        <header>
+          <h1 class="page-title">Histórico de Proyecciones</h1>
+          <p class="subtitle">Vista vacía — agrega proyecciones para ver columnas de ramos aquí.</p>
+        </header>
+
+        <section class="card" aria-labelledby="cardTitle">
+          <div class="card-header">
+            <div id="cardTitle"><strong>Proyecciones</strong></div>
+          </div>
+
+          <div class="hscroll-wrap" aria-live="polite">
+            <div class="columnas" id="contenedorColumnas"></div>
+          </div>
+        </section>
+      </div>
+    `;
+
+    this.areaContenido.innerHTML = htmlHistorico;
+
+  // Cargar el script de histórico de forma dinámica (si ya existe, removerlo)
+  const scriptId = 'historico-script';
+  const existente = document.getElementById(scriptId);
+  if (existente) existente.remove();
+
+  const script = document.createElement('script');
+  script.id = scriptId;
+  script.src = '../js/historico-script.js?v=' + Date.now();
+  document.body.appendChild(script);
+
+    console.log('✅ Vista de Histórico cargada');
   }
 
   generarHTMLPerfil(usuario) {
@@ -494,6 +576,9 @@ class MainMenuApp {
 
   cargarInicio() {
     if (!this.areaContenido || !this.contenidoInicio) return;
+  // Asegurar que no quede cargado el CSS específico de histórico (scoped)
+  const estiloHistoricoExistente = document.getElementById('historico-scoped-style');
+  if (estiloHistoricoExistente) estiloHistoricoExistente.remove();
     
     this.areaContenido.innerHTML = this.contenidoInicio;
     
@@ -534,6 +619,14 @@ class MainMenuApp {
       elementosMenu.forEach(elemento => {
         const span = elemento.querySelector('span');
         if (span && span.textContent.includes('Malla Actual')) {
+          elemento.classList.add('active');
+        }
+      });
+    } else if (tipoElemento === 'historico') {
+      const elementosMenu = document.querySelectorAll('.elemento-menu');
+      elementosMenu.forEach(elemento => {
+        const span = elemento.querySelector('span');
+        if (span && span.textContent.includes('Estadísticas - Histórico')) {
           elemento.classList.add('active');
         }
       });
