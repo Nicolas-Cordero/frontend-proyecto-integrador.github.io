@@ -230,69 +230,49 @@ class LoginApp {
   }
 
   async realizarInicioSesion(loginData) {
+    // Intentar login usando el endpoint público provisto (puclaro)
     try {
-      const response = await fetch(`${CONFIGURACION.URL_BASE_API}${CONFIGURACION.ENDPOINTS.LOGIN}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          username: loginData.username,
-          password: loginData.password
-        })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        return { success: true, data };
-      } else {
-        return { 
-          success: false, 
-          error: data.message || 'Credenciales incorrectas' 
-        };
+      const email = loginData.username;
+      const password = loginData.password;
+      const loginUrl = `https://puclaro.ucn.cl/eross/avance/login.php?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
+      const resp = await fetch(loginUrl, { method: 'GET', redirect: 'follow' });
+      const text = await resp.text();
+      let parsed;
+      try {
+        parsed = JSON.parse(text);
+      } catch (err) {
+        throw new Error(`Respuesta inválida del servidor: ${text}`);
       }
+
+      if (parsed && parsed.error) {
+        return { success: false, error: parsed.error };
+      }
+
+      const carreras = Array.isArray(parsed.carreras) ? parsed.carreras : [];
+      const userObj = {
+        id: parsed.rut || null,
+        username: email.split('@')[0],
+        email: email,
+        name: email.split('@')[0],
+        firstName: email.split('@')[0].split('.')[0] || email.split('@')[0],
+        lastName: '',
+        rut: parsed.rut || null,
+        role: 'student',
+        profilePicture: null,
+        carreras: carreras,
+        academicInfo: {
+          career: carreras[0] ? carreras[0].nombre : undefined,
+          catalog: carreras[0] ? carreras[0].catalogo : undefined
+        }
+      };
+
+      return { success: true, data: { user: userObj } };
     } catch (error) {
-      // Modo desarrollo: usar mockups hardcodeados
-      console.warn('🔧 API no disponible, usando modo desarrollo');
-      
-      // Buscar usuario en USUARIOS_MOCK (datos hardcodeados)
-      const user = USUARIOS_MOCK.find(u => 
-        (u.username === loginData.username || u.email === loginData.username) && 
-        u.password === loginData.password
-      );
-
-      if (user) {
-        console.log('✅ Usuario encontrado en mockups:', user.username);
-        console.log('📊 academicInfo disponible:', user.academicInfo);
-        
-        return {
-          success: true,
-          data: {
-            token: `mock_token_${user.id}_${Date.now()}`,
-            refreshToken: `mock_refresh_${user.id}_${Date.now()}`,
-            user: {
-              id: user.id,
-              username: user.username,
-              email: user.email,
-              name: `${user.firstName} ${user.lastName}`.trim(),
-              firstName: user.firstName,
-              lastName: user.lastName,
-              rut: user.rut,
-              role: user.role,
-              profilePicture: user.profilePicture,  // ✅ Incluir profilePicture
-              academicInfo: user.academicInfo  // ✅ Incluir academicInfo completo
-            }
-          }
-        };
-      } else {
-        console.error('❌ Credenciales incorrectas');
-        return {
-          success: false,
-          error: 'Credenciales incorrectas'
-        };
-      }
+      console.error('Error al conectar con el endpoint de login:', error);
+      return {
+        success: false,
+        error: 'No fue posible conectar con el servicio de autenticación. Intenta nuevamente más tarde.'
+      };
     }
   }
 

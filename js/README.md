@@ -4,34 +4,22 @@ Esta carpeta contiene todos los archivos JavaScript del proyecto PredictClass.
 
 ## 📄 Archivos
 
-### `mockups.js`
-**Archivo de datos de prueba (mockups) hardcodeados.**
+### `mockups.js` (ARCHIVADO)
+**El archivo de mockups fue archivado en** `js/legacy/mockups.js`.
 
-- **Propósito:** Centraliza todos los datos de usuarios de prueba
-- **Exporta:** `USUARIOS_MOCK` - Array de usuarios con información completa
-- **Carga:** Debe incluirse ANTES de cualquier script que lo use
-- **Versión:** 2025102304
-
-**Estructura de datos:**
-```javascript
-const USUARIOS_MOCK = [
-  {/* Lines 19-39 omitted */}
-];
-```
-
-**Usuarios disponibles:**
-- nicolas / nicolas.cordero01@alumnos.ucn.cl / 123
-- branco / branco.abalos@alumnos.ucn.cl / 123
-- maximiliano / maximiliano.urrutia@alumnos.ucn.cl / 123
+- **Propósito:** Datos de prueba para desarrollo local (archivado).
+- **Ubicación actual:** `js/legacy/mockups.js`
+- **Nota:** El proyecto ya no carga `mockups.js` por defecto; las llamadas de login usan la API real y el fallback a mocks se eliminó. Si necesitas los datos de prueba en desarrollo, copia `js/legacy/mockups.js` a `js/mockups.js` temporalmente.
 
 ---
+
 
 ### `index-script.js`
 **Script principal del sistema de login.**
 
 - **Propósito:** Manejo de autenticación y validación de formularios
 - **Clase principal:** `LoginApp`
-- **Dependencias:** Requiere `mockups.js` cargado previamente
+- **Dependencias:** Usa el endpoint de login (puclaro). No depende de `mockups.js` en runtime — el fallback a mocks fue retirado.
 - **Versión:** 2025102304
 
 **Funcionalidades:**
@@ -43,12 +31,13 @@ const USUARIOS_MOCK = [
 
 ---
 
+
 ### `main-menu-script.js`
 **Script del dashboard principal.**
 
 - **Propósito:** Navegación y gestión del menú principal
 - **Clase principal:** `MainMenuApp`
-- **Dependencias:** Requiere `mockups.js` cargado previamente
+- **Dependencias:** No requiere `mockups.js`. Lee la sesión desde `sessionStorage` (clave `ucn_user_data`) para obtener info del usuario.
 - **Versión:** 2025102304
 
 **Funcionalidades:**
@@ -73,23 +62,16 @@ const USUARIOS_MOCK = [
 
 ---
 
-## 🔄 Orden de Carga
+## 🔄 Orden de Carga (actualizado)
 
-Es **crítico** que los scripts se carguen en el siguiente orden:
+El proyecto ya no requiere incluir `mockups.js` por defecto. Carga los scripts principales así:
 
 ```html
-<!-- 1. Primero los datos (mockups) -->
-<script src="../js/mockups.js?v=2025102304"></script>
-
-<!-- 2. Luego los scripts que usan los datos -->
 <script src="../js/index-script.js?v=2025102304"></script>
+<script src="../js/main-menu-script.js?v=2025102304"></script>
 ```
 
-### ¿Por qué este orden?
-
-- `mockups.js` define `USUARIOS_MOCK` como variable global
-- `index-script.js` usa `USUARIOS_MOCK` para autenticación
-- Si se invierte el orden, `USUARIOS_MOCK` será `undefined`
+Si necesitas usar datos de prueba locales en desarrollo, crea una copia de `js/legacy/mockups.js` como `js/mockups.js` y cárgala antes de `index-script.js`.
 
 ---
 
