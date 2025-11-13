@@ -13,6 +13,18 @@
 
   <main id="contenedorMalla"></main>
 
+  <!-- Configuración global -->
+  <script>
+    window.APP_CONFIG = {
+      // Apunta al proxy local (http://localhost:3000/api/mallas)
+      // Asegúrate de ejecutar: node proxy-server.js
+      API_URL: 'http://localhost:3000/api/mallas',
+      TIMEOUT_MS: 10000,
+      CONTAINER_ID: 'contenedorMalla'
+    };
+  </script>
+  <script src="../js/mallas-api.js"></script>
+  <script src="../js/mallas-ui.js"></script>
   <script src="../js/mallas.js"></script>
 </body>
 </html>
