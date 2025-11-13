@@ -237,7 +237,11 @@ class HistoricoApp {
     `;
   }
 
-  // Método público para cargar y renderizar proyecciones desde un JSON
+
+  // Esta seccion de cargar proyecciones es meramente local (digamo en una se cae la API)
+
+  // Método público para cargar y renderizar proyecciones desde un JSON para pruebas manuales
+  
   async cargarProyeccionesDesdeJSON(rutaJSON) {
     // Si se pasa un array ya, usarlo directamente
     if (Array.isArray(rutaJSON)) {
