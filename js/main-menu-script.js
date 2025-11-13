@@ -48,6 +48,67 @@ class MainMenuApp {
     }
   }
 
+  // ===== MÉTODOS DE AUTENTICACIÓN / INTEGRACIÓN CON API =====
+  async fetchJsonLenient(url, options = {}) {
+    const resp = await fetch(url, options);
+    const text = await resp.text();
+    try {
+      return JSON.parse(text);
+    } catch (err) {
+      throw new Error(`Respuesta inválida JSON desde ${url}: ${text}`);
+    }
+  }
+
+  async apiLogin(email, password) {
+    const loginUrl = `https://puclaro.ucn.cl/eross/avance/login.php?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
+    try {
+      const data = await this.fetchJsonLenient(loginUrl);
+      if (data && data.error) {
+        throw new Error(data.error);
+      }
+      return data;
+    } catch (err) {
+      console.error('Error en apiLogin:', err);
+      throw err;
+    }
+  }
+
+  // Guardar en sessionStorage la estructura mínima que usa la UI
+  guardarUsuarioEnSession(data, email) {
+    const usuario = {
+      rut: data.rut || null,
+      email: email || null,
+      name: data.name || (email ? email.split('@')[0] : null),
+      firstName: (email ? (email.split('@')[0].split('.')[0] || email) : null),
+      carreras: Array.isArray(data.carreras) ? data.carreras : [],
+      academicInfo: {
+        career: data.carreras && data.carreras[0] ? data.carreras[0].nombre : undefined,
+        catalog: data.carreras && data.carreras[0] ? data.carreras[0].catalogo : undefined
+      }
+    };
+
+    sessionStorage.setItem(CLAVES_ALMACENAMIENTO.DATOS_USUARIO, JSON.stringify(usuario));
+    console.log('✅ Usuario guardado en sessionStorage:', usuario);
+    this.mostrarInformacionUsuario(usuario);
+  }
+
+  // Función utilizable desde la página de login para disparar el login real
+  async realizarLoginYRedirigir(email, password) {
+    try {
+      const res = await this.apiLogin(email, password);
+      if (res && res.rut) {
+        this.guardarUsuarioEnSession(res, email);
+        // Redirigir al main-menu una vez autenticado
+        window.location.href = 'html/main-menu.html';
+      } else {
+        throw new Error('Respuesta de login inválida');
+      }
+    } catch (err) {
+      console.error('Error en realizarLoginYRedirigir:', err);
+      throw err;
+    }
+  }
+
     // ===== VISUALIZACIÓN DE INFORMACIÓN DEL USUARIO =====
   mostrarInformacionUsuario(usuario) {
     // Actualizar nombre de usuario

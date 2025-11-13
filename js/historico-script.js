@@ -12,18 +12,106 @@ class HistoricoApp {
     console.log('HistoricoApp inicializado');
     // Renderiza un estado inicial (vacío) mientras se integran datos
     this.renderizarEstadoInicial();
+    // Intentar cargar los avances desde la API usando la sesión almacenada
+    // Si no existe sesión, mostramos un mensaje para iniciar sesión.
+    this.fetchAndRenderFromApi().catch(err => {
+      console.warn('Historico: no se pudieron obtener datos desde la API:', err);
+    });
+  }
 
-    // Datos de prueba iniciales (ejemplo según esquema proporcionado)
-    const sampleData = [
-      {"nrc":"21943","period":"202320","student":"333333333","course":"ECIN-00704","excluded":false,"inscriptionType":"REGULAR","status":"APROBADO"},
-      {"nrc":"21944","period":"202320","student":"333333333","course":"ECIN-00600","excluded":false,"inscriptionType":"REGULAR","status":"REPROBADO"},
-      {"nrc":"21945","period":"202420","student":"333333333","course":"ECIN-00800","excluded":false,"inscriptionType":"REGULAR","status":"PENDIENTE"},
-      {"nrc":"21946","period":"202420","student":"333333333","course":"ECIN-00900","excluded":false,"inscriptionType":"REGULAR","status":"APROBADO"},
-      {"nrc":"21947","period":"202520","student":"333333333","course":"ECIN-01000","excluded":false,"inscriptionType":"REGULAR","status":"PENDIENTE"}
-    ];
+  // ===== Integración con la API de Avance =====
+  async fetchJsonText(url, options = {}) {
+    const resp = await fetch(url, options);
+    const text = await resp.text();
+    try {
+      return JSON.parse(text);
+    } catch (err) {
+      throw new Error(`Respuesta inválida JSON desde ${url}: ${text}`);
+    }
+  }
 
-    // Renderizar los datos de ejemplo inmediatamente para inspección
-    this.cargarProyeccionesDesdeDatos(sampleData);
+  async fetchAvanceForCarrera(rut, codcarrera) {
+    const url = `https://puclaro.ucn.cl/eross/avance/avance.php?rut=${encodeURIComponent(rut)}&codcarrera=${encodeURIComponent(codcarrera)}`;
+    try {
+      const datos = await this.fetchJsonText(url);
+      if (Array.isArray(datos)) return datos;
+      if (datos && datos.error) {
+        console.warn('API Avance respondió con error para', codcarrera, datos.error);
+        return [];
+      }
+      return [];
+    } catch (err) {
+      console.error('Error al obtener avance para', codcarrera, err);
+      throw err;
+    }
+  }
+
+  async fetchAndRenderFromApi() {
+    // Leer sesión del usuario
+    const raw = sessionStorage.getItem('ucn_user_data');
+    if (!raw) {
+      // Mostrar instrucción para iniciar sesión
+      if (this.contenedorColumnas) {
+        this.contenedorColumnas.innerHTML = `
+          <div class="sin-datos" style="padding:2rem;text-align:center;color:var(--muted)">
+            <i class="fas fa-user-circle" style="font-size:2rem;margin-bottom:0.5rem;display:block"></i>
+            <strong>No has iniciado sesión</strong>
+            <div style="margin-top:.5rem">Por favor inicia sesión para ver tu histórico de avance.</div>
+          </div>
+        `;
+      }
+      throw new Error('No hay sesión de usuario');
+    }
+
+    let usuario;
+    try {
+      usuario = JSON.parse(raw);
+    } catch (err) {
+      console.error('Historico: error parseando sessionStorage:', err);
+      throw err;
+    }
+
+    const rut = usuario.rut || (usuario.user && usuario.user.rut) || null;
+    const carreras = usuario.carreras || (usuario.user && usuario.user.carreras) || [];
+
+    if (!rut || !Array.isArray(carreras) || carreras.length === 0) {
+      console.warn('Historico: sesión encontrada pero sin rut/carreras', usuario);
+      if (this.contenedorColumnas) {
+        this.contenedorColumnas.innerHTML = `
+          <div class="sin-datos" style="padding:2rem;text-align:center;color:var(--muted)">
+            <i class="fas fa-exclamation-circle" style="font-size:2rem;margin-bottom:0.5rem;display:block"></i>
+            <strong>No hay carreras asociadas a la sesión</strong>
+            <div style="margin-top:.5rem">Verifica tu cuenta o contacta soporte.</div>
+          </div>
+        `;
+      }
+      throw new Error('Sesión sin carreras');
+    }
+
+    // Por cada carrera, solicitar el avance y concatenar resultados
+    const todas = [];
+    for (const c of carreras) {
+      const codigo = c.codigo || c.code || c.cod || null;
+      if (!codigo) continue;
+      try {
+        const avance = await this.fetchAvanceForCarrera(rut, codigo);
+        if (Array.isArray(avance) && avance.length > 0) {
+          todas.push(...avance);
+        }
+      } catch (err) {
+        // Si falla una carrera, seguimos con las demás
+        console.warn('Historico: fallo al cargar avance para', codigo, err.message || err);
+      }
+    }
+
+    if (todas.length === 0) {
+      // Mostrar estado vacío con info
+      this.renderizarEstadoInicial();
+      throw new Error('No se obtuvieron registros de avance');
+    }
+
+    // Renderizar los registros combinados
+    this.cargarProyeccionesDesdeDatos(todas);
   }
 
   async loadJSON(ruta) {
@@ -47,31 +135,49 @@ class HistoricoApp {
       return;
     }
 
-    // Agrupar por periodo
-    const grupos = {};
+    // Normalizar y agrupar por periodo (año + semestre) para evitar duplicados
+    const grupos = {}; // key -> { label, order: {year, sem}, items: [] }
+
+    const parsePeriod = (p) => {
+      const raw = p ? String(p).trim() : '';
+      if (!raw) return { year: 0, sem: 0 };
+      // Extraer año (primer grupo de 4 dígitos)
+      const yMatch = raw.match(/(\d{4})/);
+      const year = yMatch ? parseInt(yMatch[1], 10) : 0;
+      // Buscar semestre: 5º carácter si es dígito o S1/S2 en el string
+      let sem = 0;
+      if (raw.length >= 5 && /\d/.test(raw.charAt(4))) {
+        const c = raw.charAt(4);
+        if (c === '1') sem = 1;
+        else if (c === '2') sem = 2;
+        else if (c === '0') sem = 0;
+      } else {
+        const sMatch = raw.match(/S\s?([12])/i);
+        if (sMatch) sem = parseInt(sMatch[1], 10);
+      }
+      return { year, sem };
+    };
+
+    const formatPeriodFromObj = ({ year, sem }) => {
+      if (!year) return 'Unknown';
+      if (!sem || sem === 0) return String(year);
+      return `${year} S${sem}`;
+    };
+
     datos.forEach(item => {
-      const periodo = item.period || 'unknown';
-      if (!grupos[periodo]) grupos[periodo] = [];
-      grupos[periodo].push(item);
+      const parsed = parsePeriod(item.period || item.periodo || '');
+      const key = `${parsed.year}-${parsed.sem}`;
+      if (!grupos[key]) grupos[key] = { label: formatPeriodFromObj(parsed), order: parsed, items: [] };
+      grupos[key].items.push(item);
     });
 
-    // Ordenar periodos (descendente por default)
-    const periodos = Object.keys(grupos).sort((a,b) => b.localeCompare(a));
-
-    // Helper: convertir periodos como '202320' -> '2023 S2' (si aplica)
-    const formatPeriod = (p) => {
-      if (!p || typeof p !== 'string') return String(p);
-      // Si el formato es YYYYx... tomamos los 4 primeros como año y el quinto como semestre
-      if (p.length >= 5) {
-        const year = p.slice(0,4);
-        const semChar = p.charAt(4);
-        if (semChar === '1') return `${year} S1`;
-        if (semChar === '2') return `${year} S2`;
-        // mapping para otros códigos comunes (por si usan 0/5 etc.)
-        if (semChar === '0') return `${year}`;
-      }
-      return p;
-    };
+    // Ordenar por año desc, semestre desc
+    const periodos = Object.keys(grupos).sort((a, b) => {
+      const A = grupos[a].order;
+      const B = grupos[b].order;
+      if (A.year !== B.year) return B.year - A.year;
+      return (B.sem || 0) - (A.sem || 0);
+    });
 
     // Construir HTML dinámico
     this.contenedorColumnas.innerHTML = '';
@@ -82,14 +188,15 @@ class HistoricoApp {
       columna.setAttribute('data-col', String(index + 1));
       columna.setAttribute('aria-label', `Columna ${index + 1} - Ramos`);
 
-  const tituloCol = document.createElement('div');
+      const grupo = grupos[periodo];
+      const tituloCol = document.createElement('div');
       tituloCol.className = 'titulo-col';
-  tituloCol.innerHTML = `<i class="fas fa-th-list" style="color:var(--blue)"></i> ${formatPeriod(periodo)}`;
+      tituloCol.innerHTML = `<i class="fas fa-th-list" style="color:var(--blue)"></i> ${grupo.label}`;
 
       const cuerpo = document.createElement('div');
       cuerpo.className = 'cuerpo-col';
 
-      grupos[periodo].forEach(reg => {
+  grupo.items.forEach(reg => {
         const status = (reg.status || '').toUpperCase();
         let clase = 'ramo--pendiente';
         if (status === 'APROBADO') clase = 'ramo--aprobado';
@@ -130,7 +237,11 @@ class HistoricoApp {
     `;
   }
 
-  // Método público para cargar y renderizar proyecciones desde un JSON
+
+  // Esta seccion de cargar proyecciones es meramente local (digamo en una se cae la API)
+
+  // Método público para cargar y renderizar proyecciones desde un JSON para pruebas manuales
+  
   async cargarProyeccionesDesdeJSON(rutaJSON) {
     // Si se pasa un array ya, usarlo directamente
     if (Array.isArray(rutaJSON)) {
