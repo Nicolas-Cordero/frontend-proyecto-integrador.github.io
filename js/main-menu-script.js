@@ -305,6 +305,9 @@ class MainMenuApp {
   async cargarPerfil() {
     if (!this.areaContenido) return;
 
+    // Limpiar scripts de mallas
+    this.limpiarScriptsMallas();
+
     try {
       // Obtener datos del usuario (SOLO sessionStorage)
       const datosUsuario = sessionStorage.getItem(CLAVES_ALMACENAMIENTO.DATOS_USUARIO);
@@ -347,47 +350,57 @@ class MainMenuApp {
   }
 
   // ===== NAVEGACIÓN A MALLA ACTUAL =====
-  cargarMallaActual() {
+  async cargarMallaActual() {
     if (!this.areaContenido) return;
-  // Asegurar que no quede cargado el CSS específico de histórico (scoped)
-  const estiloHistoricoExistente = document.getElementById('historico-scoped-style');
-  if (estiloHistoricoExistente) estiloHistoricoExistente.remove();
+    
+    // Asegurar que no quede cargado el CSS específico de histórico (scoped)
+    const estiloHistoricoExistente = document.getElementById('historico-scoped-style');
+    if (estiloHistoricoExistente) estiloHistoricoExistente.remove();
 
     console.log('📊 Cargando Malla Actual...');
 
-    // HTML embebido directamente (sin fetch)
-    const htmlMalla = `
-      <div>
-        <header>
-          <h1>Malla Curricular - Ingeniería Civil en Computación e Informática</h1>
-        </header>
-
-        <main id="contenedorMalla"></main>
-
-        <script src="../js/mallas.js"></script>
-      </div>
-
-    `;
-
-    this.areaContenido.innerHTML = htmlMalla;
-
-    // Cargar el script de malla-actual
-    const scriptExistente = document.getElementById('malla-actual-script');
-    if (scriptExistente) {
-      scriptExistente.remove();
+    try {
+      const respuesta = await fetch('../html/mallas (urr).html');
+      if (!respuesta.ok) {
+        throw new Error(`Error HTTP: ${respuesta.status}`);
+      }
+      const htmlCompleto = await respuesta.text();
+      
+      // Extraer el contenido del body
+      const parserDOM = new DOMParser();
+      const docParsed = parserDOM.parseFromString(htmlCompleto, 'text/html');
+      const bodyContent = docParsed.body.innerHTML;
+      
+      this.areaContenido.innerHTML = bodyContent;
+      
+      // Configurar APP_CONFIG global ANTES de cargar scripts
+      window.APP_CONFIG = {
+        API_URL: 'http://localhost:3000/api/mallas',
+        TIMEOUT_MS: 10000,
+        CONTAINER_ID: 'contenedorMalla'
+      };
+      
+      // Cargar los scripts necesarios en orden
+      const scripts = ['mallas-api.js', 'mallas-ui.js', 'mallas.js'];
+      for (const scriptName of scripts) {
+        const script = document.createElement('script');
+        script.src = `../js/${scriptName}?v=${Date.now()}`;
+        document.body.appendChild(script);
+      }
+      
+      console.log('✅ Malla Actual cargada exitosamente');
+    } catch (error) {
+      console.error('Error al cargar Malla Actual:', error);
+      this.areaContenido.innerHTML = `<div style="padding: 2rem; text-align: center;"><h2>Error al cargar la malla</h2><button onclick="window.mainMenuApp.cargarInicio()">Volver</button></div>`;
     }
-
-    const script = document.createElement('script');
-    script.id = 'malla-actual-script';
-    script.src = '../js/mallas.js?v=' + Date.now();
-    document.body.appendChild(script);
-
-    console.log('✅ Malla Actual cargada exitosamente');
   }
 
   // ===== CARGAR VISTA DE HISTÓRICO DENTRO DEL ÁREA DE CONTENIDO =====
   cargarHistorico() {
     if (!this.areaContenido) return;
+
+    // Limpiar scripts de mallas
+    this.limpiarScriptsMallas();
 
     console.log('📥 Cargando vista de Histórico en area-contenido...');
     // Inyectar stylesheet acotado para la vista histórico (no altera layout global)
@@ -637,9 +650,13 @@ class MainMenuApp {
 
   cargarInicio() {
     if (!this.areaContenido || !this.contenidoInicio) return;
-  // Asegurar que no quede cargado el CSS específico de histórico (scoped)
-  const estiloHistoricoExistente = document.getElementById('historico-scoped-style');
-  if (estiloHistoricoExistente) estiloHistoricoExistente.remove();
+    
+    // Limpiar scripts de mallas
+    this.limpiarScriptsMallas();
+    
+    // Asegurar que no quede cargado el CSS específico de histórico (scoped)
+    const estiloHistoricoExistente = document.getElementById('historico-scoped-style');
+    if (estiloHistoricoExistente) estiloHistoricoExistente.remove();
     
     this.areaContenido.innerHTML = this.contenidoInicio;
     
@@ -647,6 +664,20 @@ class MainMenuApp {
     this.establecerElementoMenuActivo('home');
     
     console.log('✅ Volviendo al home');
+  }
+
+  // ===== LIMPIAR SCRIPTS DE MALLAS =====
+  limpiarScriptsMallas() {
+    const mallasScripts = ['mallas-api.js', 'mallas-ui.js', 'mallas.js'];
+    const todosLosScripts = document.querySelectorAll('script');
+    
+    todosLosScripts.forEach(script => {
+      for (const mallasScript of mallasScripts) {
+        if (script.src.includes(mallasScript)) {
+          script.remove();
+        }
+      }
+    });
   }
 
   establecerElementoMenuActivo(tipoElemento) {

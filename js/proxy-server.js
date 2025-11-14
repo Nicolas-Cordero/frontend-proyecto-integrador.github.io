@@ -13,7 +13,7 @@ const express = require('express');
 const axios = require('axios');
 
 const app = express();
-const PORT = 3001;
+const PORT = 3000;
 
 // Credenciales de la API real
 const API_URL = 'https://losvilos.ucn.cl/hawaii/api/mallas?8606-202320';
