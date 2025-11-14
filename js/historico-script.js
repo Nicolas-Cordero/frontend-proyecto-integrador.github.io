@@ -2,6 +2,18 @@
 // Lógica inicial para la página historico.html
 // Provee una clase HistoricoApp preparada para cargar JSONs y renderizar el contenido
 
+// IIFE para permitir re-inyecciones sin conflicto de redeclaración
+(function() {
+  'use strict';
+  
+  // Si la clase ya existe, removerla del contexto global
+  if (window.HistoricoApp) {
+    delete window.HistoricoApp;
+  }
+  if (window.historicoApp) {
+    window.historicoApp = null;
+  }
+
 class HistoricoApp {
   constructor() {
     this.contenedorColumnas = document.getElementById('contenedorColumnas');
@@ -32,16 +44,18 @@ class HistoricoApp {
 
   async fetchAvanceForCarrera(rut, codcarrera) {
     const url = `https://puclaro.ucn.cl/eross/avance/avance.php?rut=${encodeURIComponent(rut)}&codcarrera=${encodeURIComponent(codcarrera)}`;
+    console.log('[HistoricoApp] URL de API:', url);
     try {
       const datos = await this.fetchJsonText(url);
       if (Array.isArray(datos)) return datos;
       if (datos && datos.error) {
-        console.warn('API Avance respondió con error para', codcarrera, datos.error);
+        console.warn('[HistoricoApp] API Avance respondió con error para', codcarrera, ':', datos.error);
         return [];
       }
+      console.log('[HistoricoApp] Respuesta API (no es array):', datos);
       return [];
     } catch (err) {
-      console.error('Error al obtener avance para', codcarrera, err);
+      console.error('[HistoricoApp] Error al obtener avance para', codcarrera, err);
       throw err;
     }
   }
@@ -90,17 +104,33 @@ class HistoricoApp {
 
     // Por cada carrera, solicitar el avance y concatenar resultados
     const todas = [];
+    
+    console.log('[HistoricoApp] Carreras encontradas:', carreras);
+    
     for (const c of carreras) {
+      console.log('[HistoricoApp] Procesando carrera:', c);
+      
+      // El endpoint de Avance requiere "codigo", NO "catalogo"
+      // "catalogo" es para la API de Malla
       const codigo = c.codigo || c.code || c.cod || null;
-      if (!codigo) continue;
+      
+      console.log('[HistoricoApp] Código de carrera extraído:', codigo);
+      
+      if (!codigo) {
+        console.warn('[HistoricoApp] Carrera sin código:', c);
+        continue;
+      }
       try {
+        console.log('[HistoricoApp] Llamando API Avance con RUT:', rut, 'y codcarrera:', codigo);
         const avance = await this.fetchAvanceForCarrera(rut, codigo);
+        console.log('[HistoricoApp] Respuesta de API Avance:', avance);
+        
         if (Array.isArray(avance) && avance.length > 0) {
           todas.push(...avance);
         }
       } catch (err) {
         // Si falla una carrera, seguimos con las demás
-        console.warn('Historico: fallo al cargar avance para', codigo, err.message || err);
+        console.warn('[HistoricoApp] Fallo al cargar avance para', codigo, err.message || err);
       }
     }
 
@@ -134,6 +164,9 @@ class HistoricoApp {
       this.renderizarEstadoInicial();
       return;
     }
+
+    // Calcular estadísticas ANTES de renderizar columnas
+    this.calcularYMostrarEstadisticas(datos);
 
     // Normalizar y agrupar por periodo (año + semestre) para evitar duplicados
     const grupos = {}; // key -> { label, order: {year, sem}, items: [] }
@@ -224,6 +257,89 @@ class HistoricoApp {
     });
   }
 
+  // ===== CALCULAR Y MOSTRAR ESTADÍSTICAS =====
+  calcularYMostrarEstadisticas(datos) {
+    console.log('[HistoricoApp] Calculando estadísticas...');
+    
+    if (!Array.isArray(datos) || datos.length === 0) {
+      // Resetear estadísticas a 0
+      this.actualizarEstadisticasDOM({ aprobados: 0, reprobados: 0, pendientes: 0, totalPeriodos: 0 });
+      return;
+    }
+
+    let aprobados = 0;
+    let reprobados = 0;
+    let pendientes = 0;
+    const periodosSet = new Set();
+
+    datos.forEach(item => {
+      const status = (item.status || '').toUpperCase();
+      
+      if (status === 'APROBADO') {
+        aprobados++;
+      } else if (status === 'REPROBADO') {
+        reprobados++;
+      } else {
+        pendientes++;
+      }
+
+      // Contar periodos únicos
+      const periodo = item.period || item.periodo || '';
+      if (periodo) {
+        periodosSet.add(periodo);
+      }
+    });
+
+    const totalPeriodos = periodosSet.size;
+
+    console.log('[HistoricoApp] Estadísticas calculadas:', {
+      aprobados,
+      reprobados,
+      pendientes,
+      totalPeriodos
+    });
+
+    // Actualizar el DOM
+    this.actualizarEstadisticasDOM({ aprobados, reprobados, pendientes, totalPeriodos });
+  }
+
+  actualizarEstadisticasDOM(estadisticas) {
+    const { aprobados, reprobados, pendientes, totalPeriodos } = estadisticas;
+
+    // Buscar elementos del DOM
+    const elementoAprobados = document.getElementById('ramosAprobados');
+    const elementoReprobados = document.getElementById('ramosReprobados');
+    const elementoPendientes = document.getElementById('ramosPendientes');
+    const elementoPeriodos = document.getElementById('totalPeriodos');
+
+    // Animar números
+    if (elementoAprobados) this.animarNumero(elementoAprobados, aprobados);
+    if (elementoReprobados) this.animarNumero(elementoReprobados, reprobados);
+    if (elementoPendientes) this.animarNumero(elementoPendientes, pendientes);
+    if (elementoPeriodos) this.animarNumero(elementoPeriodos, totalPeriodos);
+  }
+
+  animarNumero(elemento, valorFinal) {
+    const duracion = 1000; // 1 segundo
+    const pasos = 30;
+    const intervalo = duracion / pasos;
+    const incremento = valorFinal / pasos;
+    let valorActual = 0;
+    let contador = 0;
+
+    const timer = setInterval(() => {
+      contador++;
+      valorActual += incremento;
+      
+      if (contador >= pasos) {
+        clearInterval(timer);
+        elemento.textContent = valorFinal;
+      } else {
+        elemento.textContent = Math.floor(valorActual);
+      }
+    }, intervalo);
+  }
+
   renderizarEstadoInicial() {
     if (!this.contenedorColumnas) return;
 
@@ -273,6 +389,11 @@ if (document.readyState === 'loading') {
   // Si el script se inyecta dinámicamente después de DOMContentLoaded
   _initHistoricoApp();
 }
+
+// Exportar clase al contexto global
+window.HistoricoApp = HistoricoApp;
+
+})(); // Fin del IIFE
 
 // Export para testing (Node env)
 if (typeof module !== 'undefined' && module.exports) {

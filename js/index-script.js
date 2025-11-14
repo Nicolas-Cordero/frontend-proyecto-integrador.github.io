@@ -54,11 +54,23 @@ class LoginApp {
     if (usernameInput) {
       usernameInput.addEventListener('blur', () => this.validarCampo('usuario'));
       usernameInput.addEventListener('input', this.limpiarErrores.bind(this, 'usuario'));
+      usernameInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          this.manejarInicioSesion(e);
+        }
+      });
     }
 
     if (passwordInput) {
       passwordInput.addEventListener('blur', () => this.validarCampo('contrasena'));
       passwordInput.addEventListener('input', this.limpiarErrores.bind(this, 'contrasena'));
+      passwordInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          this.manejarInicioSesion(e);
+        }
+      });
     }
 
     // Botones de login alternativo
@@ -79,13 +91,6 @@ class LoginApp {
     if (mobileMenuBtn) {
       mobileMenuBtn.addEventListener('click', this.alternarMenuMovil.bind(this));
     }
-
-    // Tecla Enter en campos
-    document.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter' && (e.target.id === 'usuario' || e.target.id === 'contrasena')) {
-        this.manejarInicioSesion(e);
-      }
-    });
   }
 
   // ===== VALIDACIÓN DE FORMULARIO =====
@@ -195,27 +200,35 @@ class LoginApp {
 
   // ===== FUNCIONALIDAD DE LOGIN =====
   async manejarInicioSesion(event) {
-    event.preventDefault();
+    if (event.preventDefault) {
+      event.preventDefault();
+    }
 
-    const formData = new FormData(event.target);
+    const formData = new FormData(document.getElementById('loginForm'));
     const loginData = {
       username: formData.get('usuario')?.trim(),
       password: formData.get('contrasena')
     };
 
     // Validar campos
-  const isUsernameValid = this.validarCampo('usuario');
-  const isPasswordValid = this.validarCampo('contrasena');
+    const isUsernameValid = this.validarCampo('usuario');
+    const isPasswordValid = this.validarCampo('contrasena');
 
     if (!isUsernameValid || !isPasswordValid) {
-      this.mostrarMensajeEstado('error', 'Por favor corrige los errores antes de continuar');
+      toast.error('Por favor corrige los errores antes de continuar');
       return;
     }
 
     try {
       this.mostrarCarga(true);
       
+      // Mostrar toast de carga
+      const loadingToastId = toast.loading('Entrando al sistema...');
+      
       const result = await this.realizarInicioSesion(loginData);
+      
+      // Remover toast de carga
+      toast.remove(loadingToastId);
       
       if (result.success) {
         this.manejarInicioSesionExitoso(result.data);
@@ -281,10 +294,10 @@ class LoginApp {
     console.log('📊 academicInfo recibido:', data.user.academicInfo);
     
     // Guardar SOLO en sessionStorage
-  this.guardarDatosSesion(data);
+    this.guardarDatosSesion(data);
 
-    // Mostrar mensaje de éxito
-  this.mostrarMensajeEstado('success', '¡Inicio de sesión exitoso! Redirigiendo...');
+    // Mostrar toast de éxito
+    toast.success('¡Bienvenido! Redirigiendo...', 2000);
 
     // Redirigir al menú principal después de 1.5 segundos
     setTimeout(() => {
@@ -293,7 +306,20 @@ class LoginApp {
   }
 
   manejarErrorInicioSesion(errorMessage) {
-    this.mostrarMensajeEstado('error', errorMessage);
+    // Mapear mensaje de error a toast
+    let mensajeClaro = errorMessage;
+    
+    if (errorMessage && errorMessage.toLowerCase().includes('error')) {
+      if (errorMessage.toLowerCase().includes('correo') || errorMessage.toLowerCase().includes('usuario')) {
+        mensajeClaro = 'Correo o usuario equivocado';
+      } else if (errorMessage.toLowerCase().includes('contraseña')) {
+        mensajeClaro = 'Contraseña equivocada';
+      } else if (errorMessage.toLowerCase().includes('conectar') || errorMessage.toLowerCase().includes('servicio')) {
+        mensajeClaro = 'No se pudo conectar con el servicio. Intenta más tarde.';
+      }
+    }
+    
+    toast.error(mensajeClaro);
 
     // Limpiar contraseña
     const passwordInput = document.getElementById('contrasena');
@@ -343,12 +369,12 @@ class LoginApp {
   }
 
   manejarInicioSesionAlternativo(provider) {
-    this.mostrarMensajeEstado('warning', `Login con ${provider} no está disponible temporalmente`);
+    toast.warning(`Login con ${provider} no está disponible temporalmente`);
   }
 
   manejarOlvidoContrasena(event) {
     event.preventDefault();
-    this.mostrarMensajeEstado('info', 'Contacta al administrador para recuperar tu contraseña: soporte@ucn.cl');
+    toast.info('Contacta al administrador para recuperar tu contraseña: soporte@ucn.cl');
   }
 
   alternarMenuMovil() {

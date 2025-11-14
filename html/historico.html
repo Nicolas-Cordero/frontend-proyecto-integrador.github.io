@@ -5,6 +5,7 @@
 	<meta name="viewport" content="width=device-width,initial-scale=1">
 	<title>Histórico - PredictClass</title>
 	<link rel="stylesheet" href="../css/index-styles.css">
+	<link rel="stylesheet" href="../css/historico-estadisticas.css">
 	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -17,15 +18,55 @@
 				<p class="subtitle">Aqui se despliega todo el avance academico que llevas en la carrera</p>
 			</header>
 
+			<!-- Sección de Estadísticas -->
+			<section class="card tarjeta-estadisticas" aria-labelledby="estadisticasTitle">
+				<div class="card-header cabecera-tarjeta-detalle">
+					<i class="fas fa-chart-line"></i>
+					<h3 id="estadisticasTitle">Estadísticas Académicas</h3>
+				</div>
+				<div class="card-body cuerpo-tarjeta-detalle">
+					<div class="cuadricula-estadisticas">
+						<div class="elemento-estadistica">
+							<i class="fas fa-book"></i>
+							<div class="contenido-estadistica">
+								<span class="numero-estadistica" id="ramosAprobados">0</span>
+								<span class="etiqueta-estadistica">Ramos aprobados</span>
+							</div>
+						</div>
+						<div class="elemento-estadistica">
+							<i class="fas fa-times-circle"></i>
+							<div class="contenido-estadistica">
+								<span class="numero-estadistica" id="ramosReprobados">0</span>
+								<span class="etiqueta-estadistica">Ramos reprobados</span>
+							</div>
+						</div>
+						<div class="elemento-estadistica">
+							<i class="fas fa-clock"></i>
+							<div class="contenido-estadistica">
+								<span class="numero-estadistica" id="ramosPendientes">0</span>
+								<span class="etiqueta-estadistica">Ramos pendientes</span>
+							</div>
+						</div>
+						<div class="elemento-estadistica">
+							<i class="fas fa-calendar-alt"></i>
+							<div class="contenido-estadistica">
+								<span class="numero-estadistica" id="totalPeriodos">0</span>
+								<span class="etiqueta-estadistica">Periodos cursados</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<!-- Sección de Proyecciones -->
 			<section class="card" aria-labelledby="cardTitle">
 				<div class="card-header">
 					<div id="cardTitle">
-						<strong>Proyecciones</strong>
+						<strong>Proyecciones por Periodo</strong>
 					</div>
 				</div>
 
 				<div class="hscroll-wrap" aria-live="polite">
-
 					<div class="columnas" id="contenedorColumnas"></div>
 				</div>
 			</section>

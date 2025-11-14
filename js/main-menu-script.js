@@ -9,6 +9,7 @@ class MainMenuApp {
   constructor() {
     this.areaContenido = null;
     this.contenidoInicio = null;
+    this.vistaActual = 'inicio'; // Track current view to prevent double-load
     this.inicializar();
   }
 
@@ -304,6 +305,12 @@ class MainMenuApp {
 
   async cargarPerfil() {
     if (!this.areaContenido) return;
+    
+    // Prevenir recarga si ya estamos en esta vista
+    if (this.vistaActual === 'perfil') {
+      console.log('✅ Ya estás en la vista de Perfil');
+      return;
+    }
 
     // Limpiar scripts de mallas
     this.limpiarScriptsMallas();
@@ -331,6 +338,9 @@ class MainMenuApp {
           window.dispatchEvent(evento);
         });
       }
+      
+      // Marcar vista actual
+      this.vistaActual = 'perfil';
 
       console.log('✅ Perfil cargado exitosamente');
 
@@ -352,6 +362,12 @@ class MainMenuApp {
   // ===== NAVEGACIÓN A MALLA ACTUAL =====
   async cargarMallaActual() {
     if (!this.areaContenido) return;
+    
+    // Prevenir recarga si ya estamos en esta vista
+    if (this.vistaActual === 'malla-actual') {
+      console.log('✅ Ya estás en la vista de Malla Actual');
+      return;
+    }
     
     // Asegurar que no quede cargado el CSS específico de histórico (scoped)
     const estiloHistoricoExistente = document.getElementById('historico-scoped-style');
@@ -388,6 +404,9 @@ class MainMenuApp {
         document.body.appendChild(script);
       }
       
+      // Marcar vista actual
+      this.vistaActual = 'malla-actual';
+      
       console.log('✅ Malla Actual cargada exitosamente');
     } catch (error) {
       console.error('Error al cargar Malla Actual:', error);
@@ -398,13 +417,27 @@ class MainMenuApp {
   // ===== CARGAR VISTA DE HISTÓRICO DENTRO DEL ÁREA DE CONTENIDO =====
   cargarHistorico() {
     if (!this.areaContenido) return;
+    
+    // Prevenir recarga si ya estamos en esta vista
+    if (this.vistaActual === 'historico') {
+      console.log('✅ Ya estás en la vista de Histórico');
+      return;
+    }
 
     // Limpiar scripts de mallas
     this.limpiarScriptsMallas();
+    
+    // Limpiar instancia anterior de HistoricoApp
+    if (window.historicoApp) {
+      console.log('🧹 Limpiando instancia anterior de HistoricoApp');
+      window.historicoApp = null;
+    }
 
     console.log('📥 Cargando vista de Histórico en area-contenido...');
-    // Inyectar stylesheet acotado para la vista histórico (no altera layout global)
+    // Inyectar stylesheets para la vista histórico
     const head = document.head || document.getElementsByTagName('head')[0];
+    
+    // CSS principal de histórico
     const estiloId = 'historico-scoped-style';
     const existenteEstilo = document.getElementById(estiloId);
     if (existenteEstilo) {
@@ -416,20 +449,72 @@ class MainMenuApp {
       link.href = '../css/historico-scoped.css?v=' + Date.now();
       head.appendChild(link);
     }
+    
+    // CSS de estadísticas
+    const estiloEstadisticasId = 'historico-estadisticas-style';
+    const existenteEstadisticas = document.getElementById(estiloEstadisticasId);
+    if (!existenteEstadisticas) {
+      const linkEstadisticas = document.createElement('link');
+      linkEstadisticas.id = estiloEstadisticasId;
+      linkEstadisticas.rel = 'stylesheet';
+      linkEstadisticas.href = '../css/historico-estadisticas.css?v=' + Date.now();
+      head.appendChild(linkEstadisticas);
+    }
+    
     const htmlHistorico = `
       <div>
         <header>
           <h1 class="page-title">Histórico de Proyecciones</h1>
-          <p class="subtitle">Vista vacía — agrega proyecciones para ver columnas de ramos aquí.</p>
+          <p class="subtitle">Aquí se despliega todo el avance académico que llevas en la carrera</p>
         </header>
 
         <section class="card" aria-labelledby="cardTitle">
           <div class="card-header">
-            <div id="cardTitle"><strong>Proyecciones</strong></div>
+            <div id="cardTitle"><strong>Proyecciones por Periodo</strong></div>
           </div>
 
           <div class="hscroll-wrap" aria-live="polite">
             <div class="columnas" id="contenedorColumnas"></div>
+          </div>
+        </section>
+
+        <!-- Sección de Estadísticas -->
+        <section class="card tarjeta-estadisticas" aria-labelledby="estadisticasTitle">
+          <div class="card-header cabecera-tarjeta-detalle">
+            <i class="fas fa-chart-line"></i>
+            <h3 id="estadisticasTitle">Estadísticas Académicas</h3>
+          </div>
+          <div class="card-body cuerpo-tarjeta-detalle">
+            <div class="cuadricula-estadisticas">
+              <div class="elemento-estadistica">
+                <i class="fas fa-book"></i>
+                <div class="contenido-estadistica">
+                  <span class="numero-estadistica" id="ramosAprobados">0</span>
+                  <span class="etiqueta-estadistica">Ramos aprobados</span>
+                </div>
+              </div>
+              <div class="elemento-estadistica">
+                <i class="fas fa-times-circle"></i>
+                <div class="contenido-estadistica">
+                  <span class="numero-estadistica" id="ramosReprobados">0</span>
+                  <span class="etiqueta-estadistica">Ramos reprobados</span>
+                </div>
+              </div>
+              <div class="elemento-estadistica">
+                <i class="fas fa-clock"></i>
+                <div class="contenido-estadistica">
+                  <span class="numero-estadistica" id="ramosPendientes">0</span>
+                  <span class="etiqueta-estadistica">Ramos pendientes</span>
+                </div>
+              </div>
+              <div class="elemento-estadistica">
+                <i class="fas fa-calendar-alt"></i>
+                <div class="contenido-estadistica">
+                  <span class="numero-estadistica" id="totalPeriodos">0</span>
+                  <span class="etiqueta-estadistica">Periodos cursados</span>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </div>
@@ -437,15 +522,45 @@ class MainMenuApp {
 
     this.areaContenido.innerHTML = htmlHistorico;
 
-  // Cargar el script de histórico de forma dinámica (si ya existe, removerlo)
-  const scriptId = 'historico-script';
-  const existente = document.getElementById(scriptId);
-  if (existente) existente.remove();
+    // Cargar el script de histórico de forma dinámica (si ya existe, removerlo)
+    const scriptId = 'historico-script';
+    const existente = document.getElementById(scriptId);
+    if (existente) {
+      console.log('🗑️ Removiendo script anterior de histórico');
+      existente.remove();
+    }
 
-  const script = document.createElement('script');
-  script.id = scriptId;
-  script.src = '../js/historico-script.js?v=' + Date.now();
-  document.body.appendChild(script);
+    // IMPORTANTE: Usar requestAnimationFrame para esperar a que el navegador
+    // haya renderizado el nuevo DOM antes de inyectar el script
+    requestAnimationFrame(() => {
+      // Pequeño delay adicional para asegurar que el DOM está completamente listo
+      setTimeout(() => {
+        // Verificar que el contenedor exista ANTES de inyectar el script
+        const contenedor = document.getElementById('contenedorColumnas');
+        if (!contenedor) {
+          console.error('❌ El contenedor no existe después de renderizar');
+          return;
+        }
+        
+        console.log('✓ Contenedor verificado, inyectando script...');
+        const script = document.createElement('script');
+        script.id = scriptId;
+        script.src = '../js/historico-script.js?v=' + Date.now();
+        
+        script.onload = () => {
+          console.log('✅ Script de histórico inyectado y cargado');
+        };
+        
+        script.onerror = () => {
+          console.error('❌ Error al cargar script de histórico');
+        };
+        
+        document.body.appendChild(script);
+      }, 50);
+    });
+  
+    // Marcar vista actual
+    this.vistaActual = 'historico';
 
     console.log('✅ Vista de Histórico cargada');
   }
@@ -581,45 +696,6 @@ class MainMenuApp {
               </div>
             </div>
           </div>
-
-          <div class="tarjeta-detalle">
-            <div class="cabecera-tarjeta-detalle">
-              <i class="fas fa-chart-line"></i>
-              <h3>Estadísticas</h3>
-            </div>
-            <div class="cuerpo-tarjeta-detalle">
-              <div class="cuadricula-estadisticas">
-                <div class="elemento-estadistica">
-                  <i class="fas fa-book"></i>
-                  <div class="contenido-estadistica">
-                    <span class="numero-estadistica">${ramosAprobados}</span>
-                    <span class="etiqueta-estadistica">Ramos aprobados</span>
-                  </div>
-                </div>
-                <div class="elemento-estadistica">
-                  <i class="fas fa-clock"></i>
-                  <div class="contenido-estadistica">
-                    <span class="numero-estadistica">${ramosActuales}</span>
-                    <span class="etiqueta-estadistica">Ramos actuales</span>
-                  </div>
-                </div>
-                <div class="elemento-estadistica">
-                  <i class="fas fa-trophy"></i>
-                  <div class="contenido-estadistica">
-                    <span class="numero-estadistica">${progresoCurricular}%</span>
-                    <span class="etiqueta-estadistica">Avance curricular</span>
-                  </div>
-                </div>
-                <div class="elemento-estadistica">
-                  <i class="fas fa-calendar-check"></i>
-                  <div class="contenido-estadistica">
-                    <span class="numero-estadistica">${semestresRestantes}</span>
-                    <span class="etiqueta-estadistica">Semestres restantes</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
         <!-- Acciones del perfil -->
@@ -651,6 +727,12 @@ class MainMenuApp {
   cargarInicio() {
     if (!this.areaContenido || !this.contenidoInicio) return;
     
+    // Prevenir recarga si ya estamos en la vista de inicio
+    if (this.vistaActual === 'inicio') {
+      console.log('✅ Ya estás en la vista de Inicio');
+      return;
+    }
+    
     // Limpiar scripts de mallas
     this.limpiarScriptsMallas();
     
@@ -659,6 +741,9 @@ class MainMenuApp {
     if (estiloHistoricoExistente) estiloHistoricoExistente.remove();
     
     this.areaContenido.innerHTML = this.contenidoInicio;
+    
+    // Marcar vista actual
+    this.vistaActual = 'inicio';
     
     // Restaurar highlight a "Malla Actual"
     this.establecerElementoMenuActivo('home');
@@ -674,10 +759,17 @@ class MainMenuApp {
     todosLosScripts.forEach(script => {
       for (const mallasScript of mallasScripts) {
         if (script.src.includes(mallasScript)) {
+          console.log(`🗑️ Removiendo script: ${mallasScript}`);
           script.remove();
         }
       }
     });
+    
+    // Limpiar variables globales de mallas si existen
+    if (window.mallaApp) {
+      console.log('🧹 Limpiando instancia de mallaApp');
+      window.mallaApp = null;
+    }
   }
 
   establecerElementoMenuActivo(tipoElemento) {

@@ -1,0 +1,185 @@
+================================================================================
+                    GUÍA DE EJECUCIÓN - PREDICTCLASS
+                        Frontend Proyecto Integrador
+================================================================================
+
+📋 TABLA DE CONTENIDOS:
+  1. Requisitos Previos (Windows y macOS)
+  2. Estructura del Proyecto
+  3. Instalación de Dependencias (Windows y macOS)
+  4. Ejecución del Proxy Server
+  5. Acceso a la Aplicación
+  6. Flujos de Datos (APIs y Fetchs)
+  7. Troubleshooting
+  8. Comandos Rápidos (Windows y macOS)
+  9. Verificación Final
+  10. Contacto y Soporte
+
+📌 DIFERENCIAS CLAVE ENTRE SISTEMAS OPERATIVOS
+================================================================================
+
+┌─────────────────┬────────────────────────────┬──────────────────────────────┐
+│ TAREA           │ LINUX / macOS              │ WINDOWS (PowerShell)         │
+├─────────────────┼────────────────────────────┼──────────────────────────────┤
+│ Abrir Terminal  │ Cmd + Space → Terminal     │ Win + X → PowerShell         │
+│                 │                            │ o busca "PowerShell"         │
+├─────────────────┼────────────────────────────┼──────────────────────────────┤
+│ Navegar Carpeta │ $ cd /ruta/a/carpeta       │ > cd C:\ruta\a\carpeta       │
+├─────────────────┼────────────────────────────┼──────────────────────────────┤
+│ Instalar        │ $ npm install              │ > npm install                │
+│ Paquetes        │                            │                              │
+├─────────────────┼────────────────────────────┼──────────────────────────────┤
+│ Iniciar Proxy   │ $ npm start                │ > npm start                  │
+├─────────────────┼────────────────────────────┼──────────────────────────────┤
+│ Detener Proxy   │ Ctrl + C                   │ Ctrl + C                     │
+├─────────────────┼────────────────────────────┼──────────────────────────────┤
+│ Limpiar Carpeta │ $ rm -rf carpeta           │ > Remove-Item carpeta -R     │
+│                 │                            │ o en CMD: rmdir carpeta /s   │
+├─────────────────┼────────────────────────────┼──────────────────────────────┤
+│ Ver Versión     │ $ node --version           │ > node --version             │
+│ Node            │                            │                              │
+└─────────────────┴────────────────────────────┴──────────────────────────────┘
+
+NOTA: La mayoría de comandos npm son idénticos en todos los sistemas.
+      La diferencia principal está en comandos del sistema operativo.
+
+
+================================================================================
+1. REQUISITOS PREVIOS
+================================================================================
+
+NODE.JS: v16.x o superior
+NPM: v8.x o superior
+
+MACOS
+───────────────────────────────────────────────────────────────────────────────
+
+Verificar instalación:
+  $ node --version
+  $ npm --version
+
+Si no tienes Node instalado:
+  Opción 1 - Descargar desde: https://nodejs.org/
+  Opción 2 - Usar Homebrew (recomendado):
+    $ brew install node
+
+
+WINDOWS
+───────────────────────────────────────────────────────────────────────────────
+
+Verificar instalación (PowerShell o CMD):
+  > node --version
+  > npm --version
+
+Si no tienes Node instalado:
+  1. Descarga el instalador desde: https://nodejs.org/
+  2. Ejecuta el .msi
+  3. Sigue el wizard (acepta todas las opciones por defecto)
+  4. Reinicia tu computadora
+  5. Abre PowerShell o CMD y verifica: node --version
+
+
+================================================================================
+2. ESTRUCTURA DEL PROYECTO
+================================================================================
+
+frontend-proyecto-integrador/
+├── html/                          # Archivos HTML del proyecto
+│   ├── index.html                 # Página de login
+│   ├── main-menu.html             # Dashboard principal
+│   ├── malla-actual.html          # Vista de malla curricular actual
+│   ├── historico.html             # Vista de histórico de avance
+│   ├── perfil-usuario.html        # Perfil del usuario
+│   └── mallas (urr).html          # HTML base para mallas
+│
+├── css/                           # Estilos CSS
+│   ├── main-menu.css
+│   ├── historico-scoped.css       # Estilos para vista histórico
+│   ├── style-mallas.css           # Estilos para mallas
+│   └── [otros CSS]
+│
+├── js/                            # Lógica JavaScript
+│   ├── main-menu-script.js        # Lógica del menú principal
+│   ├── historico-script.js        # Lógica de histórico (✓ funciona)
+│   ├── malla-actual.js            # Lógica de malla actual
+│   ├── mallas-api.js              # Funciones API para mallas
+│   ├── mallas-ui.js               # Renderización UI de mallas
+│   ├── mallas.js                  # Orquestación de mallas
+│   ├── proxy-server.js            # ⭐ SERVIDOR PROXY (CRÍTICO)
+│   └── [otros scripts]
+│
+├── images/                        # Recursos de imagen
+├── package.json                   # Configuración de dependencias
+├── package-lock.json              # Lock de versiones
+└── guia-uso.txt                   # Esta guía
+
+
+================================================================================
+3. INSTALACIÓN DE DEPENDENCIAS
+================================================================================
+
+PASO 1: Navegar a la carpeta del proyecto
+
+MACOS / LINUX
+  > cd "/Users/TuUsuario/.../frontend-proyecto-integrador"
+
+WINDOWS (PowerShell)
+  > cd "C:\Users\TuUsuario\Desktop\...\frontend-proyecto-integrador"
+  
+  Si usas CMD (no PowerShell):
+  > cd C:\Users\TuUsuario\Desktop\...\frontend-proyecto-integrador
+
+
+PASO 2: Instalar dependencias (si node_modules no existe)
+
+MACOS / LINUX / WINDOWS (igual para todos)
+  $ npm install
+  
+  o si tienes problemas:
+  $ npm install --legacy-peer-deps
+
+Esto instalará:
+  - express (v4.18.2)        → Servidor web local
+  - axios (v1.6.0)           → Cliente HTTP para llamadas a API
+
+SALIDA ESPERADA:
+  added 57 packages in X.XXs
+  ✓ node_modules/ creada
+
+
+================================================================================
+4. EJECUCIÓN DEL PROXY SERVER
+================================================================================
+
+IMPORTANTE: El proxy server es CRÍTICO para que funcionen los fetchs a las
+APIs remotas. Debe estar ejecutándose en todo momento.
+
+PASO 1: Iniciar el proxy server
+
+MACOS / LINUX / WINDOWS (igual para todos)
+
+$ npm start
+
+SALIDA ESPERADA:
+  [proxy] Escuchando en http://localhost:3000
+  [proxy] Endpoint: GET http://localhost:3000/api/mallas
+
+
+PASO 2: Verificar que está funcionando
+
+  1) Abre tu navegador (Chrome, Firefox, Safari, Edge, etc.)
+  
+  2) Copia y pega esta URL en la barra de direcciones:
+     http://localhost:3000/html/index.html
+  
+  2) Si ves la página de login → ✓ Proxy está funcionando
+
+PASO 3: Mantener el terminal abierto
+
+  - NO cierres este terminal mientras desarrolles
+  - El proxy debe estar corriendo constantemente
+  - Si necesitas parar el proxy:
+    
+    MACOS / LINUX / WINDOWS (igual para todos)
+      Presiona: Ctrl + C
+

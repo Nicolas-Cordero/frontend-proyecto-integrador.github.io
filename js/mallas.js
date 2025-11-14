@@ -9,32 +9,37 @@
  * 3. Renderiza con mallas-ui.js
  */
 
-/**
- * Inicializa la malla
- */
-async function inicializarMallas(urlApi) {
-  console.log('[mallas] Inicializando...');
+// IIFE para permitir re-inyecciones sin conflicto
+(function() {
+  'use strict';
 
-  // 1. Obtener datos desde API (o proxy)
-  let datos = await window.obtenerMallas(urlApi);
+  /**
+   * Inicializa la malla
+   */
+  async function inicializarMallas(urlApi) {
 
-  // 2. Fallback a datos por defecto si falla
-  if (!datos) {
-    console.warn('[mallas] Usando datos por defecto');
-    datos = window.DEFAULT_MALLA;
+    // 1. Obtener datos desde API (o proxy)
+    let datos = await window.obtenerMallas(urlApi);
+
+    // 2. Fallback a datos por defecto si falla
+    if (!datos) {
+      console.warn('[mallas] Usando datos por defecto');
+      datos = window.DEFAULT_MALLA;
+    }
+
+    // 3. Renderizar en la página
+    window.renderizarMalla(datos);
   }
 
-  // 3. Renderizar en la página
-  window.renderizarMalla(datos);
-}
-
-// Ejecutar cuando DOM esté listo O inmediatamente si ya está cargado
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
+  // Ejecutar cuando DOM esté listo O inmediatamente si ya está cargado
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      inicializarMallas();
+    });
+  } else {
+    // DOM ya está listo (scripts cargados dinámicamente)
     inicializarMallas();
-  });
-} else {
-  // DOM ya está listo (scripts cargados dinámicamente)
-  inicializarMallas();
-}
+  }
+
+})(); // Cierre del IIFE
 

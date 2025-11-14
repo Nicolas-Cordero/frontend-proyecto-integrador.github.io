@@ -5,12 +5,14 @@
  * - Maneja restricciones CORS del navegador
  * - Añade header de autenticación X-HAWAII-AUTH
  * - Expone /api/mallas localmente en puerto 3000
+ * - Sirve archivos estáticos (HTML, CSS, JS, images)
  * 
  * Ejecutar: npm start
  */
 
 const express = require('express');
 const axios = require('axios');
+const path = require('path');
 
 const app = express();
 const PORT = 3000;
@@ -18,6 +20,14 @@ const PORT = 3000;
 // Credenciales de la API real
 const API_URL = 'https://losvilos.ucn.cl/hawaii/api/mallas?8606-202320';
 const AUTH_TOKEN = 'jf400fejof13f';
+
+/**
+ * Servir archivos estáticos desde la raíz del proyecto
+ * Esto permite acceder a /html/index.html, /css/*, /js/*, /images/*
+ */
+const projectRoot = path.join(__dirname, '..');
+console.log(`[proxy] Sirviendo archivos desde: ${projectRoot}`);
+app.use(express.static(projectRoot));
 
 /**
  * Habilitar CORS para todas las rutas
@@ -61,6 +71,14 @@ app.get('/api/mallas', async (req, res) => {
 
 // Iniciar servidor
 app.listen(PORT, () => {
-  console.log(`[proxy] Escuchando en http://localhost:${PORT}`);
-  console.log(`[proxy] Endpoint: GET http://localhost:${PORT}/api/mallas`);
+  console.log('\n' + '='.repeat(70));
+  console.log('[proxy] ✓ SERVIDOR PROXY INICIADO CORRECTAMENTE');
+  console.log('='.repeat(70));
+  console.log(`[proxy] Escuchando en: http://localhost:${PORT}`);
+  console.log(`[proxy] Sirviendo archivos desde: ${projectRoot}`);
+  console.log('\n[proxy] URLs disponibles:');
+  console.log(`  • Aplicación:  http://localhost:${PORT}/html/index.html`);
+  console.log(`  • API Proxy:   http://localhost:${PORT}/api/mallas`);
+  console.log('\n[proxy] Presiona Ctrl+C para detener el servidor\n');
+  console.log('='.repeat(70) + '\n');
 });
