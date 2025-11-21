@@ -1,0 +1,71 @@
+{
+  "simulacion": {
+    "id": 1,
+    "titulo": "Simulación rápida 21-11-2025",
+    "periodoObjetivo": "Semestre 2025",
+    "creditosTotales": 22,
+    "notas": "Generada desde la vista Malla Actual",
+    "creadoEn": "2025-11-21T03:37:00.630Z",
+    "actualizadoEn": "2025-11-21T03:37:00.630Z"
+  },
+  "estudiante": {
+    "id": 1,
+    "rut": "222222222",
+    "correo": "maria@example.com",
+    "nombre": "maria",
+    "apellido": null,
+    "nombre_completo": "maria"
+  },
+  "carrera": {
+    "id": 1,
+    "nombre": "ITI",
+    "codigo_catalogo": "202410"
+  },
+  "ramos": [
+    {
+      "codigo": "ECIN-00404",
+      "nombre": "Diseño de Sistemas Digitales",
+      "nivel": 5,
+      "creditos": 5,
+      "estado": "planificado",
+      "prioridad": 1,
+      "notaEsperada": null
+    },
+    {
+      "codigo": "UNFV-04004",
+      "nombre": "Formación General Valórica 4",
+      "nivel": 8,
+      "creditos": 2,
+      "estado": "planificado",
+      "prioridad": 2,
+      "notaEsperada": null
+    },
+    {
+      "codigo": "ECIN-00407",
+      "nombre": "Estructuras de Datos",
+      "nivel": 4,
+      "creditos": 5,
+      "estado": "planificado",
+      "prioridad": 3,
+      "notaEsperada": null
+    },
+    {
+      "codigo": "ECIN-00610",
+      "nombre": "Ingeniería de Software",
+      "nivel": 6,
+      "creditos": 5,
+      "estado": "planificado",
+      "prioridad": 4,
+      "notaEsperada": null
+    },
+    {
+      "codigo": "DCCB-00301",
+      "nombre": "Ecuaciones Diferenciales",
+      "nivel": 3,
+      "creditos": 5,
+      "estado": "planificado",
+      "prioridad": 5,
+      "notaEsperada": null
+    }
+  ]
+}

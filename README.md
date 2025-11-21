@@ -209,22 +209,66 @@ npm run dev
 
 ```
 frontend-proyecto-integrador/
-├── 📁 .git/                  # Control de versiones Git
-├── 📁 html/                  # Páginas HTML (vistas)
-│   ├── index.html           # Página principal del login
-│   └── main-menu.html       # Demo: navbar vertical (sidebar)
-├── 📁 css/                   # Hojas de estilo
-│   ├── index-styles.css     # Estilos principales del login
-│   └── main-menu.css        # Estilos del demo del menú
-├── 📁 js/                    # Lógica JavaScript
-│   └── index-script.js      # Lógica principal del login
-├── 📁 images/                # Recursos gráficos del proyecto
-│   ├── arquitectura.png     # Diagrama de arquitectura del sistema
-│   ├── coquimbo.jpg         # Imagen de fondo de Coquimbo
-│   ├── ucn-logo.png         # Logo oficial de UCN
-│   └── ucn-name.png         # Nombre institucional UCN
-├── � .gitattributes         # Configuración de Git
-├── 📄 README.md             # Este archivo de documentación
-└── 📄 Guía_Documento_Inicial.pdf  # Documentación oficial del proyecto
+├── .git/                  # Control de versiones Git
+├── frontend/                          # Aplicación cliente web
+│   ├── html/                          # Páginas HTML (vistas)
+│   │   ├── index.html                    # Página de login
+│   │   ├── main-menu.html                # Dashboard principal
+│   │   ├── malla-actual.html             # Vista de malla curricular actual
+│   │   ├── historico.html                # Vista de histórico de avance
+│   │   ├── perfil-usuario.html           # Perfil del usuario
+│   │   └── mallas (urr).html             # HTML base para mallas
+│   ├── css/                              # Hojas de estilo
+│   │   ├── index-styles.css              # Estilos del login
+│   │   ├── main-menu.css                 # Estilos del dashboard
+│   │   ├── historico-scoped.css          # Estilos de histórico
+│   │   ├── historico-estadisticas.css    # Estilos de estadísticas
+│   │   ├── malla-actual.css              # Estilos de malla actual
+│   │   ├── perfil-usuario-styles.css     # Estilos de perfil
+│   │   └── style-mallas.css              # Estilos de mallas
+│   ├── js/                               # Lógica JavaScript
+│   │   ├── index-script.js               # Lógica del login
+│   │   ├── main-menu-script.js           # Lógica del dashboard
+│   │   ├── historico-script.js           # Lógica de histórico
+│   │   ├── malla-actual.js               # Lógica de malla actual
+│   │   ├── mallas-api.js                 # Funciones API para mallas
+│   │   ├── mallas-ui.js                  # Renderización UI de mallas
+│   │   ├── mallas.js                     # Orquestación de mallas
+│   │   ├── perfil-usuario-script.js      # Lógica de perfil
+│   │   ├── proxy-server.js               # Servidor proxy local
+│   │   ├── toast-ui.js                   # UI para notificaciones
+│   │   └── mockups.js                    # Datos simulados
+│   ├── images/                           # Recursos gráficos
+│   │   ├── profile-pictures/             # Fotos de perfil
+│   │   ├── arquitectura.png              # Diagrama de arquitectura
+│   │   ├── coquimbo.jpg                  # Imagen de fondo
+│   │   ├── ucn-logo.png                  # Logo UCN
+│   │   └── ucn-name.png                  # Nombre institucional UCN
+│   ├── package.json                      # Dependencias frontend
+│   ├── package-lock.json                 # Lock de versiones
+│   └── README.md                         # Documentación frontend
+├── backend/                              # Servidor API (backend-simulacion-ramos)
+│   ├── src/                              # Código fuente del backend
+│   │   ├── rutas/                        # Endpoints API
+│   │   │   ├── estudiantes.js            # Rutas de estudiantes
+│   │   │   ├── cursos.js                 # Rutas de cursos
+│   │   │   └── simulaciones.js           # Rutas de simulaciones
+│   │   ├── utilidades/                   # Módulos auxiliares
+│   │   │   └── archivos-simulaciones.js  # Gestión de archivos JSON
+│   │   ├── servidor.js                   # Servidor Express principal
+│   │   ├── base-datos.js                 # Inicialización SQLite
+│   │   └── configuracion.js              # Configuración global
+│   ├── data/                             # Almacenamiento persistente
+│   │   ├── simulador.sqlite              # Base de datos SQLite
+│   │   └── simulaciones/                 # Archivos JSON de simulaciones
+│   ├── package.json                      # Dependencias backend
+│   ├── package-lock.json                 # Lock de versiones
+│   ├── .gitignore                        # Archivos ignorados en Git
+│   ├── README.md                         # Documentación backend
+│   └── .env (no versionado)              # Variables de entorno
+├── README.md                             # Este archivo de documentación
+├── guia-uso.txt                          # Guía de uso del proyecto
+├── .gitattributes                        # Configuración de Git
+└── Guía_Documento_Inicial.pdf            # Documentación oficial del proyecto
 ```
 ---

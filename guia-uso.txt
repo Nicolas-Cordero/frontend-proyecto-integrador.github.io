@@ -1,9 +1,8 @@
-================================================================================
-                    GUÍA DE EJECUCIÓN - PREDICTCLASS
-                        Frontend Proyecto Integrador
-================================================================================
+--------------------------------------------------------------------------------
+                    Guía de Uso
+--------------------------------------------------------------------------------
 
-📋 TABLA DE CONTENIDOS:
+ÍNDICE:
   1. Requisitos Previos (Windows y macOS)
   2. Estructura del Proyecto
   3. Instalación de Dependencias (Windows y macOS)
@@ -15,38 +14,10 @@
   9. Verificación Final
   10. Contacto y Soporte
 
-📌 DIFERENCIAS CLAVE ENTRE SISTEMAS OPERATIVOS
-================================================================================
 
-┌─────────────────┬────────────────────────────┬──────────────────────────────┐
-│ TAREA           │ LINUX / macOS              │ WINDOWS (PowerShell)         │
-├─────────────────┼────────────────────────────┼──────────────────────────────┤
-│ Abrir Terminal  │ Cmd + Space → Terminal     │ Win + X → PowerShell         │
-│                 │                            │ o busca "PowerShell"         │
-├─────────────────┼────────────────────────────┼──────────────────────────────┤
-│ Navegar Carpeta │ $ cd /ruta/a/carpeta       │ > cd C:\ruta\a\carpeta       │
-├─────────────────┼────────────────────────────┼──────────────────────────────┤
-│ Instalar        │ $ npm install              │ > npm install                │
-│ Paquetes        │                            │                              │
-├─────────────────┼────────────────────────────┼──────────────────────────────┤
-│ Iniciar Proxy   │ $ npm start                │ > npm start                  │
-├─────────────────┼────────────────────────────┼──────────────────────────────┤
-│ Detener Proxy   │ Ctrl + C                   │ Ctrl + C                     │
-├─────────────────┼────────────────────────────┼──────────────────────────────┤
-│ Limpiar Carpeta │ $ rm -rf carpeta           │ > Remove-Item carpeta -R     │
-│                 │                            │ o en CMD: rmdir carpeta /s   │
-├─────────────────┼────────────────────────────┼──────────────────────────────┤
-│ Ver Versión     │ $ node --version           │ > node --version             │
-│ Node            │                            │                              │
-└─────────────────┴────────────────────────────┴──────────────────────────────┘
-
-NOTA: La mayoría de comandos npm son idénticos en todos los sistemas.
-      La diferencia principal está en comandos del sistema operativo.
-
-
-================================================================================
+--------------------------------------------------------------------------------
 1. REQUISITOS PREVIOS
-================================================================================
+--------------------------------------------------------------------------------
 
 NODE.JS: v16.x o superior
 NPM: v8.x o superior
@@ -79,44 +50,81 @@ Si no tienes Node instalado:
   5. Abre PowerShell o CMD y verifica: node --version
 
 
-================================================================================
+--------------------------------------------------------------------------------
 2. ESTRUCTURA DEL PROYECTO
-================================================================================
+--------------------------------------------------------------------------------
 
 frontend-proyecto-integrador/
-├── html/                          # Archivos HTML del proyecto
-│   ├── index.html                 # Página de login
-│   ├── main-menu.html             # Dashboard principal
-│   ├── malla-actual.html          # Vista de malla curricular actual
-│   ├── historico.html             # Vista de histórico de avance
-│   ├── perfil-usuario.html        # Perfil del usuario
-│   └── mallas (urr).html          # HTML base para mallas
+├── frontend/                          # Aplicación cliente web
+│   ├── html/                          # Archivos HTML del proyecto
+│   │   ├── index.html                 # Página de login
+│   │   ├── main-menu.html             # Dashboard principal
+│   │   ├── malla-actual.html          # Vista de malla curricular actual
+│   │   ├── historico.html             # Vista de histórico de avance
+│   │   ├── perfil-usuario.html        # Perfil del usuario
+│   │   └── mallas (urr).html          # HTML base para mallas
+│   │
+│   ├── css/                           # Estilos CSS
+│   │   ├── main-menu.css
+│   │   ├── historico-scoped.css       # Estilos para vista histórico
+│   │   ├── historico-estadisticas.css # Estilos de estadísticas
+│   │   ├── index-styles.css           # Estilos del login
+│   │   ├── malla-actual.css           # Estilos de malla actual
+│   │   ├── perfil-usuario-styles.css  # Estilos de perfil
+│   │   └── style-mallas.css           # Estilos para mallas
+│   │
+│   ├── js/                            # Lógica JavaScript
+│   │   ├── main-menu-script.js        # Lógica del menú principal
+│   │   ├── historico-script.js        # Lógica de histórico
+│   │   ├── malla-actual.js            # Lógica de malla actual
+│   │   ├── mallas-api.js              # Funciones API para mallas
+│   │   ├── mallas-ui.js               # Renderización UI de mallas
+│   │   ├── mallas.js                  # Orquestación de mallas
+│   │   ├── proxy-server.js            # SERVIDOR PROXY (CRÍTICO)
+│   │   ├── perfil-usuario-script.js   # Lógica de perfil
+│   │   ├── index-script.js            # Lógica del login
+│   │   ├── toast-ui.js                # UI para notificaciones
+│   │   └── mockups.js                 # Datos simulados
+│   │
+│   ├── images/                        # Recursos de imagen
+│   │   └── profile-pictures/          # Fotos de perfil
+│   │
+│   ├── package.json                   # Configuración de dependencias
+│   ├── package-lock.json              # Lock de versiones
+│   └── README.md                      # Documentación del frontend
 │
-├── css/                           # Estilos CSS
-│   ├── main-menu.css
-│   ├── historico-scoped.css       # Estilos para vista histórico
-│   ├── style-mallas.css           # Estilos para mallas
-│   └── [otros CSS]
+├── backend/                            # Servidor API (backend-simulacion-ramos)
+│   ├── src/                            # Código fuente
+│   │   ├── rutas/                      # Endpoints API
+│   │   │   ├── estudiantes.js          # Rutas de estudiantes
+│   │   │   ├── cursos.js               # Rutas de cursos
+│   │   │   └── simulaciones.js         # Rutas de simulaciones
+│   │   ├── utilidades/                 # Módulos auxiliares
+│   │   │   └── archivos-simulaciones.js# Gestión de archivos JSON
+│   │   ├── servidor.js                 # Servidor Express principal
+│   │   ├── base-datos.js               # Inicialización SQLite
+│   │   └── configuracion.js            # Configuración global
+│   │
+│   ├── data/                           # Almacenamiento persistente
+│   │   ├── simulador.sqlite            # Base de datos SQLite
+│   │   └── simulaciones/               # Archivos JSON de simulaciones
+│   │
+│   ├── package.json                    # Configuración de dependencias
+│   ├── package-lock.json               # Lock de versiones
+│   ├── .gitignore                      # Archivos ignorados en Git
+│   ├── README.md                       # Documentación del backend
+│   └── .env (no versionado)            # Variables de entorno
 │
-├── js/                            # Lógica JavaScript
-│   ├── main-menu-script.js        # Lógica del menú principal
-│   ├── historico-script.js        # Lógica de histórico (✓ funciona)
-│   ├── malla-actual.js            # Lógica de malla actual
-│   ├── mallas-api.js              # Funciones API para mallas
-│   ├── mallas-ui.js               # Renderización UI de mallas
-│   ├── mallas.js                  # Orquestación de mallas
-│   ├── proxy-server.js            # ⭐ SERVIDOR PROXY (CRÍTICO)
-│   └── [otros scripts]
-│
-├── images/                        # Recursos de imagen
-├── package.json                   # Configuración de dependencias
-├── package-lock.json              # Lock de versiones
-└── guia-uso.txt                   # Esta guía
+├── package.json                        # Configuración raíz
+├── guia-uso.txt                        # Esta guía
+├── README.md                           # Documentación principal
+├── .gitattributes                      # Configuración de Git
+└── Guía_Documento_Inicial.pdf          # Documentación oficial del proyecto
 
 
-================================================================================
+--------------------------------------------------------------------------------
 3. INSTALACIÓN DE DEPENDENCIAS
-================================================================================
+--------------------------------------------------------------------------------
 
 PASO 1: Navegar a la carpeta del proyecto
 
@@ -147,9 +155,9 @@ SALIDA ESPERADA:
   ✓ node_modules/ creada
 
 
-================================================================================
+--------------------------------------------------------------------------------
 4. EJECUCIÓN DEL PROXY SERVER
-================================================================================
+--------------------------------------------------------------------------------
 
 IMPORTANTE: El proxy server es CRÍTICO para que funcionen los fetchs a las
 APIs remotas. Debe estar ejecutándose en todo momento.

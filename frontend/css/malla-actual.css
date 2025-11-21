@@ -57,3 +57,31 @@
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   min-height: 400px;
 }
+
+.barra-simulacion {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1.5rem;
+}
+
+.boton-simulacion {
+  padding: 0.85rem 1.75rem;
+  border: none;
+  border-radius: 0.6rem;
+  background: #2563eb;
+  color: white;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.boton-simulacion:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.boton-simulacion:hover:not(:disabled) {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}

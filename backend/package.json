@@ -1,0 +1,21 @@
+{
+  "name": "backend-simulacion-ramos",
+  "version": "0.1.0",
+  "description": "Backend SQLite para simulaciones de toma de ramos",
+  "main": "src/servidor.js",
+  "scripts": {
+    "dev": "nodemon src/servidor.js",
+    "start": "node src/servidor.js",
+    "lint": "echo 'No lint configurado'"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}

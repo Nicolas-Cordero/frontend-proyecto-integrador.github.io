@@ -396,12 +396,11 @@ class MainMenuApp {
         CONTAINER_ID: 'contenedorMalla'
       };
       
-      // Cargar los scripts necesarios en orden
-      const scripts = ['mallas-api.js', 'mallas-ui.js', 'mallas.js'];
+      // Cargar los scripts necesarios en orden garantizando dependencias
+      const scripts = ['mallas-api.js', 'mallas-ui.js', 'mallas.js', 'malla-actual.js'];
       for (const scriptName of scripts) {
-        const script = document.createElement('script');
-        script.src = `../js/${scriptName}?v=${Date.now()}`;
-        document.body.appendChild(script);
+        const ruta = `../js/${scriptName}?v=${Date.now()}`;
+        await this.inyectarScriptSecuencial(ruta);
       }
       
       // Marcar vista actual
@@ -412,6 +411,17 @@ class MainMenuApp {
       console.error('Error al cargar Malla Actual:', error);
       this.areaContenido.innerHTML = `<div style="padding: 2rem; text-align: center;"><h2>Error al cargar la malla</h2><button onclick="window.mainMenuApp.cargarInicio()">Volver</button></div>`;
     }
+  }
+
+  inyectarScriptSecuencial(src) {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = src;
+      script.async = false; // asegurar orden de carga
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error(`No se pudo cargar ${src}`));
+      document.body.appendChild(script);
+    });
   }
 
   // ===== CARGAR VISTA DE HISTÓRICO DENTRO DEL ÁREA DE CONTENIDO =====
@@ -522,7 +532,7 @@ class MainMenuApp {
 
     this.areaContenido.innerHTML = htmlHistorico;
 
-    // Cargar el script de histórico de forma dinámica (si ya existe, removerlo)
+    // Cargar el script de histórico de forma dinámica 
     const scriptId = 'historico-script';
     const existente = document.getElementById(scriptId);
     if (existente) {
@@ -530,8 +540,7 @@ class MainMenuApp {
       existente.remove();
     }
 
-    // IMPORTANTE: Usar requestAnimationFrame para esperar a que el navegador
-    // haya renderizado el nuevo DOM antes de inyectar el script
+
     requestAnimationFrame(() => {
       // Pequeño delay adicional para asegurar que el DOM está completamente listo
       setTimeout(() => {
@@ -753,7 +762,7 @@ class MainMenuApp {
 
   // ===== LIMPIAR SCRIPTS DE MALLAS =====
   limpiarScriptsMallas() {
-    const mallasScripts = ['mallas-api.js', 'mallas-ui.js', 'mallas.js'];
+    const mallasScripts = ['mallas-api.js', 'mallas-ui.js', 'mallas.js', 'malla-actual.js'];
     const todosLosScripts = document.querySelectorAll('script');
     
     todosLosScripts.forEach(script => {

@@ -1,0 +1,13 @@
+{
+  "name": "mallas-frontend",
+  "version": "1.0.0",
+  "description": "Frontend para mallas curriculares",
+  "main": "js/proxy-server.js",
+  "scripts": {
+    "start": "node js/proxy-server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.6.0"
+  }
+}
