@@ -23,10 +23,63 @@ class MainMenuApp {
     this.cargarDatosUsuario();
     this.configurarCierreSesion();
     this.configurarBusqueda();
+    this.configurarTema();
     this.configurarNavegacionPerfil();
     this.configurarNavegacionMallaActual();
     this.configurarNavegacionHistorico();
     this.configurarNavegacionAtras();
+  }
+
+  // ===== TEMA (CLARO / OSCURO) =====
+  configurarTema() {
+    try {
+      const boton = document.getElementById('botonTema');
+      const icon = document.getElementById('iconTema');
+      if (!boton || !icon) return;
+
+      const KEY = 'predictclass_theme';
+      const saved = localStorage.getItem(KEY) || 'light';
+      this.aplicarTema(saved, { boton, icon });
+
+      // Apply time-based contrast class: day -> dark contrast, night -> light contrast
+      try {
+        const hour = new Date().getHours();
+        const isDay = (hour >= 7 && hour < 19);
+        boton.classList.toggle('contrast-dark', isDay);
+        boton.classList.toggle('contrast-light', !isDay);
+      } catch (err) {}
+
+      // Click or keyboard (Enter / Space)
+      const handler = (e) => {
+        if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
+        const current = document.body.classList.contains('theme-dark') ? 'dark' : 'light';
+        const next = current === 'dark' ? 'light' : 'dark';
+        localStorage.setItem(KEY, next);
+        this.aplicarTema(next, { boton, icon });
+      };
+
+      boton.addEventListener('click', handler);
+      boton.addEventListener('keydown', handler);
+    } catch (err) {
+      console.warn('Error al configurar tema:', err);
+    }
+  }
+
+  aplicarTema(tema, elements = {}) {
+    const { boton, icon } = elements;
+    if (tema === 'dark') {
+      document.body.classList.add('theme-dark');
+      if (boton) boton.setAttribute('aria-pressed', 'true');
+      if (boton) boton.setAttribute('title', 'Activar modo claro');
+      if (boton) boton.setAttribute('aria-label', 'Activar modo claro');
+      if (icon) icon.className = 'fa-solid fa-sun';
+    } else {
+      document.body.classList.remove('theme-dark');
+      if (boton) boton.setAttribute('aria-pressed', 'false');
+      if (boton) boton.setAttribute('title', 'Activar modo oscuro');
+      if (boton) boton.setAttribute('aria-label', 'Activar modo oscuro');
+      if (icon) icon.className = 'fa-solid fa-moon';
+    }
   }
 
     // ===== CARGA DE DATOS DEL USUARIO =====
@@ -370,8 +423,8 @@ class MainMenuApp {
       const parserDOM = new DOMParser();
       const docParsed = parserDOM.parseFromString(htmlCompleto, 'text/html');
       const bodyContent = docParsed.body.innerHTML;
-      
-      this.areaContenido.innerHTML = bodyContent;
+        const htmlPerfil = this.generarHTMLPerfil(usuario);
+        this.areaContenido.innerHTML = htmlPerfil;
       
       // Configurar APP_CONFIG global ANTES de cargar scripts
       window.APP_CONFIG = {
@@ -622,21 +675,7 @@ class MainMenuApp {
           </div>
         </div>
 
-        <!-- Acciones del perfil -->
-        <div class="acciones-perfil">
-          <button class="boton-accion primario" onclick="alert('Función de edición de perfil próximamente')">
-            <i class="fas fa-edit"></i>
-            <span>Editar Perfil</span>
-          </button>
-          <button class="boton-accion secundario" onclick="alert('Función de cambio de contraseña próximamente')">
-            <i class="fas fa-key"></i>
-            <span>Cambiar Contraseña</span>
-          </button>
-          <button class="boton-accion secundario" onclick="alert('Configuración de notificaciones próximamente')">
-            <i class="fas fa-bell"></i>
-            <span>Notificaciones</span>
-          </button>
-        </div>
+        <!-- Acciones del perfil removidas por configuración UX -->
       </div>
     `;
   }
