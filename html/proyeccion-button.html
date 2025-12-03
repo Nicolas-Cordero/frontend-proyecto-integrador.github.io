@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proyección - Botón de prueba</title>
+  <link rel="stylesheet" href="../css/style-mallas.css">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 2rem; }
+    .container { max-width: 800px; margin: 0 auto; }
+    label { display: block; margin-top: 0.5rem; }
+    input { width: 100%; padding: 0.5rem; margin-top: 0.25rem; }
+    button { margin-top: 1rem; padding: 0.6rem 1rem; }
+    .resultado { margin-top: 1.5rem; background: #f7f7f7; padding: 1rem; border-radius: 6px; }
+    pre { white-space: pre-wrap; word-wrap: break-word; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Proyección - Generador manual</h1>
+    <p>Rellena los datos y presiona <strong>Generar proyección</strong>.</p>
+
+    <div>
+      <label for="rut">RUT</label>
+      <input id="rut" type="text" value="222222222" />
+
+      <label for="codigo">Código carrera</label>
+      <input id="codigo" type="text" value="8266" />
+
+      <label for="semestre">Semestre</label>
+      <input id="semestre" type="text" value="202410" />
+
+      <label for="creditos">Créditos máximos por semestre</label>
+      <input id="creditos" type="number" value="30" min="1" />
+
+      <button id="btnGenerar">Generar proyección</button>
+    </div>
+
+    <div class="resultado" id="resultado">
+      <strong>Resultado:</strong>
+      <div id="estado">Esperando acción...</div>
+      <pre id="salida" style="display:none"></pre>
+    </div>
+  </div>
+
+  <!-- Cargar solo módulos de proyección necesarios -->
+  <script src="../js/mallas-api.js"></script>
+  <script src="../js/proyeccion-validator.js"></script>
+  <script src="../js/proyeccion-processor.js"></script>
+  <script src="../js/proyeccion-builder.js"></script>
+  <script src="../js/proyeccion-app.js"></script>
+  <script src="../js/historico-avance-api.js"></script>
+
+  <script>
+    (function(){
+      const btn = document.getElementById('btnGenerar');
+      const estado = document.getElementById('estado');
+      const salida = document.getElementById('salida');
+
+      btn.addEventListener('click', async () => {
+        estado.textContent = '⏳ Generando proyección...';
+        salida.style.display = 'none';
+        salida.textContent = '';
+
+        const rut = document.getElementById('rut').value.trim();
+        const codigo = document.getElementById('codigo').value.trim();
+        const semestre = document.getElementById('semestre').value.trim();
+        const creditos = Number(document.getElementById('creditos').value) || 30;
+
+        try {
+          if (typeof window.prepararProyeccion !== 'function') {
+            throw new Error('Función prepararProyeccion no disponible. Asegúrate de cargar los scripts de proyección.');
+          }
+
+          const proyeccion = await window.prepararProyeccion(rut, codigo, semestre, creditos);
+
+          estado.textContent = '✅ Proyección generada';
+          salida.style.display = 'block';
+          salida.textContent = JSON.stringify(proyeccion, null, 2);
+        } catch (err) {
+          estado.textContent = '❌ Error: ' + (err.message || err);
+          salida.style.display = 'block';
+          salida.textContent = (err.stack && err.stack.toString()) || JSON.stringify(err, null, 2);
+        }
+      });
+
+      // Optionally allow Enter to submit if focused in any input
+      ['rut','codigo','semestre','creditos'].forEach(id => {
+        const el = document.getElementById(id);
+        el.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            btn.click();
+          }
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

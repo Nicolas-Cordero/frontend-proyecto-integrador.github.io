@@ -3,48 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Malla Curricular - PredictClass</title>
-  <link rel="stylesheet" href="../css/malla-actual.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <title>Malla Curricular</title>
+  <link rel="stylesheet" href="../css/style-mallas.css">
 </head>
 <body>
-  <!-- Malla Actual - Página completa -->
-  <div class="contenedor-malla-actual">
-    <div class="cabecera-malla">
-      <button class="boton-volver" id="volverInicio" onclick="window.history.back()">
-        <i class="fas fa-arrow-left"></i>
-        <span>Volver</span>
-      </button>
-      <div>
-        <h1>Malla Curricular Actual</h1>
-        <p>Visualiza tu progreso académico y planifica tus próximos semestres</p>
-      </div>
-    </div>
+  <header>
+    <h1>Malla Curricular - Ingeniería Civil en Computación e Informática</h1>
+  </header>
 
-    <div class="contenido-malla">
-      <div style="text-align: center; padding: 3rem;">
-        <i class="fas fa-graduation-cap" style="font-size: 4rem; color: #10b981; margin-bottom: 2rem;"></i>
-        <h2 style="color: #1e293b; margin-bottom: 1rem;">Malla Curricular en Desarrollo</h2>
-        <p style="color: #64748b; font-size: 1.1rem; margin-bottom: 2rem;">
-          Estamos trabajando en implementar la visualización completa de tu malla curricular.
-        </p>
-        <div style="background: #f1f5f9; padding: 2rem; border-radius: 1rem; max-width: 600px; margin: 0 auto;">
-          <h3 style="color: #334155; margin-bottom: 1rem;">Funcionalidades Próximas:</h3>
-          <ul style="text-align: left; color: #64748b; line-height: 1.6;">
-            <li>✅ Visualización de ramos por semestre</li>
-            <li>✅ Estado de aprobación de cada ramo</li>
-            <li>✅ Requisitos y prerrequisitos</li>
-            <li>✅ Proyección de semestres futuros</li>
-            <li>✅ Optimización de carga académica</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- JavaScript -->
-  <script src="../js/mockups.js?v=2025102304"></script>
-  <script src="../js/malla-actual.js?v=2025102304"></script>
+  <main id="contenedorMalla"></main>
+  <script src="../js/mallas-api.js"></script>
+  <script src="../js/mallas-ui.js"></script>
+  <script src="../js/mallas.js"></script>
 </body>
 </html>

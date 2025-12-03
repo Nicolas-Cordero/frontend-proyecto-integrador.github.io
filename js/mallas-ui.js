@@ -55,5 +55,44 @@ function renderizarMalla(malla, containerId) {
   console.log(`[mallas-ui] ✓ ${Object.keys(semestres).length} semestres renderizados`);
 }
 
+/**
+ * Crea un campo de opciones desplegables (select)
+ * 
+ * @param {string} selectId - ID del elemento select
+ * @param {Array} opciones - Array de objiones: [{ value, label }, ...]
+ * @param {string} containerId - ID del contenedor donde insertar (opcional)
+ * @param {Function} onChange - Callback cuando cambia la opción (opcional)
+ */
+function crearSelect(selectId, opciones, containerId, onChange) {
+  // Crear elemento select
+  const select = document.createElement('select');
+  select.id = selectId;
+  select.classList.add('select-desplegable');
+  
+  // Agregar opciones
+  opciones.forEach(opcion => {
+    const option = document.createElement('option');
+    option.value = opcion.value || '';
+    option.textContent = opcion.label || opcion.value;
+    select.appendChild(option);
+  });
+  
+  // Agregar callback si se proporciona
+  if (onChange && typeof onChange === 'function') {
+    select.addEventListener('change', onChange);
+  }
+  
+  // Insertar en contenedor si se proporciona
+  if (containerId) {
+    const contenedor = document.getElementById(containerId);
+    if (contenedor) {
+      contenedor.appendChild(select);
+    }
+  }
+  
+  return select;
+}
+
 // Exportar global
 window.renderizarMalla = renderizarMalla;
+window.crearSelect = crearSelect;

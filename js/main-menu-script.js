@@ -182,7 +182,7 @@ class MainMenuApp {
     }
     
     // Filtrar elementos del menú principal
-  this.filtrarSeccionesMenu(seccionesMenu, terminoBusqueda);
+    this.filtrarSeccionesMenu(seccionesMenu, terminoBusqueda);
     
     // Filtrar elementos del footer (excepto logout)
     this.filtrarElementosInferiores(elementosInferior, terminoBusqueda);
@@ -270,7 +270,7 @@ class MainMenuApp {
       if (textoElemento === 'Malla Actual') {
         elemento.addEventListener('click', () => {
           this.cargarMallaActual();
-          this.establecerElementoMenuActivo('mallas (urr)');
+          this.establecerElementoMenuActivo('malla-actual');
         });
       }
     });
@@ -350,6 +350,7 @@ class MainMenuApp {
   }
 
   // ===== NAVEGACIÓN A MALLA ACTUAL =====
+  
   async cargarMallaActual() {
     if (!this.areaContenido) return;
     
@@ -360,7 +361,7 @@ class MainMenuApp {
     console.log('📊 Cargando Malla Actual...');
 
     try {
-      const respuesta = await fetch('../html/mallas (urr).html');
+      const respuesta = await fetch('../html/malla-actual.html');
       if (!respuesta.ok) {
         throw new Error(`Error HTTP: ${respuesta.status}`);
       }
@@ -437,17 +438,44 @@ class MainMenuApp {
 
     this.areaContenido.innerHTML = htmlHistorico;
 
-  // Cargar el script de histórico de forma dinámica (si ya existe, removerlo)
-  const scriptId = 'historico-script';
-  const existente = document.getElementById(scriptId);
-  if (existente) existente.remove();
+    // Cargar los scripts modulares de histórico de forma dinámica
+    // Orden: AvanceAPI -> API -> Render -> App (en orden de dependencia)
+    const scriptIds = ['historico-avance-api', 'historico-api', 'historico-render', 'historico-app'];
+    const scripts = [
+      '../js/historico-avance-api.js?v=' + Date.now(),
+      '../js/historico-api.js?v=' + Date.now(),
+      '../js/historico-render.js?v=' + Date.now(),
+      '../js/historico-app.js?v=' + Date.now()
+    ];
 
-  const script = document.createElement('script');
-  script.id = scriptId;
-  script.src = '../js/historico-script.js?v=' + Date.now();
-  document.body.appendChild(script);
+    // Remover scripts existentes
+    scriptIds.forEach(id => {
+      const existente = document.getElementById(id);
+      if (existente) existente.remove();
+    });
 
-    console.log('✅ Vista de Histórico cargada');
+    // Cargar scripts en orden
+    let scriptIndex = 0;
+    const cargarSiguiente = () => {
+      if (scriptIndex >= scripts.length) {
+        console.log('✅ Vista de Histórico cargada con todos los módulos');
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.id = scriptIds[scriptIndex];
+      script.src = scripts[scriptIndex];
+      script.onload = () => {
+        scriptIndex++;
+        cargarSiguiente();
+      };
+      script.onerror = () => {
+        console.error('❌ Error cargando script:', scripts[scriptIndex]);
+      };
+      document.body.appendChild(script);
+    };
+
+    cargarSiguiente();
   }
 
   generarHTMLPerfil(usuario) {

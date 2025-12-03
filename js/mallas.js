@@ -15,8 +15,11 @@
 async function inicializarMallas(urlApi) {
   console.log('[mallas] Inicializando...');
 
+  const userData = JSON.parse(sessionStorage.getItem('ucn_user_data'));
+  const carreras = userData?.carreras || [];
+
   // 1. Obtener datos desde API (o proxy)
-  let datos = await window.obtenerMallas(urlApi);
+  let datos = await window.obtenerMallas(carreras[0].codigo, carreras[0].catalogo);
 
   // 2. Fallback a datos por defecto si falla
   if (!datos) {
@@ -26,6 +29,7 @@ async function inicializarMallas(urlApi) {
 
   // 3. Renderizar en la página
   window.renderizarMalla(datos);
+  window.crearSelect
 }
 
 // Ejecutar cuando DOM esté listo O inmediatamente si ya está cargado

@@ -1,13 +1,3 @@
-/**
- * mallas-api.js
- * 
- * Responsabilidad: Obtener datos de mallas desde el proxy
- * 
- * Expone:
- * - obtenerMallas(url): Fetch a API, retorna array o null
- * - DEFAULT_MALLA: Datos de fallback
- */
-
 // Datos de fallback si la API falla
 const DEFAULT_MALLA = [
   { codigo: "DCCB-00106", asignatura: "CÁLCULO I", nivel: 1 },
@@ -20,12 +10,12 @@ const DEFAULT_MALLA = [
 /**
  * Obtiene mallas desde el proxy
  * 
- * @param {string} url - URL del endpoint (default: http://localhost:3000/api/mallas)
- * @returns {Promise<Array|null>} - Array de mallas o null si hay error
+ * @param {string} codigo - Código de carrera (ej: "8606")
+ * @param {string} semestre - Semestre (ej: "202320")
  */
-async function obtenerMallas(url) {
-  // Usar URL pasada, config global, o default
-  url = url || window.APP_CONFIG?.API_URL || '/api/mallas';
+async function obtenerMallas(codigo, semestre) {
+  // Construir la ruta al proxy local en puerto 3000, pasando codigo y semestre como query params
+  const url = `http://localhost:3000/api/mallas?codigo=${encodeURIComponent(codigo)}&semestre=${encodeURIComponent(semestre)}`;
   
   try {
     console.log(`[mallas-api] GET ${url}`);
@@ -39,7 +29,7 @@ async function obtenerMallas(url) {
 
     const datos = await res.json();
     console.log(`[mallas-api] ✓ ${datos.length || 0} mallas obtenidas`);
-    
+
     return datos;
     
   } catch (err) {

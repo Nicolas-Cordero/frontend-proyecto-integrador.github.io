@@ -16,7 +16,9 @@ const app = express();
 const PORT = 3000;
 
 // Credenciales de la API real
-const API_URL = 'https://losvilos.ucn.cl/hawaii/api/mallas?8606-202320';
+// Usamos una plantilla donde se reemplazarán los placeholders `codigo` y `semestre`.
+// Ejemplo de plantilla: 'https://losvilos.ucn.cl/hawaii/api/mallas?codigo-semestre'
+const API_URL_TEMPLATE = 'https://losvilos.ucn.cl/hawaii/api/mallas?codigo-semestre';
 const AUTH_TOKEN = 'jf400fejof13f';
 
 /**
@@ -25,7 +27,8 @@ const AUTH_TOKEN = 'jf400fejof13f';
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  // Permitimos el header de autenticación que enviamos al backend remoto
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-HAWAII-AUTH');
   next();
 });
 
@@ -38,23 +41,35 @@ app.use((req, res, next) => {
 app.get('/api/mallas', async (req, res) => {
   try {
     console.log('[proxy] GET /api/mallas - Iniciando...');
-    
-    // Fetch con header de autenticación
-    const response = await axios.get(API_URL, {
+    const codigo = req.query.codigo
+    const semestre = req.query.semestre
+
+    // Reemplazar placeholders en la plantilla
+    let remoteUrl = API_URL_TEMPLATE.replace('codigo', codigo).replace('semestre', semestre);
+    // Si por alguna razón la plantilla no contiene placeholders, fallback al formato antiguo
+    if (!remoteUrl.includes(codigo) && !remoteUrl.includes(semestre) && !remoteUrl.includes('-')) {
+      remoteUrl = `${API_URL_TEMPLATE}?${codigo}-${semestre}`;
+    }
+    console.log(`[proxy] → Petición remota: ${remoteUrl}`);
+
+    // Llamada a la API remota incluyendo el header de autenticación
+    const response = await axios.get(remoteUrl, {
       headers: {
-        'X-HAWAII-AUTH': AUTH_TOKEN
-      }
+        'X-HAWAII-AUTH': AUTH_TOKEN,
+      },
+      // timeout opcional para no colgar la petición
+      timeout: 10000,
     });
 
     console.log(`[proxy] ✓ API respondió: ${response.status}`);
     res.json(response.data);
-    
+
   } catch (error) {
     console.error(`[proxy] ✗ Error: ${error.message}`);
     console.error('[proxy] Respuesta de error:', error.response?.status, error.response?.statusText);
-    res.status(error.response?.status || 500).json({ 
+    res.status(error.response?.status || 500).json({
       error: error.message,
-      details: error.response?.data || null
+      details: error.response?.data || null,
     });
   }
 });
