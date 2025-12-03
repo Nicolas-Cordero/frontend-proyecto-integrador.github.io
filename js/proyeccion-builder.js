@@ -55,7 +55,7 @@ function crearProyeccion(ramosPendientes, ramosAprobados, creditosMaximos = 30) 
     semestres: semestres,
     totalSemestres: semestres.length,
     totalRamos: semestres.flat().length,
-    ramosRestantes: ramosPorProcesar.length
+    ramosReqNoPosibles: ramosPorProcesar
   };
 }
 
