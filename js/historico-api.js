@@ -68,7 +68,6 @@ async function obtenerTodosLosAvances() {
       }
     } catch (err) {
       console.warn('HistoricoAPI: fallo al cargar avance para', codigo, err.message || err);
-      // Continuar con las demás carreras
     }
   }
 
