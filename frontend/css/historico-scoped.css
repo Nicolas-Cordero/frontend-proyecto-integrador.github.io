@@ -5,12 +5,16 @@
 }
 
 .area-contenido .hscroll-wrap{
-  position: relative;
+  position: sticky;
+  bottom: 0;
   margin-top: .5rem;
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: visible;
   -webkit-overflow-scrolling: touch;
   padding-bottom:.6rem;
+  background: var(--bg, #fff);
+  z-index: 10;
+  max-height: calc(100vh - 200px);
 }
 
 .area-contenido .columnas{display:flex;gap:var(--gap);align-items:flex-start;min-height:380px;flex-wrap: nowrap;}

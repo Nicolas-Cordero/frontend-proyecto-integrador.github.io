@@ -827,10 +827,35 @@ class MainMenuApp {
   }
 }
 
-// ===== INICIALIZACIÓN =====
+// aca inicializa to el main menu
 document.addEventListener('DOMContentLoaded', () => {
   // Inicializar aplicación del menú principal
   window.mainMenuApp = new MainMenuApp();
+  
+  // Toggle de tema solo si existe el botón y temaManager está cargado
+  const botonTema = document.getElementById('botonTema');
+  if (botonTema && typeof temaManager !== 'undefined') {
+    const actualizarIconoBoton = () => {
+      const icono = botonTema.querySelector('i');
+      if (!icono) return; // evitar error si falta el ícono
+
+      const temaActual = temaManager.obtenerTemaActual();
+      if (temaActual === 'dark') {
+        icono.classList.remove('fa-moon');
+        icono.classList.add('fa-sun');
+      } else {
+        icono.classList.remove('fa-sun');
+        icono.classList.add('fa-moon');
+      }
+    };
+
+    botonTema.addEventListener('click', () => {
+      temaManager.alternarTema();
+      actualizarIconoBoton();
+    });
+
+    actualizarIconoBoton();
+  }
 
   // Log de información del sistema
   console.log('Sistema de menú principal inicializado');

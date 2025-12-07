@@ -31,6 +31,7 @@ class LoginApp {
     this.enlazarEventos();
     this.verificarSesionExistente();
     this.configurarValidacionFormulario();
+    this.configurarToggleTema();
   }
 
   // ===== MANEJO DE EVENTOS =====
@@ -103,6 +104,33 @@ class LoginApp {
     inputs.forEach(input => {
       input.addEventListener('invalid', this.manejarEntradaInvalida.bind(this));
     });
+  }
+
+  // ===== CONFIGURACIÓN DEL TOGGLE DE TEMA =====
+  configurarToggleTema() {
+    const botonTema = document.getElementById('botonTema');
+    if (botonTema && typeof temaManager !== 'undefined') {
+      const actualizarIconoBoton = () => {
+        const icono = botonTema.querySelector('i');
+        if (!icono) return;
+
+        const temaActual = temaManager.obtenerTemaActual();
+        if (temaActual === 'dark') {
+          icono.classList.remove('fa-moon');
+          icono.classList.add('fa-sun');
+        } else {
+          icono.classList.remove('fa-sun');
+          icono.classList.add('fa-moon');
+        }
+      };
+
+      botonTema.addEventListener('click', () => {
+        temaManager.alternarTema();
+        actualizarIconoBoton();
+      });
+
+      actualizarIconoBoton();
+    }
   }
 
   validarCampo(fieldName) {

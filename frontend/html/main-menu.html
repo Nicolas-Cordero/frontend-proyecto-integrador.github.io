@@ -65,12 +65,17 @@
   <main class="area-contenido">
     <div style="padding: 2rem; text-align: center;">
       <h1>¡Bienvenido a PredictClass!</h1>
-      <p style="margin-top: 1rem; color: #64748b;">Has iniciado sesión exitosamente.</p>
-      <p style="margin-top: 0.5rem; color: #64748b;">Usuario: <strong id="correoUsuario">...</strong></p>
+      <p style="margin-top: 1rem; color: var(--muted);">Has iniciado sesión exitosamente.</p>
+      <p style="margin-top: 0.5rem; color: var(--muted);">Usuario: <strong id="correoUsuario">...</strong></p>
     </div>
   </main>
 
+  <button id="botonTema" class="boton-tema" aria-label="Cambiar tema">
+    <i class="fa-solid fa-moon"></i>
+  </button>
+
   <!-- JavaScript -->
+  <script src="../js/tema-manager.js"></script>
   <script src="../js/main-menu-script.js?v=2025102304"></script>
 </body>
 </html>
