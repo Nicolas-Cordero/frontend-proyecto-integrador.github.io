@@ -707,21 +707,6 @@ class MainMenuApp {
           </div>
         </div>
 
-        <!-- Acciones del perfil -->
-        <div class="acciones-perfil">
-          <button class="boton-accion primario" onclick="alert('Función de edición de perfil próximamente')">
-            <i class="fas fa-edit"></i>
-            <span>Editar Perfil</span>
-          </button>
-          <button class="boton-accion secundario" onclick="alert('Función de cambio de contraseña próximamente')">
-            <i class="fas fa-key"></i>
-            <span>Cambiar Contraseña</span>
-          </button>
-          <button class="boton-accion secundario" onclick="alert('Configuración de notificaciones próximamente')">
-            <i class="fas fa-bell"></i>
-            <span>Notificaciones</span>
-          </button>
-        </div>
       </div>
     `;
   }

@@ -251,52 +251,6 @@
   margin-top: 0.25rem;
 }
 
-/* Acciones del perfil */
-.acciones-perfil {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.boton-accion {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 2rem;
-  border: none;
-  border-radius: 0.75rem;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.boton-accion i {
-  font-size: 1.1rem;
-}
-
-.boton-accion.primario {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-}
-
-.boton-accion.primario:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-}
-
-.boton-accion.secundario {
-  background: white;
-  color: var(--gray-700, #334155);
-  border: 2px solid var(--gray-300, #cbd5e1);
-}
-
-.boton-accion.secundario:hover {
-  background: var(--gray-50, #f8fafc);
-  border-color: var(--gray-400, #94a3b8);
-  transform: translateY(-2px);
-}
 
 /* Animaciones */
 @keyframes fadeIn {
