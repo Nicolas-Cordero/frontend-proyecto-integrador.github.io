@@ -1,0 +1,71 @@
+{
+  "simulacion": {
+    "id": 2,
+    "titulo": "Simulación rápida 09-12-2025",
+    "periodoObjetivo": "Semestre 2025",
+    "creditosTotales": 27,
+    "notas": "Generada desde la vista Malla Actual",
+    "creadoEn": "2025-12-10T00:08:45.224Z",
+    "actualizadoEn": "2025-12-10T00:08:45.224Z"
+  },
+  "estudiante": {
+    "id": 1,
+    "rut": "222222222",
+    "correo": "maria@example.com",
+    "nombre": "maria",
+    "apellido": null,
+    "nombre_completo": "maria"
+  },
+  "carrera": {
+    "id": 1,
+    "nombre": "ITI",
+    "codigo_catalogo": "202410"
+  },
+  "ramos": [
+    {
+      "codigo": "ECIN-08606",
+      "nombre": "Práctica Pre-Profesional",
+      "nivel": 9,
+      "creditos": 12,
+      "estado": "planificado",
+      "prioridad": 1,
+      "notaEsperada": null
+    },
+    {
+      "codigo": "DCCB-00107",
+      "nombre": "Álgebra I",
+      "nivel": 1,
+      "creditos": 6,
+      "estado": "planificado",
+      "prioridad": 2,
+      "notaEsperada": null
+    },
+    {
+      "codigo": "ECIN-00805",
+      "nombre": "Sistemas de Información I",
+      "nivel": 7,
+      "creditos": 5,
+      "estado": "planificado",
+      "prioridad": 3,
+      "notaEsperada": null
+    },
+    {
+      "codigo": "SSED-00102",
+      "nombre": "Comunicación Efectiva I",
+      "nivel": 1,
+      "creditos": 2,
+      "estado": "planificado",
+      "prioridad": 4,
+      "notaEsperada": null
+    },
+    {
+      "codigo": "SSED-02020",
+      "nombre": "Comunicación Efectiva II",
+      "nivel": 3,
+      "creditos": 2,
+      "estado": "planificado",
+      "prioridad": 5,
+      "notaEsperada": null
+    }
+  ]
+}

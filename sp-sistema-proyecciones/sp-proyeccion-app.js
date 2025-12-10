@@ -8,7 +8,7 @@ async function prepararProyeccion(rut, codcarrera, semestre, creditosMaximos = 3
     
     return proyeccion;
   } catch (error) {
-    console.error('❌ Error en prepararProyeccion:', error.message);
+    console.error(' Error en prepararProyeccion:', error.message);
     throw error;
   }
 }

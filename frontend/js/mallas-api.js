@@ -1,57 +1,50 @@
-/**
- * mallas-api.js
- * 
- * Responsabilidad: Obtener datos de mallas desde el proxy
- * 
- * Expone:
- * - obtenerMallas(url): Fetch a API, retorna array o null
- * - DEFAULT_MALLA: Datos de fallback
- */
-
-// IIFE para permitir re-inyecciones sin conflicto
 (function() {
   'use strict';
   
-  // Datos de fallback si la API falla
   const DEFAULT_MALLA = [
-    { codigo: "DCCB-00106", asignatura: "CÁLCULO I", nivel: 1 },
-    { codigo: "DCCB-00107", asignatura: "ÁLGEBRA I", nivel: 1 },
-    { codigo: "DCCB-00204", asignatura: "PROGRAMACIÓN", nivel: 2 },
-    { codigo: "DCCB-00304", asignatura: "PROGRAMACIÓN ORIENTADA A OBJETOS", nivel: 3 },
-    { codigo: "DCCB-00402", asignatura: "BASES DE DATOS", nivel: 4 }
+    { codigo: "DCCB-00106", asignatura: "CÁLCULO I", nivel: 1, creditos: 6, prereq: "" },
+    { codigo: "DCCB-00107", asignatura: "ÁLGEBRA I", nivel: 1, creditos: 6, prereq: "" },
+    { codigo: "DCCB-00204", asignatura: "PROGRAMACIÓN", nivel: 2, creditos: 8, prereq: "DCCB-00106,DCCB-00107" },
+    { codigo: "DCCB-00304", asignatura: "PROGRAMACIÓN ORIENTADA A OBJETOS", nivel: 3, creditos: 8, prereq: "DCCB-00204" },
+    { codigo: "DCCB-00402", asignatura: "BASES DE DATOS", nivel: 4, creditos: 8, prereq: "DCCB-00304" },
+    { codigo: "UNFV-01001", asignatura: "FORMACIÓN GENERAL VALORICA 1", nivel: 1, creditos: 2, prereq: "" },
+    { codigo: "UNFV-02002", asignatura: "FORMACIÓN GENERAL VALORICA 2", nivel: 2, creditos: 2, prereq: "" },
+    { codigo: "DCCB-00119", asignatura: "INTRODUCCIÓN A LA FÍSICA", nivel: 1, creditos: 6, prereq: "" }
   ];
 
-  /**
-   * Obtiene mallas desde el proxy
-   * 
-   * @param {string} url - URL del endpoint (default: http://localhost:3000/api/mallas)
-   * @returns {Promise<Array|null>} - Array de mallas o null si hay error
-   */
-  async function obtenerMallas(url) {
-    // Usar URL pasada, config global, o default
-    url = url || window.APP_CONFIG?.API_URL || '/api/mallas';
+  async function obtenerMallas(codigoCarrera, semestre) {
+    let url;
+    
+    if (typeof codigoCarrera === 'string' && codigoCarrera.startsWith('http')) {
+      url = codigoCarrera;
+    } else if (codigoCarrera && semestre) {
+      url = `http://localhost:3000/api/mallas?codigo=${encodeURIComponent(codigoCarrera)}&semestre=${encodeURIComponent(semestre)}`;
+    } else {
+      url = window.APP_CONFIG?.API_URL || '/api/mallas';
+    }
     
     try {
+      console.log(`[mallas-api] GET ${url}`);
       
       const res = await fetch(url);
       
       if (!res.ok) {
-        console.error(`[mallas-api] Error HTTP ${res.status}`);
-        return null;
+        console.warn(`[mallas-api] Error HTTP ${res.status}, usando fallback`);
+        return DEFAULT_MALLA;
       }
 
       const datos = await res.json();
+      console.log(`[mallas-api] ✓ ${datos.length || 0} mallas obtenidas`);
       
       return datos;
       
     } catch (err) {
-      console.error(`[mallas-api] Error: ${err.message}`);
-      return null;
+      console.warn(`[mallas-api] Error: ${err.message}, usando fallback`);
+      return DEFAULT_MALLA;
     }
   }
 
-  // Exportar globales
   window.obtenerMallas = obtenerMallas;
   window.DEFAULT_MALLA = DEFAULT_MALLA;
 
-})(); // Cierre del IIFE
+})();

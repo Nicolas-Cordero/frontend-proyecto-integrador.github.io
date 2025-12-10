@@ -17,7 +17,6 @@ class MainMenuApp {
   inicializar() {
     this.areaContenido = document.querySelector('.area-contenido');
     if (this.areaContenido) {
-      // Guardar el contenido original del home
       this.contenidoInicio = this.areaContenido.innerHTML;
     }
     
@@ -27,6 +26,7 @@ class MainMenuApp {
     this.configurarNavegacionPerfil();
     this.configurarNavegacionMallaActual();
     this.configurarNavegacionHistorico();
+    this.configurarNavegacionTesting();
     this.configurarNavegacionAtras();
   }
 
@@ -303,6 +303,21 @@ class MainMenuApp {
     });
   }
 
+  configurarNavegacionTesting() {
+    const elementosMenu = document.querySelectorAll('.elemento-menu');
+
+    elementosMenu.forEach(elemento => {
+      const textoElemento = elemento.querySelector('span')?.textContent?.trim();
+      if (textoElemento === 'Proyección Testing') {
+        elemento.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.cargarTesting();
+          this.establecerElementoMenuActivo('proyeccion-testing');
+        });
+      }
+    });
+  }
+
   async cargarPerfil() {
     if (!this.areaContenido) return;
     
@@ -574,6 +589,101 @@ class MainMenuApp {
     console.log('✅ Vista de Histórico cargada');
   }
 
+  async cargarTesting() {
+    if (!this.areaContenido) return;
+    
+    if (this.vistaActual === 'proyeccion-testing') {
+      console.log('✅ Ya estás en la vista de Proyección Testing');
+      return;
+    }
+
+    this.limpiarScriptsMallas();
+
+    console.log('🧪 Cargando vista de Proyección Testing...');
+
+    try {
+      const htmlCompleto = `
+        <div style="padding: 2rem;">
+          <header style="margin-bottom: 2rem;">
+            <h1 style="margin: 0 0 0.5rem 0; font-size: 2rem; color: var(--text-primary, #000);">Malla Curricular - Testing</h1>
+            <p style="margin: 0; color: var(--text-secondary, #666);">Página de prueba para los módulos de proyección</p>
+          </header>
+
+          <main style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+            <section style="border: 1px solid var(--border-color, #ddd); border-radius: 8px; padding: 1.5rem; background: var(--bg-secondary, #f9f9f9);">
+              <h2 style="margin-top: 0; margin-bottom: 1rem; font-size: 1.25rem; color: var(--text-primary, #000);">Contenedor de Malla</h2>
+              <div id="contenedorMalla" style="color: var(--text-primary, #000);"></div>
+            </section>
+
+            <section style="border: 1px solid var(--border-color, #ddd); border-radius: 8px; padding: 1.5rem; background: var(--bg-secondary, #f9f9f9);">
+              <h2 style="margin-top: 0; margin-bottom: 1rem; font-size: 1.25rem; color: var(--text-primary, #000);">Resultado de Proyección</h2>
+              <div id="resultadoProyeccion" style="color: var(--text-primary, #000);">
+                <p>Esperando ejecución...</p>
+              </div>
+            </section>
+          </main>
+        </div>
+      `;
+      
+      this.areaContenido.innerHTML = htmlCompleto;
+      
+      this.vistaActual = 'proyeccion-testing';
+      
+      await this.inyectarScriptSecuencial('../js/mallas-api.js?v=' + Date.now());
+      await this.inyectarScriptSecuencial('../js/proyeccion-validador.js?v=' + Date.now());
+      await this.inyectarScriptSecuencial('../js/proyeccion-procesador.js?v=' + Date.now());
+      await this.inyectarScriptSecuencial('../js/proyeccion-constructor.js?v=' + Date.now());
+      await this.inyectarScriptSecuencial('../js/proyeccion-app.js?v=' + Date.now());
+      await this.inyectarScriptSecuencial('../js/historico-avance-api.js?v=' + Date.now());
+      
+      this.ejecutarTestingProyeccion();
+      
+      console.log('Proyección Testing cargada exitosamente');
+    } catch (error) {
+      console.error('Error al cargar Proyección Testing:', error);
+      this.areaContenido.innerHTML = `<div style="padding: 2rem; text-align: center; color: var(--text-primary, #000);"><h2>Error al cargar la página de testing</h2><button onclick="window.mainMenuApp.cargarInicio()">Volver</button></div>`;
+    }
+  }
+
+  ejecutarTestingProyeccion() {
+    const resultDiv = document.getElementById('resultadoProyeccion');
+    
+    const ejecutar = async () => {
+      try {
+        console.log('🧪 Iniciando proyección de testing...');
+        resultDiv.innerHTML = '<p style="color: #22c55e;">⏳ Ejecutando prueba...</p>';
+        
+        if (typeof window.prepararProyeccion !== 'function') {
+          throw new Error('La función prepararProyeccion no está disponible');
+        }
+        
+        console.log('Llamando a prepararProyeccion...');
+        const proyeccion = await window.prepararProyeccion(
+          '222222222',
+          '8266',
+          '202410',
+          30
+        );
+
+        console.log('Proyección completada:', proyeccion);
+        
+        resultDiv.innerHTML = `
+          <h3 style="color: #22c55e; margin-top: 0;">✅ Proyección generada exitosamente</h3>
+          <pre style="background: var(--bg-code, #fff); color: var(--text-primary, #000); padding: 1rem; border: 1px solid var(--border-color, #ddd); overflow-x: auto; border-radius: 4px; max-height: 500px; overflow-y: auto; font-size: 0.85rem;">${JSON.stringify(proyeccion, null, 2)}</pre>
+        `;
+      } catch (error) {
+        console.error('Error en la proyección:', error);
+        resultDiv.innerHTML = `
+          <h3 style="color: #ef4444; margin-top: 0;"> Error en la proyección:</h3>
+          <pre style="color: #ef4444; background: var(--bg-code, #fff); padding: 1rem; border: 1px solid var(--border-color, #ddd); overflow-x: auto; border-radius: 4px; font-size: 0.85rem;">${error.message}\n\nStack: ${error.stack}</pre>
+          <p style="color: var(--text-secondary, #666);">Verifica la consola del navegador (F12) para más detalles.</p>
+        `;
+      }
+    };
+    
+    setTimeout(ejecutar, 500);
+  }
+
   generarHTMLPerfil(usuario) {
     // 🔍 DEBUG: Ver qué datos llegan
     console.log('🔍 DEBUG - Datos del usuario:', usuario);
@@ -805,6 +915,14 @@ class MainMenuApp {
       elementosMenu.forEach(elemento => {
         const span = elemento.querySelector('span');
         if (span && span.textContent.includes('Estadísticas - Histórico')) {
+          elemento.classList.add('active');
+        }
+      });
+    } else if (tipoElemento === 'proyeccion-testing') {
+      const elementosMenu = document.querySelectorAll('.elemento-menu');
+      elementosMenu.forEach(elemento => {
+        const span = elemento.querySelector('span');
+        if (span && span.textContent.includes('Proyección Testing')) {
           elemento.classList.add('active');
         }
       });
