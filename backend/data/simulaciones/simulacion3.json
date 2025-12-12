@@ -1,0 +1,71 @@
+{
+  "simulacion": {
+    "id": 3,
+    "titulo": "Simulación rápida 12-12-2025",
+    "periodoObjetivo": "Semestre 2025",
+    "creditosTotales": 19,
+    "notas": "Generada desde la vista Malla Actual",
+    "creadoEn": "2025-12-12T21:11:57.959Z",
+    "actualizadoEn": "2025-12-12T21:11:57.959Z"
+  },
+  "estudiante": {
+    "id": 1,
+    "rut": "222222222",
+    "correo": "maria@example.com",
+    "nombre": "maria",
+    "apellido": null,
+    "nombre_completo": "maria"
+  },
+  "carrera": {
+    "id": 1,
+    "nombre": "ITI",
+    "codigo_catalogo": "202410"
+  },
+  "ramos": [
+    {
+      "codigo": "DCCB-00401",
+      "nombre": "Cálculo III",
+      "nivel": 3,
+      "creditos": 5,
+      "estado": "planificado",
+      "prioridad": 1,
+      "notaEsperada": null
+    },
+    {
+      "codigo": "UNFV-04004",
+      "nombre": "Formación General Valórica 4",
+      "nivel": 8,
+      "creditos": 2,
+      "estado": "planificado",
+      "prioridad": 2,
+      "notaEsperada": null
+    },
+    {
+      "codigo": "UNFV-03003",
+      "nombre": "Formación General Valórica 3",
+      "nivel": 7,
+      "creditos": 2,
+      "estado": "planificado",
+      "prioridad": 3,
+      "notaEsperada": null
+    },
+    {
+      "codigo": "UNFP-90001",
+      "nombre": "Formación Profesional Electiva",
+      "nivel": 9,
+      "creditos": 5,
+      "estado": "planificado",
+      "prioridad": 4,
+      "notaEsperada": null
+    },
+    {
+      "codigo": "UNFP-50001",
+      "nombre": "Formación Profesional Electiva",
+      "nivel": 5,
+      "creditos": 5,
+      "estado": "planificado",
+      "prioridad": 5,
+      "notaEsperada": null
+    }
+  ]
+}
