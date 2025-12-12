@@ -1,694 +1,204 @@
-// ===== CONFIGURACIÓN Y CONSTANTES =====
-const CLAVES_ALMACENAMIENTO = {
-  DATOS_USUARIO: 'ucn_user_data'
-  // Solo sessionStorage para desarrollo
-};
+class AppConfig {
+  static CLAVES = {
+    DATOS_USUARIO: 'ucn_user_data'
+  };
 
-// ===== CLASE PRINCIPAL DEL MENÚ =====
-class MainMenuApp {
-  constructor() {
-    this.areaContenido = null;
-    this.contenidoInicio = null;
-    this.vistaActual = 'inicio'; // Track current view to prevent double-load
-    this.inicializar();
-  }
+  static URLS = {
+    LOGIN_API: 'https://puclaro.ucn.cl/eross/avance/login.php',
+    INDEX: 'index.html',
+    MAIN_MENU: 'html/main-menu.html'
+  };
 
-  // Inicialización de la aplicación
-  inicializar() {
-    this.areaContenido = document.querySelector('.area-contenido');
-    if (this.areaContenido) {
-      this.contenidoInicio = this.areaContenido.innerHTML;
+  static RUTAS = {
+    HTML: '../html/',
+    JS: '../js/',
+    CSS: '../css/'
+  };
+
+  static IDS = {
+    AREA_CONTENIDO: '.area-contenido',
+    NOMBRE_USUARIO: 'nombreUsuario',
+    AVATAR_USUARIO: 'avatarUsuario',
+    CORREO_USUARIO: 'correoUsuario',
+    BOTON_CERRAR_SESION: 'botonCerrarSesion',
+    ENTRADA_BUSQUEDA: 'entradaBusqueda',
+    BOTON_TEMA: 'botonTema'
+  };
+
+  static SCRIPTS_MALLA = ['mallas-api.js', 'mallas-ui.js', 'mallas.js', 'malla-actual.js'];
+
+  static APP_CONFIG_MALLA = {
+    API_URL: 'http://localhost:3000/api/mallas',
+    TIMEOUT_MS: 10000,
+    CONTAINER_ID: 'contenedorMalla'
+  };
+}
+
+class StorageService {
+  getItem(key) {
+    try {
+      const valor = sessionStorage.getItem(key);
+      return valor ? JSON.parse(valor) : null;
+    } catch (error) {
+      console.error(`Error al leer ${key}:`, error);
+      return null;
     }
-    
-    this.cargarDatosUsuario();
-    this.configurarCierreSesion();
-    this.configurarBusqueda();
-    this.configurarNavegacionPerfil();
-    this.configurarNavegacionMallaActual();
-    this.configurarNavegacionHistorico();
-    this.configurarNavegacionTesting();
-    this.configurarNavegacionAtras();
   }
 
-    // ===== CARGA DE DATOS DEL USUARIO =====
-  cargarDatosUsuario() {
-    // Solo sessionStorage
-    const datosUsuario = sessionStorage.getItem(CLAVES_ALMACENAMIENTO.DATOS_USUARIO);
-    
-    if (datosUsuario) {
+  setItem(key, valor) {
+    try {
+      sessionStorage.setItem(key, JSON.stringify(valor));
+      return true;
+    } catch (error) {
+      console.error(`Error al guardar ${key}:`, error);
+      return false;
+    }
+  }
+
+  removeItem(key) {
+    try {
+      sessionStorage.removeItem(key);
+      return true;
+    } catch (error) {
+      console.error(`Error al eliminar ${key}:`, error);
+      return false;
+    }
+  }
+
+  clear() {
+    try {
+      sessionStorage.clear();
+      return true;
+    } catch (error) {
+      console.error('Error al limpiar almacenamiento:', error);
+      return false;
+    }
+  }
+}
+
+class ApiService {
+  async fetchJson(url, options = {}) {
+    try {
+      const respuesta = await fetch(url, options);
+      const texto = await respuesta.text();
+      
       try {
-        const usuario = JSON.parse(datosUsuario);
-  console.log('📥 Usuario cargado desde sessionStorage:', usuario);
-  this.mostrarInformacionUsuario(usuario);
+        return JSON.parse(texto);
       } catch (error) {
-        console.error('Error al parsear datos del usuario:', error);
+        throw new Error(`Respuesta inválida JSON desde ${url}: ${texto}`);
       }
-    } else {
-      console.warn('No hay datos de usuario disponibles');
-      this.redirigirAlInicioSesion();
-    }
-  }
-
-  // ===== MÉTODOS DE AUTENTICACIÓN / INTEGRACIÓN CON API =====
-  async fetchJsonLenient(url, options = {}) {
-    const resp = await fetch(url, options);
-    const text = await resp.text();
-    try {
-      return JSON.parse(text);
-    } catch (err) {
-      throw new Error(`Respuesta inválida JSON desde ${url}: ${text}`);
-    }
-  }
-
-  async apiLogin(email, password) {
-    const loginUrl = `https://puclaro.ucn.cl/eross/avance/login.php?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
-    try {
-      const data = await this.fetchJsonLenient(loginUrl);
-      if (data && data.error) {
-        throw new Error(data.error);
-      }
-      return data;
-    } catch (err) {
-      console.error('Error en apiLogin:', err);
-      throw err;
-    }
-  }
-
-  // Guardar en sessionStorage la estructura mínima que usa la UI
-  guardarUsuarioEnSession(data, email) {
-    const usuario = {
-      rut: data.rut || null,
-      email: email || null,
-      name: data.name || (email ? email.split('@')[0] : null),
-      firstName: (email ? (email.split('@')[0].split('.')[0] || email) : null),
-      carreras: Array.isArray(data.carreras) ? data.carreras : [],
-      academicInfo: {
-        career: data.carreras && data.carreras[0] ? data.carreras[0].nombre : undefined,
-        catalog: data.carreras && data.carreras[0] ? data.carreras[0].catalogo : undefined
-      }
-    };
-
-    sessionStorage.setItem(CLAVES_ALMACENAMIENTO.DATOS_USUARIO, JSON.stringify(usuario));
-    console.log('✅ Usuario guardado en sessionStorage:', usuario);
-    this.mostrarInformacionUsuario(usuario);
-  }
-
-  // Función utilizable desde la página de login para disparar el login real
-  async realizarLoginYRedirigir(email, password) {
-    try {
-      const res = await this.apiLogin(email, password);
-      if (res && res.rut) {
-        this.guardarUsuarioEnSession(res, email);
-        // Redirigir al main-menu una vez autenticado
-        window.location.href = 'html/main-menu.html';
-      } else {
-        throw new Error('Respuesta de login inválida');
-      }
-    } catch (err) {
-      console.error('Error en realizarLoginYRedirigir:', err);
-      throw err;
-    }
-  }
-
-    // ===== VISUALIZACIÓN DE INFORMACIÓN DEL USUARIO =====
-  mostrarInformacionUsuario(usuario) {
-    // Actualizar nombre de usuario
-    const elementoNombreUsuario = document.getElementById('nombreUsuario');
-    if (elementoNombreUsuario && usuario.name) {
-      elementoNombreUsuario.textContent = usuario.name;
-    }
-    
-    // Actualizar avatar con imagen o inicial
-    const elementoAvatar = document.getElementById('avatarUsuario');
-    if (elementoAvatar) {
-      if (usuario.profilePicture) {
-        // Construir ruta relativa desde html/main-menu.html
-        const rutaImagen = `../${usuario.profilePicture}`;
-        elementoAvatar.innerHTML = `<img src="${rutaImagen}" alt="${usuario.firstName}">`;
-      } else if (usuario.firstName) {
-        elementoAvatar.textContent = usuario.firstName.charAt(0).toUpperCase();
-      }
-    }
-    
-    // Actualizar email en el contenido
-    const elementoEmailUsuario = document.getElementById('correoUsuario');
-    if (elementoEmailUsuario && usuario.email) {
-      elementoEmailUsuario.textContent = usuario.email;
-    }
-  }
-
-  // ===== GESTIÓN DE LOGOUT =====
-  configurarCierreSesion() {
-    const botonCerrarSesion = document.getElementById('botonCerrarSesion');
-    if (botonCerrarSesion) {
-      botonCerrarSesion.addEventListener('click', this.realizarCierreSesion.bind(this));
-    }
-  }
-
-  realizarCierreSesion() {
-    // Limpiar sessionStorage
-    sessionStorage.clear();
-    
-    console.log('✅ Sesión cerrada exitosamente');
-    
-    // Redirigir al login
-    this.redirigirAlInicioSesion();
-  }
-
-  redirigirAlInicioSesion() {
-    window.location.href = 'index.html';
-  }
-
-  // ===== FUNCIONALIDAD DE BÚSQUEDA =====
-  configurarBusqueda() {
-    const entradaBusqueda = document.getElementById('entradaBusqueda');
-    if (entradaBusqueda) {
-      entradaBusqueda.addEventListener('input', (e) => {
-        this.manejarBusqueda(e.target.value);
-      });
-    }
-  }
-
-  manejarBusqueda(valorBusqueda) {
-    const terminoBusqueda = valorBusqueda.toLowerCase().trim();
-    
-    // Obtener todos los elementos del menú
-    const seccionesMenu = document.querySelectorAll('.seccion-menu');
-    const elementosInferior = document.querySelectorAll('.elemento-inferior');
-    
-    // Si no hay término de búsqueda, mostrar todo
-    if (terminoBusqueda === '') {
-      this.mostrarTodosLosElementosMenu(seccionesMenu, elementosInferior);
-      return;
-    }
-    
-    // Filtrar elementos del menú principal
-  this.filtrarSeccionesMenu(seccionesMenu, terminoBusqueda);
-    
-    // Filtrar elementos del footer (excepto logout)
-    this.filtrarElementosInferiores(elementosInferior, terminoBusqueda);
-  }
-
-  mostrarTodosLosElementosMenu(seccionesMenu, elementosInferior) {
-    seccionesMenu.forEach(seccion => {
-      seccion.style.display = '';
-      const elementosMenu = seccion.querySelectorAll('.elemento-menu');
-      elementosMenu.forEach(elemento => elemento.style.display = '');
-    });
-    
-    elementosInferior.forEach(elemento => {
-      if (!elemento.classList.contains('cerrar-sesion')) {
-        elemento.style.display = '';
-      }
-    });
-  }
-
-  filtrarSeccionesMenu(seccionesMenu, terminoBusqueda) {
-    seccionesMenu.forEach(seccion => {
-      const elementosMenu = seccion.querySelectorAll('.elemento-menu');
-      let contadorElementosVisibles = 0;
-      
-      elementosMenu.forEach(elemento => {
-        const texto = elemento.querySelector('span').textContent.toLowerCase();
-        if (texto.includes(terminoBusqueda)) {
-          elemento.style.display = '';
-          contadorElementosVisibles++;
-        } else {
-          elemento.style.display = 'none';
-        }
-      });
-      
-      // Ocultar sección completa si no tiene elementos visibles
-      if (contadorElementosVisibles === 0) {
-        seccion.style.display = 'none';
-      } else {
-        seccion.style.display = '';
-      }
-    });
-  }
-
-  filtrarElementosInferiores(elementosInferior, terminoBusqueda) {
-    elementosInferior.forEach(elemento => {
-      if (!elemento.classList.contains('cerrar-sesion')) {
-        const texto = elemento.querySelector('span').textContent.toLowerCase();
-        if (texto.includes(terminoBusqueda)) {
-          elemento.style.display = '';
-        } else {
-          elemento.style.display = 'none';
-        }
-      }
-    });
-  }
-
-  // ===== NAVEGACIÓN AL PERFIL =====
-  configurarNavegacionPerfil() {
-    const nombreUsuario = document.getElementById('nombreUsuario');
-    const avatarUsuario = document.getElementById('avatarUsuario');
-    
-    if (nombreUsuario) {
-      nombreUsuario.addEventListener('click', () => {
-        this.cargarPerfil();
-        this.establecerElementoMenuActivo('profile');
-      });
-    }
-    
-    if (avatarUsuario) {
-      avatarUsuario.style.cursor = 'pointer';
-      avatarUsuario.title = 'Ver perfil';
-      avatarUsuario.addEventListener('click', () => {
-        this.cargarPerfil();
-        this.establecerElementoMenuActivo('profile');
-      });
-    }
-  }
-
-  // ===== NAVEGACIÓN A MALLA ACTUAL =====
-  configurarNavegacionMallaActual() {
-    const elementosMenu = document.querySelectorAll('.elemento-menu');
-    
-    elementosMenu.forEach(elemento => {
-      const textoElemento = elemento.querySelector('span')?.textContent;
-      if (textoElemento === 'Malla Actual') {
-        elemento.addEventListener('click', () => {
-          this.cargarMallaActual();
-          this.establecerElementoMenuActivo('mallas (urr)');
-        });
-      }
-    });
-  }
-
-  // ===== NAVEGACIÓN A HISTÓRICO =====
-  configurarNavegacionHistorico() {
-    const elementosMenu = document.querySelectorAll('.elemento-menu');
-
-    elementosMenu.forEach(elemento => {
-      const textoElemento = elemento.querySelector('span')?.textContent?.trim();
-      if (textoElemento === 'Estadísticas - Histórico') {
-        // Si el elemento contiene un <a>, interceptamos su click para evitar navegación
-        const enlace = elemento.querySelector('a');
-        if (enlace) {
-          enlace.addEventListener('click', (e) => {
-            e.preventDefault();
-            this.cargarHistorico();
-            this.establecerElementoMenuActivo('historico');
-          });
-        } else {
-          elemento.addEventListener('click', (e) => {
-            e.preventDefault();
-            this.cargarHistorico();
-            this.establecerElementoMenuActivo('historico');
-          });
-        }
-      }
-    });
-  }
-
-  configurarNavegacionTesting() {
-    const elementosMenu = document.querySelectorAll('.elemento-menu');
-
-    elementosMenu.forEach(elemento => {
-      const textoElemento = elemento.querySelector('span')?.textContent?.trim();
-      if (textoElemento === 'Proyección Testing') {
-        elemento.addEventListener('click', (e) => {
-          e.preventDefault();
-          this.cargarTesting();
-          this.establecerElementoMenuActivo('proyeccion-testing');
-        });
-      }
-    });
-  }
-
-  async cargarPerfil() {
-    if (!this.areaContenido) return;
-    
-    // Prevenir recarga si ya estamos en esta vista
-    if (this.vistaActual === 'perfil') {
-      console.log('✅ Ya estás en la vista de Perfil');
-      return;
-    }
-
-    // Limpiar scripts de mallas
-    this.limpiarScriptsMallas();
-
-    try {
-      // Obtener datos del usuario (SOLO sessionStorage)
-      const datosUsuario = sessionStorage.getItem(CLAVES_ALMACENAMIENTO.DATOS_USUARIO);
-      
-      if (!datosUsuario) {
-        throw new Error('No hay datos de usuario disponibles');
-      }
-
-      const usuario = JSON.parse(datosUsuario);
-      console.log('📄 Cargando perfil para usuario:', usuario);
-
-      // Generar HTML del perfil directamente
-  const htmlPerfil = this.generarHTMLPerfil(usuario);
-      this.areaContenido.innerHTML = htmlPerfil;
-
-      // Configurar botón de volver
-      const botonVolver = document.getElementById('volverInicio');
-      if (botonVolver) {
-        botonVolver.addEventListener('click', () => {
-          const evento = new CustomEvent('navigateBack');
-          window.dispatchEvent(evento);
-        });
-      }
-      
-      // Marcar vista actual
-      this.vistaActual = 'perfil';
-
-      console.log('✅ Perfil cargado exitosamente');
-
     } catch (error) {
-      console.error('Error al cargar el perfil:', error);
-      this.areaContenido.innerHTML = `
-        <div style="padding: 2rem; text-align: center;">
-          <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #ef4444; margin-bottom: 1rem;"></i>
-          <h2 style="color: #1e293b; margin-bottom: 1rem;">Error al cargar el perfil</h2>
-          <p style="color: #64748b; margin-bottom: 2rem;">No se pudo cargar la información del perfil.</p>
-          <button onclick="window.mainMenuApp.cargarInicio()" style="padding: 0.75rem 2rem; background: #667eea; color: white; border: none; border-radius: 0.5rem; cursor: pointer; font-weight: 600;">
-            Volver al inicio
-          </button>
-        </div>
-      `;
+      console.error(`Error en fetchJson ${url}:`, error);
+      throw error;
     }
   }
 
-  // ===== NAVEGACIÓN A MALLA ACTUAL =====
-  async cargarMallaActual() {
-    if (!this.areaContenido) return;
+  async login(email, password) {
+    const url = `${AppConfig.URLS.LOGIN_API}?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`;
+    const datos = await this.fetchJson(url);
     
-    // Prevenir recarga si ya estamos en esta vista
-    if (this.vistaActual === 'malla-actual') {
-      console.log('✅ Ya estás en la vista de Malla Actual');
-      return;
+    if (datos && datos.error) {
+      throw new Error(datos.error);
     }
     
-    // Asegurar que no quede cargado el CSS específico de histórico (scoped)
-    const estiloHistoricoExistente = document.getElementById('historico-scoped-style');
-    if (estiloHistoricoExistente) estiloHistoricoExistente.remove();
+    return datos;
+  }
+}
 
-    console.log('📊 Cargando Malla Actual...');
-
-    try {
-      const respuesta = await fetch('../html/mallas (urr).html');
-      if (!respuesta.ok) {
-        throw new Error(`Error HTTP: ${respuesta.status}`);
-      }
-      const htmlCompleto = await respuesta.text();
-      
-      // Extraer el contenido del body
-      const parserDOM = new DOMParser();
-      const docParsed = parserDOM.parseFromString(htmlCompleto, 'text/html');
-      const bodyContent = docParsed.body.innerHTML;
-      
-      this.areaContenido.innerHTML = bodyContent;
-      
-      // Configurar APP_CONFIG global ANTES de cargar scripts
-      window.APP_CONFIG = {
-        API_URL: 'http://localhost:3000/api/mallas',
-        TIMEOUT_MS: 10000,
-        CONTAINER_ID: 'contenedorMalla'
-      };
-      
-      // Cargar los scripts necesarios en orden garantizando dependencias
-      const scripts = ['mallas-api.js', 'mallas-ui.js', 'mallas.js', 'malla-actual.js'];
-      for (const scriptName of scripts) {
-        const ruta = `../js/${scriptName}?v=${Date.now()}`;
-        await this.inyectarScriptSecuencial(ruta);
-      }
-      
-      // Marcar vista actual
-      this.vistaActual = 'malla-actual';
-      
-      console.log('✅ Malla Actual cargada exitosamente');
-    } catch (error) {
-      console.error('Error al cargar Malla Actual:', error);
-      this.areaContenido.innerHTML = `<div style="padding: 2rem; text-align: center;"><h2>Error al cargar la malla</h2><button onclick="window.mainMenuApp.cargarInicio()">Volver</button></div>`;
-    }
+class ResourceManager {
+  constructor() {
+    this.recursosCargados = new Map();
   }
 
-  inyectarScriptSecuencial(src) {
+  inyectarScript(src) {
     return new Promise((resolve, reject) => {
+      if (this.recursosCargados.has(src)) {
+        resolve();
+        return;
+      }
+
       const script = document.createElement('script');
       script.src = src;
-      script.async = false; // asegurar orden de carga
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error(`No se pudo cargar ${src}`));
+      script.async = false;
+      
+      script.onload = () => {
+        this.recursosCargados.set(src, true);
+        resolve();
+      };
+      
+      script.onerror = () => {
+        reject(new Error(`No se pudo cargar ${src}`));
+      };
+      
       document.body.appendChild(script);
     });
   }
 
-  // ===== CARGAR VISTA DE HISTÓRICO DENTRO DEL ÁREA DE CONTENIDO =====
-  cargarHistorico() {
-    if (!this.areaContenido) return;
-    
-    // Prevenir recarga si ya estamos en esta vista
-    if (this.vistaActual === 'historico') {
-      console.log('✅ Ya estás en la vista de Histórico');
+  inyectarCss(href, id) {
+    if (document.getElementById(id)) {
       return;
     }
 
-    // Limpiar scripts de mallas
-    this.limpiarScriptsMallas();
-    
-    // Limpiar instancia anterior de HistoricoApp
-    if (window.historicoApp) {
-      console.log('🧹 Limpiando instancia anterior de HistoricoApp');
-      window.historicoApp = null;
-    }
+    const link = document.createElement('link');
+    link.id = id;
+    link.rel = 'stylesheet';
+    link.href = href;
+    document.head.appendChild(link);
+    this.recursosCargados.set(id, true);
+  }
 
-    console.log('📥 Cargando vista de Histórico en area-contenido...');
-    // Inyectar stylesheets para la vista histórico
-    const head = document.head || document.getElementsByTagName('head')[0];
-    
-    // CSS principal de histórico
-    const estiloId = 'historico-scoped-style';
-    const existenteEstilo = document.getElementById(estiloId);
-    if (existenteEstilo) {
-      existenteEstilo.href = '../css/historico-scoped.css?v=' + Date.now();
-    } else {
-      const link = document.createElement('link');
-      link.id = estiloId;
-      link.rel = 'stylesheet';
-      link.href = '../css/historico-scoped.css?v=' + Date.now();
-      head.appendChild(link);
-    }
-    
-    // CSS de estadísticas
-    const estiloEstadisticasId = 'historico-estadisticas-style';
-    const existenteEstadisticas = document.getElementById(estiloEstadisticasId);
-    if (!existenteEstadisticas) {
-      const linkEstadisticas = document.createElement('link');
-      linkEstadisticas.id = estiloEstadisticasId;
-      linkEstadisticas.rel = 'stylesheet';
-      linkEstadisticas.href = '../css/historico-estadisticas.css?v=' + Date.now();
-      head.appendChild(linkEstadisticas);
-    }
-    
-    const htmlHistorico = `
-      <div>
-        <header>
-          <h1 class="page-title">Histórico de Proyecciones</h1>
-          <p class="subtitle">Aquí se despliega todo el avance académico que llevas en la carrera</p>
-        </header>
+  limpiarScripts(patrones) {
+    const scripts = document.querySelectorAll('script[src]');
+    scripts.forEach(script => {
+      for (const patron of patrones) {
+        if (script.src.includes(patron)) {
+          this.recursosCargados.delete(script.src);
+          script.remove();
+        }
+      }
+    });
+  }
 
-        <section class="card" aria-labelledby="cardTitle">
-          <div class="card-header">
-            <div id="cardTitle"><strong>Proyecciones por Periodo</strong></div>
-          </div>
+  limpiarCss(ids) {
+    ids.forEach(id => {
+      const elemento = document.getElementById(id);
+      if (elemento) {
+        elemento.remove();
+        this.recursosCargados.delete(id);
+      }
+    });
+  }
 
-          <div class="hscroll-wrap" aria-live="polite">
-            <div class="columnas" id="contenedorColumnas"></div>
-          </div>
-        </section>
+  limpiarRecursosVista(vistaId) {
+    const recursos = this.recursosCargados.get(vistaId) || [];
+    recursos.forEach(recurso => {
+      if (recurso.tipo === 'script') {
+        const elemento = document.querySelector(`script[src="${recurso.src}"]`);
+        if (elemento) elemento.remove();
+      } else if (recurso.tipo === 'css') {
+        const elemento = document.getElementById(recurso.id);
+        if (elemento) elemento.remove();
+      }
+    });
+    this.recursosCargados.delete(vistaId);
+  }
+}
 
-        <!-- Sección de Estadísticas -->
-        <section class="card tarjeta-estadisticas" aria-labelledby="estadisticasTitle">
-          <div class="card-header cabecera-tarjeta-detalle">
-            <i class="fas fa-chart-line"></i>
-            <h3 id="estadisticasTitle">Estadísticas Académicas</h3>
-          </div>
-          <div class="card-body cuerpo-tarjeta-detalle">
-            <div class="cuadricula-estadisticas">
-              <div class="elemento-estadistica">
-                <i class="fas fa-book"></i>
-                <div class="contenido-estadistica">
-                  <span class="numero-estadistica" id="ramosAprobados">0</span>
-                  <span class="etiqueta-estadistica">Ramos aprobados</span>
-                </div>
-              </div>
-              <div class="elemento-estadistica">
-                <i class="fas fa-times-circle"></i>
-                <div class="contenido-estadistica">
-                  <span class="numero-estadistica" id="ramosReprobados">0</span>
-                  <span class="etiqueta-estadistica">Ramos reprobados</span>
-                </div>
-              </div>
-              <div class="elemento-estadistica">
-                <i class="fas fa-clock"></i>
-                <div class="contenido-estadistica">
-                  <span class="numero-estadistica" id="ramosPendientes">0</span>
-                  <span class="etiqueta-estadistica">Ramos pendientes</span>
-                </div>
-              </div>
-              <div class="elemento-estadistica">
-                <i class="fas fa-calendar-alt"></i>
-                <div class="contenido-estadistica">
-                  <span class="numero-estadistica" id="totalPeriodos">0</span>
-                  <span class="etiqueta-estadistica">Periodos cursados</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+class RenderService {
+  generarError(mensaje, titulo = 'Error') {
+    return `
+      <div style="padding: 2rem; text-align: center;">
+        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #ef4444; margin-bottom: 1rem;"></i>
+        <h2 style="color: #1e293b; margin-bottom: 1rem;">${titulo}</h2>
+        <p style="color: #64748b; margin-bottom: 2rem;">${mensaje}</p>
+        <button onclick="window.mainMenuApp.cargarInicio()" style="padding: 0.75rem 2rem; background: #667eea; color: white; border: none; border-radius: 0.5rem; cursor: pointer; font-weight: 600;">
+          Volver al inicio
+        </button>
       </div>
     `;
-
-    this.areaContenido.innerHTML = htmlHistorico;
-
-    // Cargar el script de histórico de forma dinámica 
-    const scriptId = 'historico-script';
-    const existente = document.getElementById(scriptId);
-    if (existente) {
-      console.log('🗑️ Removiendo script anterior de histórico');
-      existente.remove();
-    }
-
-
-    requestAnimationFrame(() => {
-      // Pequeño delay adicional para asegurar que el DOM está completamente listo
-      setTimeout(() => {
-        // Verificar que el contenedor exista ANTES de inyectar el script
-        const contenedor = document.getElementById('contenedorColumnas');
-        if (!contenedor) {
-          console.error('❌ El contenedor no existe después de renderizar');
-          return;
-        }
-        
-        console.log('✓ Contenedor verificado, inyectando script...');
-        const script = document.createElement('script');
-        script.id = scriptId;
-        script.src = '../js/historico-script.js?v=' + Date.now();
-        
-        script.onload = () => {
-          console.log('✅ Script de histórico inyectado y cargado');
-        };
-        
-        script.onerror = () => {
-          console.error('❌ Error al cargar script de histórico');
-        };
-        
-        document.body.appendChild(script);
-      }, 50);
-    });
-  
-    // Marcar vista actual
-    this.vistaActual = 'historico';
-
-    console.log('✅ Vista de Histórico cargada');
   }
 
-  async cargarTesting() {
-    if (!this.areaContenido) return;
-    
-    if (this.vistaActual === 'proyeccion-testing') {
-      console.log('✅ Ya estás en la vista de Proyección Testing');
-      return;
-    }
-
-    this.limpiarScriptsMallas();
-
-    console.log('🧪 Cargando vista de Proyección Testing...');
-
-    try {
-      const htmlCompleto = `
-        <div style="padding: 2rem;">
-          <header style="margin-bottom: 2rem;">
-            <h1 style="margin: 0 0 0.5rem 0; font-size: 2rem; color: var(--text-primary, #000);">Malla Curricular - Testing</h1>
-            <p style="margin: 0; color: var(--text-secondary, #666);">Página de prueba para los módulos de proyección</p>
-          </header>
-
-          <main style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-            <section style="border: 1px solid var(--border-color, #ddd); border-radius: 8px; padding: 1.5rem; background: var(--bg-secondary, #f9f9f9);">
-              <h2 style="margin-top: 0; margin-bottom: 1rem; font-size: 1.25rem; color: var(--text-primary, #000);">Contenedor de Malla</h2>
-              <div id="contenedorMalla" style="color: var(--text-primary, #000);"></div>
-            </section>
-
-            <section style="border: 1px solid var(--border-color, #ddd); border-radius: 8px; padding: 1.5rem; background: var(--bg-secondary, #f9f9f9);">
-              <h2 style="margin-top: 0; margin-bottom: 1rem; font-size: 1.25rem; color: var(--text-primary, #000);">Resultado de Proyección</h2>
-              <div id="resultadoProyeccion" style="color: var(--text-primary, #000);">
-                <p>Esperando ejecución...</p>
-              </div>
-            </section>
-          </main>
-        </div>
-      `;
-      
-      this.areaContenido.innerHTML = htmlCompleto;
-      
-      this.vistaActual = 'proyeccion-testing';
-      
-      await this.inyectarScriptSecuencial('../js/mallas-api.js?v=' + Date.now());
-      await this.inyectarScriptSecuencial('../js/proyeccion-validador.js?v=' + Date.now());
-      await this.inyectarScriptSecuencial('../js/proyeccion-procesador.js?v=' + Date.now());
-      await this.inyectarScriptSecuencial('../js/proyeccion-constructor.js?v=' + Date.now());
-      await this.inyectarScriptSecuencial('../js/proyeccion-app.js?v=' + Date.now());
-      await this.inyectarScriptSecuencial('../js/historico-avance-api.js?v=' + Date.now());
-      
-      this.ejecutarTestingProyeccion();
-      
-      console.log('Proyección Testing cargada exitosamente');
-    } catch (error) {
-      console.error('Error al cargar Proyección Testing:', error);
-      this.areaContenido.innerHTML = `<div style="padding: 2rem; text-align: center; color: var(--text-primary, #000);"><h2>Error al cargar la página de testing</h2><button onclick="window.mainMenuApp.cargarInicio()">Volver</button></div>`;
-    }
-  }
-
-  ejecutarTestingProyeccion() {
-    const resultDiv = document.getElementById('resultadoProyeccion');
-    
-    const ejecutar = async () => {
-      try {
-        console.log('🧪 Iniciando proyección de testing...');
-        resultDiv.innerHTML = '<p style="color: #22c55e;">⏳ Ejecutando prueba...</p>';
-        
-        if (typeof window.prepararProyeccion !== 'function') {
-          throw new Error('La función prepararProyeccion no está disponible');
-        }
-        
-        console.log('Llamando a prepararProyeccion...');
-        const proyeccion = await window.prepararProyeccion(
-          '222222222',
-          '8266',
-          '202410',
-          30
-        );
-
-        console.log('Proyección completada:', proyeccion);
-        
-        resultDiv.innerHTML = `
-          <h3 style="color: #22c55e; margin-top: 0;">✅ Proyección generada exitosamente</h3>
-          <pre style="background: var(--bg-code, #fff); color: var(--text-primary, #000); padding: 1rem; border: 1px solid var(--border-color, #ddd); overflow-x: auto; border-radius: 4px; max-height: 500px; overflow-y: auto; font-size: 0.85rem;">${JSON.stringify(proyeccion, null, 2)}</pre>
-        `;
-      } catch (error) {
-        console.error('Error en la proyección:', error);
-        resultDiv.innerHTML = `
-          <h3 style="color: #ef4444; margin-top: 0;"> Error en la proyección:</h3>
-          <pre style="color: #ef4444; background: var(--bg-code, #fff); padding: 1rem; border: 1px solid var(--border-color, #ddd); overflow-x: auto; border-radius: 4px; font-size: 0.85rem;">${error.message}\n\nStack: ${error.stack}</pre>
-          <p style="color: var(--text-secondary, #666);">Verifica la consola del navegador (F12) para más detalles.</p>
-        `;
-      }
-    };
-    
-    setTimeout(ejecutar, 500);
-  }
-
-  generarHTMLPerfil(usuario) {
-    // 🔍 DEBUG: Ver qué datos llegan
-    console.log('🔍 DEBUG - Datos del usuario:', usuario);
-    console.log('🔍 DEBUG - academicInfo:', usuario.academicInfo);
-    
+  generarPerfil(usuario) {
     const nombreCompleto = usuario.name || `${usuario.firstName || ''} ${usuario.lastName || ''}`.trim();
     const nombre = usuario.firstName || 'Usuario';
     const avatar = nombre.charAt(0).toUpperCase();
@@ -697,47 +207,20 @@ class MainMenuApp {
     const nombreUsuario = usuario.username || 'No disponible';
     const rut = usuario.rut || 'No disponible';
     
-    // ✅ Imagen de perfil o fallback a inicial
     const fotoPerfil = usuario.profilePicture;
-    // Construir ruta relativa desde html/main-menu.html (o donde se cargue el perfil)
     const rutaImagen = fotoPerfil ? `../${fotoPerfil}` : null;
     const contenidoAvatar = rutaImagen 
       ? `<img src="${rutaImagen}" alt="${nombre}">` 
       : avatar;
     
-    // Datos académicos (con valores por defecto si no existen)
     const informacionAcademica = usuario.academicInfo || {};
     const carrera = informacionAcademica.career || 'No especificada';
     const generacion = informacionAcademica.generation || 'No especificada';
     const semestreActual = informacionAcademica.currentSemester || 0;
-    const semestresTotales = informacionAcademica.totalSemesters || 10;
     const promedio = informacionAcademica.gpa || 0;
-    const ramosAprobados = informacionAcademica.approvedCourses || 0;
-    const ramosActuales = informacionAcademica.currentCourses || 0;
-    
-    // ✅ Cálculo DINÁMICO del avance curricular basado en semestres
-    const progresoCurricular = semestresTotales > 0 
-      ? Math.round((semestreActual / semestresTotales) * 100) 
-      : 0;
-    
-    // Cálculo dinámico de semestres restantes
-    const semestresRestantes = Math.max(0, semestresTotales - semestreActual);
-    
-    // 🔍 DEBUG: Ver valores calculados
-    console.log('🔍 DEBUG - Valores calculados:', {
-      carrera,
-      generacion,
-      semestreActual,
-      promedio,
-      ramosAprobados,
-      ramosActuales,
-      progresoCurricular,
-      semestresRestantes
-    });
 
     return `
       <div class="contenedor-perfil">
-        <!-- Header del perfil -->
         <div class="cabecera-perfil">
           <button class="boton-volver" id="volverInicio">
             <i class="fas fa-arrow-left"></i>
@@ -746,7 +229,6 @@ class MainMenuApp {
           <h1>Perfil de Usuario</h1>
         </div>
 
-        <!-- Información principal del usuario -->
         <div class="perfil-principal">
           <div class="tarjeta-perfil">
             <div class="seccion-avatar-perfil">
@@ -764,7 +246,6 @@ class MainMenuApp {
           </div>
         </div>
 
-        <!-- Detalles del usuario en cards -->
         <div class="detalles-perfil">
           <div class="tarjeta-detalle">
             <div class="cabecera-tarjeta-detalle">
@@ -816,131 +297,796 @@ class MainMenuApp {
             </div>
           </div>
         </div>
-
       </div>
     `;
   }
 
+  generarHistorico() {
+    return `
+      <div>
+        <header>
+          <h1 class="page-title">Histórico de Proyecciones</h1>
+          <p class="subtitle">Aquí se despliega todo el avance académico que llevas en la carrera</p>
+        </header>
+
+        <section class="card" aria-labelledby="cardTitle">
+          <div class="card-header">
+            <div id="cardTitle"><strong>Proyecciones por Periodo</strong></div>
+          </div>
+
+          <div class="hscroll-wrap" aria-live="polite">
+            <div class="columnas" id="contenedorColumnas"></div>
+          </div>
+        </section>
+
+        <section class="card tarjeta-estadisticas" aria-labelledby="estadisticasTitle">
+          <div class="card-header cabecera-tarjeta-detalle">
+            <i class="fas fa-chart-line"></i>
+            <h3 id="estadisticasTitle">Estadísticas Académicas</h3>
+          </div>
+          <div class="card-body cuerpo-tarjeta-detalle">
+            <div class="cuadricula-estadisticas">
+              <div class="elemento-estadistica">
+                <i class="fas fa-book"></i>
+                <div class="contenido-estadistica">
+                  <span class="numero-estadistica" id="ramosAprobados">0</span>
+                  <span class="etiqueta-estadistica">Ramos aprobados</span>
+                </div>
+              </div>
+              <div class="elemento-estadistica">
+                <i class="fas fa-times-circle"></i>
+                <div class="contenido-estadistica">
+                  <span class="numero-estadistica" id="ramosReprobados">0</span>
+                  <span class="etiqueta-estadistica">Ramos reprobados</span>
+                </div>
+              </div>
+              <div class="elemento-estadistica">
+                <i class="fas fa-clock"></i>
+                <div class="contenido-estadistica">
+                  <span class="numero-estadistica" id="ramosPendientes">0</span>
+                  <span class="etiqueta-estadistica">Ramos pendientes</span>
+                </div>
+              </div>
+              <div class="elemento-estadistica">
+                <i class="fas fa-calendar-alt"></i>
+                <div class="contenido-estadistica">
+                  <span class="numero-estadistica" id="totalPeriodos">0</span>
+                  <span class="etiqueta-estadistica">Periodos cursados</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    `;
+  }
+
+  generarTesting() {
+    return `
+      <div style="padding: 2rem;">
+        <header style="margin-bottom: 2rem;">
+          <h1 style="margin: 0 0 0.5rem 0; font-size: 2rem; color: var(--text-primary, #000);">Malla Curricular - Testing</h1>
+          <p style="margin: 0; color: var(--text-secondary, #666);">Página de prueba para los módulos de proyección</p>
+        </header>
+
+        <main style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+          <section style="border: 1px solid var(--border-color, #ddd); border-radius: 8px; padding: 1.5rem; background: var(--bg-secondary, #f9f9f9);">
+            <h2 style="margin-top: 0; margin-bottom: 1rem; font-size: 1.25rem; color: var(--text-primary, #000);">Contenedor de Malla</h2>
+            <div id="contenedorMalla" style="color: var(--text-primary, #000);"></div>
+          </section>
+
+          <section style="border: 1px solid var(--border-color, #ddd); border-radius: 8px; padding: 1.5rem; background: var(--bg-secondary, #f9f9f9);">
+            <h2 style="margin-top: 0; margin-bottom: 1rem; font-size: 1.25rem; color: var(--text-primary, #000);">Resultado de Proyección</h2>
+            <div id="resultadoProyeccion" style="color: var(--text-primary, #000);">
+              <p>Esperando ejecución...</p>
+            </div>
+          </section>
+        </main>
+      </div>
+    `;
+  }
+}
+
+class UsuarioService {
+  constructor(storageService) {
+    this.storageService = storageService;
+  }
+
+  obtenerUsuario() {
+    return this.storageService.getItem(AppConfig.CLAVES.DATOS_USUARIO);
+  }
+
+  validarSesion() {
+    const usuario = this.obtenerUsuario();
+    return usuario !== null;
+  }
+
+  transformarDatosUsuario(data, email) {
+    return {
+      rut: data.rut || null,
+      email: email || null,
+      name: data.name || (email ? email.split('@')[0] : null),
+      firstName: (email ? (email.split('@')[0].split('.')[0] || email) : null),
+      carreras: Array.isArray(data.carreras) ? data.carreras : [],
+      academicInfo: {
+        career: data.carreras && data.carreras[0] ? data.carreras[0].nombre : undefined,
+        catalog: data.carreras && data.carreras[0] ? data.carreras[0].catalogo : undefined
+      }
+    };
+  }
+
+  guardarUsuario(data, email) {
+    const usuario = this.transformarDatosUsuario(data, email);
+    this.storageService.setItem(AppConfig.CLAVES.DATOS_USUARIO, usuario);
+    return usuario;
+  }
+
+  limpiarSesion() {
+    this.storageService.clear();
+  }
+}
+
+class VistaStrategy {
+  getIdVista() {
+    throw new Error('getIdVista debe ser implementado');
+  }
+
+  async cargar(areaContenido, servicios) {
+    throw new Error('cargar debe ser implementado');
+  }
+
+  limpiar(resourceManager) {
+    throw new Error('limpiar debe ser implementado');
+  }
+}
+
+class VistaInicioStrategy extends VistaStrategy {
+  constructor(contenidoInicio) {
+    super();
+    this.contenidoInicio = contenidoInicio;
+  }
+
+  getIdVista() {
+    return 'inicio';
+  }
+
+  async cargar(areaContenido, servicios) {
+    const { resourceManager } = servicios;
+    resourceManager.limpiarCss(['historico-scoped-style']);
+    resourceManager.limpiarScripts(AppConfig.SCRIPTS_MALLA);
+    
+    if (window.mallaApp) {
+      window.mallaApp = null;
+    }
+
+    areaContenido.innerHTML = this.contenidoInicio;
+  }
+
+  limpiar(resourceManager) {
+    resourceManager.limpiarCss(['historico-scoped-style']);
+    resourceManager.limpiarScripts(AppConfig.SCRIPTS_MALLA);
+  }
+}
+
+class VistaPerfilStrategy extends VistaStrategy {
+  getIdVista() {
+    return 'perfil';
+  }
+
+  async cargar(areaContenido, servicios) {
+    const { usuarioService, renderService, resourceManager } = servicios;
+    
+    resourceManager.limpiarScripts(AppConfig.SCRIPTS_MALLA);
+
+    const usuario = usuarioService.obtenerUsuario();
+    if (!usuario) {
+      throw new Error('No hay datos de usuario disponibles');
+    }
+
+    const html = renderService.generarPerfil(usuario);
+    areaContenido.innerHTML = html;
+
+    const botonVolver = document.getElementById('volverInicio');
+    if (botonVolver) {
+      botonVolver.addEventListener('click', () => {
+        const evento = new CustomEvent('navigateBack');
+        window.dispatchEvent(evento);
+      });
+    }
+  }
+
+  limpiar(resourceManager) {
+    resourceManager.limpiarScripts(AppConfig.SCRIPTS_MALLA);
+  }
+}
+
+class VistaMallaActualStrategy extends VistaStrategy {
+  getIdVista() {
+    return 'malla-actual';
+  }
+
+  async cargar(areaContenido, servicios) {
+    const { apiService, resourceManager } = servicios;
+    
+    resourceManager.limpiarCss(['historico-scoped-style']);
+
+    const respuesta = await fetch(`${AppConfig.RUTAS.HTML}mallas (urr).html`);
+    if (!respuesta.ok) {
+      throw new Error(`Error HTTP: ${respuesta.status}`);
+    }
+
+    const htmlCompleto = await respuesta.text();
+    const parserDOM = new DOMParser();
+    const docParsed = parserDOM.parseFromString(htmlCompleto, 'text/html');
+    const bodyContent = docParsed.body.innerHTML;
+    
+    areaContenido.innerHTML = bodyContent;
+
+    window.APP_CONFIG = AppConfig.APP_CONFIG_MALLA;
+
+    const scripts = AppConfig.SCRIPTS_MALLA;
+    for (const scriptName of scripts) {
+      const ruta = `${AppConfig.RUTAS.JS}${scriptName}?v=${Date.now()}`;
+      await resourceManager.inyectarScript(ruta);
+    }
+  }
+
+  limpiar(resourceManager) {
+    resourceManager.limpiarCss(['historico-scoped-style']);
+    resourceManager.limpiarScripts(AppConfig.SCRIPTS_MALLA);
+  }
+}
+
+class VistaHistoricoStrategy extends VistaStrategy {
+  getIdVista() {
+    return 'historico';
+  }
+
+  async cargar(areaContenido, servicios) {
+    const { renderService, resourceManager } = servicios;
+    
+    resourceManager.limpiarScripts(AppConfig.SCRIPTS_MALLA);
+    
+    if (window.historicoApp) {
+      window.historicoApp = null;
+    }
+
+    resourceManager.inyectarCss(
+      `${AppConfig.RUTAS.CSS}historico-scoped.css?v=${Date.now()}`,
+      'historico-scoped-style'
+    );
+    
+    resourceManager.inyectarCss(
+      `${AppConfig.RUTAS.CSS}historico-estadisticas.css?v=${Date.now()}`,
+      'historico-estadisticas-style'
+    );
+
+    const html = renderService.generarHistorico();
+    areaContenido.innerHTML = html;
+
+    return new Promise((resolve) => {
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          const contenedor = document.getElementById('contenedorColumnas');
+          if (!contenedor) {
+            console.error('El contenedor no existe después de renderizar');
+            resolve();
+            return;
+          }
+
+          const scriptId = 'historico-script';
+          const existente = document.getElementById(scriptId);
+          if (existente) {
+            existente.remove();
+          }
+
+          const script = document.createElement('script');
+          script.id = scriptId;
+          script.src = `${AppConfig.RUTAS.JS}historico-script.js?v=${Date.now()}`;
+          script.onload = () => resolve();
+          script.onerror = () => resolve();
+          document.body.appendChild(script);
+        }, 50);
+      });
+    });
+  }
+
+  limpiar(resourceManager) {
+    resourceManager.limpiarScripts(AppConfig.SCRIPTS_MALLA);
+    if (window.historicoApp) {
+      window.historicoApp = null;
+    }
+  }
+}
+
+class VistaTestingStrategy extends VistaStrategy {
+  getIdVista() {
+    return 'proyeccion-testing';
+  }
+
+  async cargar(areaContenido, servicios) {
+    const { renderService, resourceManager } = servicios;
+    
+    resourceManager.limpiarScripts(AppConfig.SCRIPTS_MALLA);
+
+    const html = renderService.generarTesting();
+    areaContenido.innerHTML = html;
+
+    const scripts = [
+      'mallas-api.js',
+      'proyeccion-validador.js',
+      'proyeccion-procesador.js',
+      'proyeccion-constructor.js',
+      'proyeccion-app.js',
+      'historico-avance-api.js'
+    ];
+
+    for (const scriptName of scripts) {
+      const ruta = `${AppConfig.RUTAS.JS}${scriptName}?v=${Date.now()}`;
+      await resourceManager.inyectarScript(ruta);
+    }
+
+    this.ejecutarTesting();
+  }
+
+  ejecutarTesting() {
+    const resultDiv = document.getElementById('resultadoProyeccion');
+    if (!resultDiv) return;
+
+    const ejecutar = async () => {
+      try {
+        resultDiv.innerHTML = '<p style="color: #22c55e;">⏳ Ejecutando prueba...</p>';
+        
+        if (typeof window.prepararProyeccion !== 'function') {
+          throw new Error('La función prepararProyeccion no está disponible');
+        }
+
+        const proyeccion = await window.prepararProyeccion('222222222', '8266', '202410', 30);
+
+        resultDiv.innerHTML = `
+          <h3 style="color: #22c55e; margin-top: 0;">✅ Proyección generada exitosamente</h3>
+          <pre style="background: var(--bg-code, #fff); color: var(--text-primary, #000); padding: 1rem; border: 1px solid var(--border-color, #ddd); overflow-x: auto; border-radius: 4px; max-height: 500px; overflow-y: auto; font-size: 0.85rem;">${JSON.stringify(proyeccion, null, 2)}</pre>
+        `;
+      } catch (error) {
+        resultDiv.innerHTML = `
+          <h3 style="color: #ef4444; margin-top: 0;">Error en la proyección:</h3>
+          <pre style="color: #ef4444; background: var(--bg-code, #fff); padding: 1rem; border: 1px solid var(--border-color, #ddd); overflow-x: auto; border-radius: 4px; font-size: 0.85rem;">${error.message}\n\nStack: ${error.stack}</pre>
+          <p style="color: var(--text-secondary, #666);">Verifica la consola del navegador (F12) para más detalles.</p>
+        `;
+      }
+    };
+
+    setTimeout(ejecutar, 500);
+  }
+
+  limpiar(resourceManager) {
+    resourceManager.limpiarScripts(AppConfig.SCRIPTS_MALLA);
+  }
+}
+
+class NavegacionService {
+  constructor(resourceManager, renderService, usuarioService, apiService) {
+    this.resourceManager = resourceManager;
+    this.renderService = renderService;
+    this.usuarioService = usuarioService;
+    this.apiService = apiService;
+    this.vistaActual = null;
+    this.estrategias = new Map();
+    this.areaContenido = null;
+    this.contenidoInicio = null;
+  }
+
+  inicializar(areaContenido, contenidoInicio) {
+    this.areaContenido = areaContenido;
+    this.contenidoInicio = contenidoInicio;
+    
+    this.estrategias.set('inicio', new VistaInicioStrategy(contenidoInicio));
+    this.estrategias.set('perfil', new VistaPerfilStrategy());
+    this.estrategias.set('malla-actual', new VistaMallaActualStrategy());
+    this.estrategias.set('historico', new VistaHistoricoStrategy());
+    this.estrategias.set('proyeccion-testing', new VistaTestingStrategy());
+  }
+
+  obtenerServicios() {
+    return {
+      resourceManager: this.resourceManager,
+      renderService: this.renderService,
+      usuarioService: this.usuarioService,
+      apiService: this.apiService
+    };
+  }
+
+  async navegarA(idVista) {
+    if (!this.areaContenido) {
+      throw new Error('Área de contenido no inicializada');
+    }
+
+    const estrategia = this.estrategias.get(idVista);
+    if (!estrategia) {
+      throw new Error(`Vista ${idVista} no encontrada`);
+    }
+
+    if (this.vistaActual === idVista) {
+      return;
+    }
+
+    if (this.vistaActual) {
+      const estrategiaAnterior = this.estrategias.get(this.vistaActual);
+      if (estrategiaAnterior) {
+        estrategiaAnterior.limpiar(this.resourceManager);
+      }
+    }
+
+    try {
+      await estrategia.cargar(this.areaContenido, this.obtenerServicios());
+      this.vistaActual = idVista;
+    } catch (error) {
+      console.error(`Error al cargar vista ${idVista}:`, error);
+      const htmlError = this.renderService.generarError(
+        `No se pudo cargar la vista: ${error.message}`,
+        'Error al cargar'
+      );
+      this.areaContenido.innerHTML = htmlError;
+      throw error;
+    }
+  }
+
+  getVistaActual() {
+    return this.vistaActual;
+  }
+
+  cargarInicio() {
+    return this.navegarA('inicio');
+  }
+}
+
+class BusquedaService {
+  filtrarElementos(terminoBusqueda) {
+    const seccionesMenu = document.querySelectorAll('.seccion-menu');
+    const elementosInferior = document.querySelectorAll('.elemento-inferior');
+    
+    if (!terminoBusqueda) {
+      this.mostrarTodos(seccionesMenu, elementosInferior);
+      return;
+    }
+
+    this.filtrarSecciones(seccionesMenu, terminoBusqueda);
+    this.filtrarElementosInferiores(elementosInferior, terminoBusqueda);
+  }
+
+  mostrarTodos(seccionesMenu, elementosInferior) {
+    seccionesMenu.forEach(seccion => {
+      seccion.style.display = '';
+      seccion.querySelectorAll('.elemento-menu').forEach(elemento => {
+        elemento.style.display = '';
+      });
+    });
+
+    elementosInferior.forEach(elemento => {
+      if (!elemento.classList.contains('cerrar-sesion')) {
+        elemento.style.display = '';
+      }
+    });
+  }
+
+  filtrarSecciones(seccionesMenu, terminoBusqueda) {
+    seccionesMenu.forEach(seccion => {
+      const elementosMenu = seccion.querySelectorAll('.elemento-menu');
+      let contadorVisibles = 0;
+
+      elementosMenu.forEach(elemento => {
+        const span = elemento.querySelector('span');
+        if (span && span.textContent.toLowerCase().includes(terminoBusqueda)) {
+          elemento.style.display = '';
+          contadorVisibles++;
+        } else {
+          elemento.style.display = 'none';
+        }
+      });
+
+      seccion.style.display = contadorVisibles > 0 ? '' : 'none';
+    });
+  }
+
+  filtrarElementosInferiores(elementosInferior, terminoBusqueda) {
+    elementosInferior.forEach(elemento => {
+      if (!elemento.classList.contains('cerrar-sesion')) {
+        const span = elemento.querySelector('span');
+        if (span && span.textContent.toLowerCase().includes(terminoBusqueda)) {
+          elemento.style.display = '';
+        } else {
+          elemento.style.display = 'none';
+        }
+      }
+    });
+  }
+}
+
+class MenuActivoService {
+  establecer(tipoElemento) {
+    const todosElementosMenu = document.querySelectorAll('.elemento-menu');
+    todosElementosMenu.forEach(elemento => elemento.classList.remove('active'));
+
+    const nombreUsuario = document.getElementById(AppConfig.IDS.NOMBRE_USUARIO);
+    if (nombreUsuario) {
+      nombreUsuario.classList.remove('active');
+    }
+
+    const mapeoTipos = {
+      'profile': () => {
+        if (nombreUsuario) nombreUsuario.classList.add('active');
+      },
+      'home': () => this.activarPorTexto('Malla Actual', todosElementosMenu),
+      'malla-actual': () => this.activarPorTexto('Malla Actual', todosElementosMenu),
+      'historico': () => this.activarPorTexto('Estadísticas - Histórico', todosElementosMenu),
+      'proyeccion-testing': () => this.activarPorTexto('Proyección Testing', todosElementosMenu)
+    };
+
+    const accion = mapeoTipos[tipoElemento];
+    if (accion) {
+      accion();
+    }
+  }
+
+  activarPorTexto(textoBuscado, elementosMenu) {
+    elementosMenu.forEach(elemento => {
+      const span = elemento.querySelector('span');
+      if (span && span.textContent.includes(textoBuscado)) {
+        elemento.classList.add('active');
+      }
+    });
+  }
+}
+
+class UsuarioUIService {
+  mostrarInformacion(usuario) {
+    const elementoNombreUsuario = document.getElementById(AppConfig.IDS.NOMBRE_USUARIO);
+    if (elementoNombreUsuario && usuario.name) {
+      elementoNombreUsuario.textContent = usuario.name;
+    }
+
+    const elementoAvatar = document.getElementById(AppConfig.IDS.AVATAR_USUARIO);
+    if (elementoAvatar) {
+      if (usuario.profilePicture) {
+        const rutaImagen = `../${usuario.profilePicture}`;
+        elementoAvatar.innerHTML = `<img src="${rutaImagen}" alt="${usuario.firstName || ''}">`;
+      } else if (usuario.firstName) {
+        elementoAvatar.textContent = usuario.firstName.charAt(0).toUpperCase();
+      }
+    }
+
+    const elementoEmailUsuario = document.getElementById(AppConfig.IDS.CORREO_USUARIO);
+    if (elementoEmailUsuario && usuario.email) {
+      elementoEmailUsuario.textContent = usuario.email;
+    }
+  }
+
+  configurarClicksPerfil(handler) {
+    const nombreUsuario = document.getElementById(AppConfig.IDS.NOMBRE_USUARIO);
+    const avatarUsuario = document.getElementById(AppConfig.IDS.AVATAR_USUARIO);
+
+    if (nombreUsuario) {
+      nombreUsuario.addEventListener('click', handler);
+    }
+
+    if (avatarUsuario) {
+      avatarUsuario.style.cursor = 'pointer';
+      avatarUsuario.title = 'Ver perfil';
+      avatarUsuario.addEventListener('click', handler);
+    }
+  }
+}
+
+class MainMenuApp {
+  constructor() {
+    this.storageService = new StorageService();
+    this.apiService = new ApiService();
+    this.renderService = new RenderService();
+    this.resourceManager = new ResourceManager();
+    this.usuarioService = new UsuarioService(this.storageService);
+    this.navegacionService = new NavegacionService(
+      this.resourceManager,
+      this.renderService,
+      this.usuarioService,
+      this.apiService
+    );
+    this.busquedaService = new BusquedaService();
+    this.menuActivoService = new MenuActivoService();
+    this.usuarioUIService = new UsuarioUIService();
+    this.areaContenido = null;
+    this.contenidoInicio = null;
+    this.inicializar();
+  }
+
+  inicializar() {
+    this.areaContenido = document.querySelector(AppConfig.IDS.AREA_CONTENIDO);
+    if (this.areaContenido) {
+      this.contenidoInicio = this.areaContenido.innerHTML;
+      this.navegacionService.inicializar(this.areaContenido, this.contenidoInicio);
+    }
+
+    this.cargarDatosUsuario();
+    this.configurarEventos();
+  }
+
+  cargarDatosUsuario() {
+    const usuario = this.usuarioService.obtenerUsuario();
+    
+    if (usuario) {
+      this.usuarioUIService.mostrarInformacion(usuario);
+    } else {
+      this.redirigirAlInicioSesion();
+    }
+  }
+
+  configurarEventos() {
+    this.configurarCierreSesion();
+    this.configurarBusqueda();
+    this.configurarNavegacionPerfil();
+    this.configurarNavegacionMallaActual();
+    this.configurarNavegacionHistorico();
+    this.configurarNavegacionTesting();
+    this.configurarNavegacionAtras();
+  }
+
+  configurarCierreSesion() {
+    const botonCerrarSesion = document.getElementById(AppConfig.IDS.BOTON_CERRAR_SESION);
+    if (botonCerrarSesion) {
+      botonCerrarSesion.addEventListener('click', () => {
+        this.realizarCierreSesion();
+      });
+    }
+  }
+
+  realizarCierreSesion() {
+    this.usuarioService.limpiarSesion();
+    this.redirigirAlInicioSesion();
+  }
+
+  redirigirAlInicioSesion() {
+    window.location.href = AppConfig.URLS.INDEX;
+  }
+
+  configurarBusqueda() {
+    const entradaBusqueda = document.getElementById(AppConfig.IDS.ENTRADA_BUSQUEDA);
+    if (entradaBusqueda) {
+      entradaBusqueda.addEventListener('input', (e) => {
+        const termino = e.target.value.toLowerCase().trim();
+        this.busquedaService.filtrarElementos(termino);
+      });
+    }
+  }
+
+  configurarNavegacionPerfil() {
+    this.usuarioUIService.configurarClicksPerfil(() => {
+      this.cargarPerfil();
+      this.menuActivoService.establecer('profile');
+    });
+  }
+
+  configurarNavegacionMallaActual() {
+    const elementosMenu = document.querySelectorAll('.elemento-menu');
+    elementosMenu.forEach(elemento => {
+      const texto = elemento.querySelector('span')?.textContent;
+      if (texto === 'Malla Actual') {
+        elemento.addEventListener('click', () => {
+          this.cargarMallaActual();
+          this.menuActivoService.establecer('malla-actual');
+        });
+      }
+    });
+  }
+
+  configurarNavegacionHistorico() {
+    const elementosMenu = document.querySelectorAll('.elemento-menu');
+    elementosMenu.forEach(elemento => {
+      const texto = elemento.querySelector('span')?.textContent?.trim();
+      if (texto === 'Estadísticas - Histórico') {
+        const enlace = elemento.querySelector('a');
+        const handler = (e) => {
+          e.preventDefault();
+          this.cargarHistorico();
+          this.menuActivoService.establecer('historico');
+        };
+
+        if (enlace) {
+          enlace.addEventListener('click', handler);
+        } else {
+          elemento.addEventListener('click', handler);
+        }
+      }
+    });
+  }
+
+  configurarNavegacionTesting() {
+    const elementosMenu = document.querySelectorAll('.elemento-menu');
+    elementosMenu.forEach(elemento => {
+      const texto = elemento.querySelector('span')?.textContent?.trim();
+      if (texto === 'Proyección Testing') {
+        elemento.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.cargarTesting();
+          this.menuActivoService.establecer('proyeccion-testing');
+        });
+      }
+    });
+  }
+
   configurarNavegacionAtras() {
-    // Escuchar evento de navegación hacia atrás
     window.addEventListener('navigateBack', () => {
       this.cargarInicio();
     });
   }
 
+  async cargarPerfil() {
+    try {
+      await this.navegacionService.navegarA('perfil');
+    } catch (error) {
+      console.error('Error al cargar perfil:', error);
+    }
+  }
+
+  async cargarMallaActual() {
+    try {
+      await this.navegacionService.navegarA('malla-actual');
+    } catch (error) {
+      console.error('Error al cargar malla actual:', error);
+    }
+  }
+
+  cargarHistorico() {
+    try {
+      this.navegacionService.navegarA('historico');
+    } catch (error) {
+      console.error('Error al cargar histórico:', error);
+    }
+  }
+
+  async cargarTesting() {
+    try {
+      await this.navegacionService.navegarA('proyeccion-testing');
+    } catch (error) {
+      console.error('Error al cargar testing:', error);
+    }
+  }
+
   cargarInicio() {
-    if (!this.areaContenido || !this.contenidoInicio) return;
-    
-    // Prevenir recarga si ya estamos en la vista de inicio
-    if (this.vistaActual === 'inicio') {
-      console.log('✅ Ya estás en la vista de Inicio');
-      return;
-    }
-    
-    // Limpiar scripts de mallas
-    this.limpiarScriptsMallas();
-    
-    // Asegurar que no quede cargado el CSS específico de histórico (scoped)
-    const estiloHistoricoExistente = document.getElementById('historico-scoped-style');
-    if (estiloHistoricoExistente) estiloHistoricoExistente.remove();
-    
-    this.areaContenido.innerHTML = this.contenidoInicio;
-    
-    // Marcar vista actual
-    this.vistaActual = 'inicio';
-    
-    // Restaurar highlight a "Malla Actual"
-    this.establecerElementoMenuActivo('home');
-    
-    console.log('✅ Volviendo al home');
-  }
-
-  // ===== LIMPIAR SCRIPTS DE MALLAS =====
-  limpiarScriptsMallas() {
-    const mallasScripts = ['mallas-api.js', 'mallas-ui.js', 'mallas.js', 'malla-actual.js'];
-    const todosLosScripts = document.querySelectorAll('script');
-    
-    todosLosScripts.forEach(script => {
-      for (const mallasScript of mallasScripts) {
-        if (script.src.includes(mallasScript)) {
-          console.log(`🗑️ Removiendo script: ${mallasScript}`);
-          script.remove();
-        }
-      }
-    });
-    
-    // Limpiar variables globales de mallas si existen
-    if (window.mallaApp) {
-      console.log('🧹 Limpiando instancia de mallaApp');
-      window.mallaApp = null;
+    try {
+      this.navegacionService.cargarInicio();
+      this.menuActivoService.establecer('home');
+    } catch (error) {
+      console.error('Error al cargar inicio:', error);
     }
   }
 
-  establecerElementoMenuActivo(tipoElemento) {
-    // Remover clase active de todos los menu-items
-    const todosElementosMenu = document.querySelectorAll('.elemento-menu');
-    todosElementosMenu.forEach(elemento => elemento.classList.remove('active'));
-    
-    // Remover clase active del nombre de usuario
-    const nombreUsuario = document.getElementById('nombreUsuario');
-    if (nombreUsuario) {
-      nombreUsuario.classList.remove('active');
-    }
-    
-    // Agregar clase active según el tipo
-    if (tipoElemento === 'profile') {
-      if (nombreUsuario) {
-        nombreUsuario.classList.add('active');
+  async realizarLoginYRedirigir(email, password) {
+    try {
+      const res = await this.apiService.login(email, password);
+      if (res && res.rut) {
+        this.usuarioService.guardarUsuario(res, email);
+        window.location.href = AppConfig.URLS.MAIN_MENU;
+      } else {
+        throw new Error('Respuesta de login inválida');
       }
-    } else if (tipoElemento === 'home') {
-      // Buscar el menu-item que contiene "Malla Actual" y activarlo
-      const elementosMenu = document.querySelectorAll('.elemento-menu');
-      elementosMenu.forEach(elemento => {
-        const span = elemento.querySelector('span');
-        if (span && span.textContent.includes('Malla Actual')) {
-          elemento.classList.add('active');
-        }
-      });
-    } else if (tipoElemento === 'malla-actual') {
-      // Buscar el menu-item que contiene "Malla Actual" y activarlo
-      const elementosMenu = document.querySelectorAll('.elemento-menu');
-      elementosMenu.forEach(elemento => {
-        const span = elemento.querySelector('span');
-        if (span && span.textContent.includes('Malla Actual')) {
-          elemento.classList.add('active');
-        }
-      });
-    } else if (tipoElemento === 'historico') {
-      const elementosMenu = document.querySelectorAll('.elemento-menu');
-      elementosMenu.forEach(elemento => {
-        const span = elemento.querySelector('span');
-        if (span && span.textContent.includes('Estadísticas - Histórico')) {
-          elemento.classList.add('active');
-        }
-      });
-    } else if (tipoElemento === 'proyeccion-testing') {
-      const elementosMenu = document.querySelectorAll('.elemento-menu');
-      elementosMenu.forEach(elemento => {
-        const span = elemento.querySelector('span');
-        if (span && span.textContent.includes('Proyección Testing')) {
-          elemento.classList.add('active');
-        }
-      });
+    } catch (error) {
+      console.error('Error en realizarLoginYRedirigir:', error);
+      throw error;
     }
+  }
+
+  guardarUsuarioEnSession(data, email) {
+    return this.usuarioService.guardarUsuario(data, email);
   }
 }
 
-// aca inicializa to el main menu
 document.addEventListener('DOMContentLoaded', () => {
-  // Inicializar aplicación del menú principal
   window.mainMenuApp = new MainMenuApp();
-  
-  // Toggle de tema solo si existe el botón y temaManager está cargado
-  const botonTema = document.getElementById('botonTema');
+
+  const botonTema = document.getElementById(AppConfig.IDS.BOTON_TEMA);
   if (botonTema && typeof temaManager !== 'undefined') {
     const actualizarIconoBoton = () => {
       const icono = botonTema.querySelector('i');
-      if (!icono) return; // evitar error si falta el ícono
+      if (!icono) return;
 
       const temaActual = temaManager.obtenerTemaActual();
       if (temaActual === 'dark') {
@@ -959,13 +1105,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     actualizarIconoBoton();
   }
-
-  // Log de información del sistema
-  console.log('Sistema de menú principal inicializado');
-  console.log('Versión: 1.0.0');
 });
 
-// ===== EXPORTAR PARA TESTING =====
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { MainMenuApp, CLAVES_ALMACENAMIENTO };
+  module.exports = { MainMenuApp, AppConfig };
 }
