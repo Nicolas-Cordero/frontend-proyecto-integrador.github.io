@@ -1,0 +1,22 @@
+Reporte de Cobertura de Código
+Fecha: 2025-12-12
+
+Resumen
+Total de tests: 145
+Statements: 509/597 (85.26%)
+Branches: 203/265 (76.6%)
+Functions: 123/147 (83.67%)
+Lines: 498/581 (85.71%)
+
+Detalle por archivo
+main-menu-script.js
+  Statements: 372/455 (81.76%)
+  Branches: 133/190 (70%)
+  Functions: 91/115 (79.13%)
+  Lines: 367/447 (82.1%)
+
+perfil-usuario-script.js
+  Statements: 137/142 (96.48%)
+  Branches: 70/75 (93.33%)
+  Functions: 32/32 (100%)
+  Lines: 131/134 (97.76%)

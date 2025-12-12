@@ -1107,6 +1107,44 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+if (typeof window !== 'undefined') {
+  window.AppConfig = AppConfig;
+  window.StorageService = StorageService;
+  window.ApiService = ApiService;
+  window.ResourceManager = ResourceManager;
+  window.RenderService = RenderService;
+  window.UsuarioService = UsuarioService;
+  window.VistaStrategy = VistaStrategy;
+  window.VistaInicioStrategy = VistaInicioStrategy;
+  window.VistaPerfilStrategy = VistaPerfilStrategy;
+  window.VistaMallaActualStrategy = VistaMallaActualStrategy;
+  window.VistaHistoricoStrategy = VistaHistoricoStrategy;
+  window.VistaTestingStrategy = VistaTestingStrategy;
+  window.NavegacionService = NavegacionService;
+  window.BusquedaService = BusquedaService;
+  window.MenuActivoService = MenuActivoService;
+  window.UsuarioUIService = UsuarioUIService;
+  window.MainMenuApp = MainMenuApp;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { MainMenuApp, AppConfig };
+  module.exports = { 
+    MainMenuApp, 
+    AppConfig,
+    StorageService,
+    ApiService,
+    ResourceManager,
+    RenderService,
+    UsuarioService,
+    VistaStrategy,
+    VistaInicioStrategy,
+    VistaPerfilStrategy,
+    VistaMallaActualStrategy,
+    VistaHistoricoStrategy,
+    VistaTestingStrategy,
+    NavegacionService,
+    BusquedaService,
+    MenuActivoService,
+    UsuarioUIService
+  };
 }

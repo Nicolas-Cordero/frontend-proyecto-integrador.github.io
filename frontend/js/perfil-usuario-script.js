@@ -305,6 +305,16 @@ if (document.getElementById(PerfilConfig.IDS.AVATAR_GRANDE)) {
   window.aplicacionPerfilUsuario = new AplicacionPerfilUsuario();
 }
 
+if (typeof window !== 'undefined') {
+  window.PerfilConfig = PerfilConfig;
+  window.StorageService = StorageService;
+  window.UsuarioService = UsuarioService;
+  window.PerfilDataService = PerfilDataService;
+  window.PerfilRenderService = PerfilRenderService;
+  window.PerfilEventService = PerfilEventService;
+  window.AplicacionPerfilUsuario = AplicacionPerfilUsuario;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { 
     AplicacionPerfilUsuario, 

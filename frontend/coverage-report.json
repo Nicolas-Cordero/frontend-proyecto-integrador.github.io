@@ -1,0 +1,72 @@
+{
+  "fecha": "2025-12-12",
+  "totalTests": 145,
+  "cobertura": {
+    "statements": {
+      "total": 597,
+      "cubiertos": 509,
+      "porcentaje": 85.26
+    },
+    "branches": {
+      "total": 265,
+      "cubiertos": 203,
+      "porcentaje": 76.6
+    },
+    "functions": {
+      "total": 147,
+      "cubiertos": 123,
+      "porcentaje": 83.67
+    },
+    "lines": {
+      "total": 581,
+      "cubiertos": 498,
+      "porcentaje": 85.71
+    }
+  },
+  "archivos": {
+    "main-menu-script.js": {
+      "statements": {
+        "total": 455,
+        "cubiertos": 372,
+        "porcentaje": 81.76
+      },
+      "branches": {
+        "total": 190,
+        "cubiertos": 133,
+        "porcentaje": 70
+      },
+      "functions": {
+        "total": 115,
+        "cubiertos": 91,
+        "porcentaje": 79.13
+      },
+      "lines": {
+        "total": 447,
+        "cubiertos": 367,
+        "porcentaje": 82.1
+      }
+    },
+    "perfil-usuario-script.js": {
+      "statements": {
+        "total": 142,
+        "cubiertos": 137,
+        "porcentaje": 96.48
+      },
+      "branches": {
+        "total": 75,
+        "cubiertos": 70,
+        "porcentaje": 93.33
+      },
+      "functions": {
+        "total": 32,
+        "cubiertos": 32,
+        "porcentaje": 100
+      },
+      "lines": {
+        "total": 134,
+        "cubiertos": 131,
+        "porcentaje": 97.76
+      }
+    }
+  }
+}
