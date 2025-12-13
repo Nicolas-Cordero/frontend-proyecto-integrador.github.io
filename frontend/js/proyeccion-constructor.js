@@ -1,7 +1,7 @@
 (function() {
   'use strict';
 
-  function crearProyeccion(ramosPendientes, ramosAprobados, creditosMaximos = 30) {
+  function crearProyeccion(ramosPendientes, ramosAprobados, creditosMaximos) {
     if (!Array.isArray(ramosPendientes)) ramosPendientes = [];
     if (!Array.isArray(ramosAprobados)) ramosAprobados = [];
 
