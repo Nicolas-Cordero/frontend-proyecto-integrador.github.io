@@ -297,6 +297,8 @@ class RenderService {
             </div>
           </div>
         </div>
+
+        <div id="estadisticasContainer"></div>
       </div>
     `;
   }
@@ -309,6 +311,8 @@ class RenderService {
           <p class="subtitle">Aquí se despliega todo el avance académico que llevas en la carrera</p>
         </header>
 
+        <div id="carreraSelectorContainer"></div>
+
         <section class="card" aria-labelledby="cardTitle">
           <div class="card-header">
             <div id="cardTitle"><strong>Proyecciones por Periodo</strong></div>
@@ -316,45 +320,6 @@ class RenderService {
 
           <div class="hscroll-wrap" aria-live="polite">
             <div class="columnas" id="contenedorColumnas"></div>
-          </div>
-        </section>
-
-        <section class="card tarjeta-estadisticas" aria-labelledby="estadisticasTitle">
-          <div class="card-header cabecera-tarjeta-detalle">
-            <i class="fas fa-chart-line"></i>
-            <h3 id="estadisticasTitle">Estadísticas Académicas</h3>
-          </div>
-          <div class="card-body cuerpo-tarjeta-detalle">
-            <div class="cuadricula-estadisticas">
-              <div class="elemento-estadistica">
-                <i class="fas fa-book"></i>
-                <div class="contenido-estadistica">
-                  <span class="numero-estadistica" id="ramosAprobados">0</span>
-                  <span class="etiqueta-estadistica">Ramos aprobados</span>
-                </div>
-              </div>
-              <div class="elemento-estadistica">
-                <i class="fas fa-times-circle"></i>
-                <div class="contenido-estadistica">
-                  <span class="numero-estadistica" id="ramosReprobados">0</span>
-                  <span class="etiqueta-estadistica">Ramos reprobados</span>
-                </div>
-              </div>
-              <div class="elemento-estadistica">
-                <i class="fas fa-clock"></i>
-                <div class="contenido-estadistica">
-                  <span class="numero-estadistica" id="ramosPendientes">0</span>
-                  <span class="etiqueta-estadistica">Ramos pendientes</span>
-                </div>
-              </div>
-              <div class="elemento-estadistica">
-                <i class="fas fa-calendar-alt"></i>
-                <div class="contenido-estadistica">
-                  <span class="numero-estadistica" id="totalPeriodos">0</span>
-                  <span class="etiqueta-estadistica">Periodos cursados</span>
-                </div>
-              </div>
-            </div>
           </div>
         </section>
       </div>
@@ -478,6 +443,11 @@ class VistaPerfilStrategy extends VistaStrategy {
     
     resourceManager.limpiarScripts(AppConfig.SCRIPTS_MALLA);
 
+    // Limpiar widget anterior si existe
+    if (window.historicoEstadisticas) {
+      window.historicoEstadisticas = null;
+    }
+
     const usuario = usuarioService.obtenerUsuario();
     if (!usuario) {
       throw new Error('No hay datos de usuario disponibles');
@@ -485,6 +455,33 @@ class VistaPerfilStrategy extends VistaStrategy {
 
     const html = renderService.generarPerfil(usuario);
     areaContenido.innerHTML = html;
+
+    resourceManager.inyectarCss(
+      `${AppConfig.RUTAS.CSS}historico-estadisticas.css?v=2025121201`,
+      'historico-estadisticas-style'
+    );
+
+    await resourceManager.inyectarScript(`${AppConfig.RUTAS.JS}carrera-selector.js?v=2025121201`);
+    await resourceManager.inyectarScript(`${AppConfig.RUTAS.JS}historico-estadisticas.js?v=2025121201`);
+
+    await new Promise((resolve) => {
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          const widget = this.obtenerWidgetEstadisticas();
+          if (widget && typeof widget.cargarDesdeUsuario === 'function') {
+            const carreras = usuario.carreras || [];
+            const primeraCarrera = carreras.length > 0 ? carreras[0] : null;
+            
+            if (primeraCarrera) {
+              widget.cargarDesdeUsuario(usuario, primeraCarrera).catch(err => 
+                console.warn('[VistaPerfil] Error al cargar estadísticas:', err)
+              );
+            }
+          }
+          resolve();
+        }, 50);
+      });
+    });
 
     const botonVolver = document.getElementById('volverInicio');
     if (botonVolver) {
@@ -497,6 +494,23 @@ class VistaPerfilStrategy extends VistaStrategy {
 
   limpiar(resourceManager) {
     resourceManager.limpiarScripts(AppConfig.SCRIPTS_MALLA);
+  }
+
+  obtenerWidgetEstadisticas() {
+    if (window.historicoEstadisticas) return window.historicoEstadisticas;
+    if (window.HistoricoEstadisticas) {
+      const widget = new window.HistoricoEstadisticas({ contenedor: '#estadisticasContainer' });
+      window.historicoEstadisticas = widget;
+      return widget;
+    }
+    return null;
+  }
+
+  async cargarEstadisticasAcademicas(usuario) {
+    const widget = this.obtenerWidgetEstadisticas();
+    if (widget && typeof widget.cargarDesdeUsuario === 'function') {
+      await widget.cargarDesdeUsuario(usuario);
+    }
   }
 }
 
@@ -555,24 +569,22 @@ class VistaHistoricoStrategy extends VistaStrategy {
       `${AppConfig.RUTAS.CSS}historico-scoped.css?v=${Date.now()}`,
       'historico-scoped-style'
     );
-    
-    resourceManager.inyectarCss(
-      `${AppConfig.RUTAS.CSS}historico-estadisticas.css?v=${Date.now()}`,
-      'historico-estadisticas-style'
-    );
 
     const html = renderService.generarHistorico();
     areaContenido.innerHTML = html;
 
     return new Promise((resolve) => {
       requestAnimationFrame(() => {
-        setTimeout(() => {
+        setTimeout(async () => {
           const contenedor = document.getElementById('contenedorColumnas');
           if (!contenedor) {
             console.error('El contenedor no existe después de renderizar');
             resolve();
             return;
           }
+
+          // Inyectar script del selector de carrera
+          await resourceManager.inyectarScript(`${AppConfig.RUTAS.JS}carrera-selector.js?v=${Date.now()}`);
 
           const scriptId = 'historico-script';
           const existente = document.getElementById(scriptId);

@@ -265,12 +265,15 @@ class AplicacionPerfilUsuario {
     this.perfilRenderService = new PerfilRenderService(this.perfilDataService);
     this.perfilEventService = new PerfilEventService();
     this.datosUsuario = null;
+    this.estadisticasWidget = null;
     this.inicializar();
   }
 
   inicializar() {
     this.cargarDatosUsuario();
     this.configurarEventos();
+    this.estadisticasWidget = this.obtenerWidgetEstadisticas();
+    this.cargarEstadisticasAcademicas().catch(err => console.warn('[PerfilUsuario] No se pudieron cargar estadísticas:', err));
   }
 
   cargarDatosUsuario() {
@@ -292,6 +295,34 @@ class AplicacionPerfilUsuario {
       this.perfilRenderService.renderizarPerfilCompleto(this.datosUsuario);
     } catch (error) {
       console.error('Error al renderizar perfil:', error);
+    }
+  }
+
+  obtenerWidgetEstadisticas() {
+    if (window.historicoEstadisticas) return window.historicoEstadisticas;
+    if (window.HistoricoEstadisticas) {
+      const widget = new window.HistoricoEstadisticas({ contenedor: '#estadisticasContainer' });
+      window.historicoEstadisticas = widget;
+      return widget;
+    }
+    return null;
+  }
+
+  async cargarEstadisticasAcademicas() {
+    const widget = this.obtenerWidgetEstadisticas();
+    if (!widget) return;
+
+    // Cargar solo la primera carrera del usuario
+    const usuario = this.datosUsuario;
+    if (!usuario) return;
+
+    const carreras = usuario.carreras || [];
+    const primeraCarrera = carreras.length > 0 ? carreras[0] : null;
+
+    if (primeraCarrera) {
+      await widget.cargarDesdeUsuario(usuario, primeraCarrera);
+    } else {
+      widget.actualizar({ aprobados: 0, reprobados: 0, pendientes: 0, totalPeriodos: 0 });
     }
   }
 
