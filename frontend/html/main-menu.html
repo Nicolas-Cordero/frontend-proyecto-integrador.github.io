@@ -11,7 +11,10 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-  <aside class="barra-lateral">
+  <aside class="barra-lateral" id="barraLateral" aria-label="Barra lateral de navegación">
+  <button class="toggle-barra" id="toggleBarra" aria-label="Alternar barra lateral">
+    <i class="fa fa-bars"></i>
+  </button>
     <div class="parte-superior-barra">
       <div class="usuario-corto">
         <div class="avatar" id="avatarUsuario">?</div>
@@ -49,11 +52,22 @@
 
     <div class="parte-inferior-barra">
       <ul>
-        <li class="elemento-inferior"><i class="fa-regular fa-circle-question"></i><span>Ayuda</span></li>
-        <li class="elemento-inferior cerrar-sesion" id="botonCerrarSesion"><i class="fa-solid fa-right-from-bracket"></i><span>Cerrar Sesión</span></li>
+        <li class="elemento-inferior" id="botonTema">
+          <i class="fa-solid fa-moon"></i>
+          <span>Modo Oscuro</span>
+        </li>
+        <li class="elemento-inferior">
+          <i class="fa-regular fa-circle-question"></i>
+          <span>Ayuda</span>
+        </li>
+        <li class="elemento-inferior cerrar-sesion" id="botonCerrarSesion">
+          <i class="fa-solid fa-right-from-bracket"></i>
+          <span>Cerrar Sesión</span>
+        </li>
       </ul>
     </div>
   </aside>
+
 
   <main class="area-contenido">
     <div style="padding: 2rem; text-align: center;">
@@ -62,10 +76,6 @@
       <p style="margin-top: 0.5rem; color: var(--muted);">Usuario: <strong id="correoUsuario">...</strong></p>
     </div>
   </main>
-
-  <button id="botonTema" class="boton-tema" aria-label="Cambiar tema">
-    <i class="fa-solid fa-moon"></i>
-  </button>
 
   <!-- JavaScript -->
   <script src="../js/tema-manager.js"></script>

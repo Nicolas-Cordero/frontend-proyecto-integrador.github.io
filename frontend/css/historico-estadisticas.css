@@ -124,7 +124,7 @@
 /* Responsive */
 @media (max-width: 768px) {
   .cuadricula-estadisticas {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1fr;
     gap: 1rem;
     max-width: 100%;
   }

@@ -22,7 +22,9 @@ class AppConfig {
     CORREO_USUARIO: 'correoUsuario',
     BOTON_CERRAR_SESION: 'botonCerrarSesion',
     ENTRADA_BUSQUEDA: 'entradaBusqueda',
-    BOTON_TEMA: 'botonTema'
+    BOTON_TEMA: 'botonTema',
+    BOTON_TOGGLE_BARRA: 'toggleBarra',
+    BARRA_LATERAL: 'barraLateral'
   };
 
   static SCRIPTS_MALLA = ['mallas-api.js', 'mallas-ui.js', 'mallas.js', 'malla-actual.js'];
@@ -887,6 +889,37 @@ class UsuarioUIService {
       avatarUsuario.addEventListener('click', handler);
     }
   }
+  
+  configurarToggleBarra() {
+  const barraLateral = document.getElementById(AppConfig.IDS.BARRA_LATERAL);
+  const botonToggle = document.getElementById(AppConfig.IDS.BOTON_TOGGLE_BARRA);
+  if (!barraLateral || !botonToggle) return;
+
+  const icono = botonToggle.querySelector('i');
+    const actualizarIcono = () => {
+    if (!icono) return;
+      if (barraLateral.classList.contains('retraida')) {
+        icono.classList.remove('fa-bars');
+        icono.classList.add('fa-arrow-right');
+      } else {
+        icono.classList.remove('fa-arrow-right');
+        icono.classList.add('fa-bars');
+      }
+  };
+
+    // Retracción única con animación (toggle de clase 'retraida')
+    botonToggle.addEventListener('click', () => {
+      // Añade clase temporal para sombra sutil durante el movimiento
+      barraLateral.classList.add('moviendo');
+      barraLateral.classList.toggle('retraida');
+      actualizarIcono();
+      // Quita la clase moviendo después de la transición
+      setTimeout(() => barraLateral.classList.remove('moviendo'), 300);
+    });
+
+    actualizarIcono();
+  }
+
 }
 
 class MainMenuApp {
@@ -939,6 +972,7 @@ class MainMenuApp {
     this.configurarNavegacionHistorico();
     this.configurarNavegacionTesting();
     this.configurarNavegacionAtras();
+    this.configurarToggleBarra();
   }
 
   configurarCierreSesion() {
@@ -948,6 +982,35 @@ class MainMenuApp {
         this.realizarCierreSesion();
       });
     }
+  }
+
+  configurarToggleBarra() {
+    const barraLateral = document.getElementById(AppConfig.IDS.BARRA_LATERAL);
+    const botonToggle = document.getElementById(AppConfig.IDS.BOTON_TOGGLE_BARRA);
+    if (!barraLateral || !botonToggle) return;
+
+    const icono = botonToggle.querySelector('i');
+    const actualizarIcono = () => {
+      if (!icono) return;
+      if (barraLateral.classList.contains('retraida')) {
+        icono.classList.remove('fa-bars');
+        icono.classList.add('fa-arrow-right');
+      } else {
+        icono.classList.remove('fa-arrow-right');
+        icono.classList.add('fa-bars');
+      }
+    };
+
+    const handler = () => {
+      barraLateral.classList.add('moviendo');
+      barraLateral.classList.toggle('retraida');
+      actualizarIcono();
+      setTimeout(() => barraLateral.classList.remove('moviendo'), 320);
+    };
+
+    botonToggle.addEventListener('click', handler);
+
+    actualizarIcono();
   }
 
   realizarCierreSesion() {
@@ -1098,15 +1161,18 @@ document.addEventListener('DOMContentLoaded', () => {
   if (botonTema && typeof temaManager !== 'undefined') {
     const actualizarIconoBoton = () => {
       const icono = botonTema.querySelector('i');
+      const texto = botonTema.querySelector('span');
       if (!icono) return;
 
       const temaActual = temaManager.obtenerTemaActual();
       if (temaActual === 'dark') {
         icono.classList.remove('fa-moon');
         icono.classList.add('fa-sun');
+        if (texto) texto.textContent = 'Modo Claro'; // Cambia según prefieras
       } else {
         icono.classList.remove('fa-sun');
         icono.classList.add('fa-moon');
+        if (texto) texto.textContent = 'Modo Oscuro'; // Cambia según prefieras
       }
     };
 
@@ -1117,6 +1183,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     actualizarIconoBoton();
   }
+
+  // Fallback: asegurar toggle de barra aunque falle la inicialización previa
+  // Eliminado fallback para evitar doble binding y estados conflictivos
 });
 
 if (typeof module !== 'undefined' && module.exports) {

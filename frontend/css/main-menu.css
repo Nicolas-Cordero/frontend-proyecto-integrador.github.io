@@ -58,6 +58,7 @@ body{
   flex-direction:column;
   justify-content:space-between;
   padding:20px 16px;
+  flex: 0 0 var(--sidebar-width);
 }
 
 .parte-superior-barra{
@@ -239,22 +240,108 @@ body{
   overflow-y:auto;
   overflow-x:hidden;
 }
-.boton-tema {
-  background: none;
-  border: none;
+
+.barra-lateral {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  height: auto;
+  min-height: 100vh;
+  transform: translateX(0);
+  transition: transform 0.32s ease;
+  will-change: transform;
+}
+
+.toggle-barra {
+  position: absolute;
+  top: 10px;
+  right: -14px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--sidebar-bg);
+  color: var(--icon-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  font-size: 1.5rem;
-  color: var(--text);
-  padding: 0.5rem;
-  transition: transform 0.3s, color 0.3s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transform: translateX(0);
+  transition: transform 0.32s ease, box-shadow 0.15s ease, color 0.15s ease;
+  z-index: 10;
 }
 
-.boton-tema:hover {
-  transform: scale(1.1);
+.toggle-barra:hover {
+  transform: scale(1.05);
   color: var(--primary);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
-/* responsive */
-@media (max-width:700px){
-  .barra-lateral{width:220px}
+.barra-lateral.retraida { 
+  transform: translateX(calc(-100% + 24px));
+  width: 0 !important;
+  flex: 0 0 0 !important;
+}
+
+/* Sombra sutil al estar visible para enfatizar el movimiento */
+.barra-lateral {
+  box-shadow: 0 0 0 rgba(0,0,0,0);
+}
+.barra-lateral:not(.retraida) {
+  box-shadow: 0 0 0 rgba(0,0,0,0); /* sin sombra estática */
+}
+.barra-lateral.moviendo {
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+
+.barra-lateral.retraida .toggle-barra {
+  position: fixed;
+  top: 10px;
+  right:-14px;
+  transform: none;
+  z-index: 9999;
+}
+
+.area-contenido {
+  margin-left: var(--sidebar-width);
+}
+
+.barra-lateral.retraida ~ .area-contenido {
+  margin-left: 0;
+}
+
+.barra-lateral.retraida .nombre-usuario,
+.barra-lateral.retraida .busqueda,
+.barra-lateral.retraida .titulo-seccion,
+.barra-lateral.retraida .elemento-menu span,
+.barra-lateral.retraida .elemento-inferior span { display: none; }
+
+.barra-lateral.retraida .elemento-inferior i {
+  margin-left: -12px;
+}
+
+/* aca ta el responsive pa vista de tablets, celus intermedios y chicos */
+@media (max-width: 480px) {
+  .barra-lateral{
+    width:200px;
+    flex: 0 0 200px;
+  }
+
+  .barra-lateral.retraida{
+    transform:translateX(calc(-100% + 16px));
+    width:0 !important; 
+    flex:0 0 0 !important
+  }
+}
+
+@media (min-width: 481px) and (max-width:768px){
+  .barra-lateral{width:220px; flex: 0 0 220px;}
+  .barra-lateral.retraida{transform:translateX(calc(-100% + 20px)); width:0 !important; flex:0 0 0 !important}
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .barra-lateral{width:240px; flex: 0 0 240px;}
+  .barra-lateral.retraida{transform:translateX(calc(-100% + 24px)); width:0 !important; flex:0 0 0 !important}
 }
