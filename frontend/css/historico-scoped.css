@@ -59,7 +59,8 @@
   }
 }
 
-@media (max-width:600px){
+
+@media (max-width:768px){
   .area-contenido .columnas{min-width:200px}
   .area-contenido .scroll-btn{width:34px;height:34px}
 }

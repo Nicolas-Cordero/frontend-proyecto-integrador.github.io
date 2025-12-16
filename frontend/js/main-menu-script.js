@@ -1168,11 +1168,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (temaActual === 'dark') {
         icono.classList.remove('fa-moon');
         icono.classList.add('fa-sun');
-        if (texto) texto.textContent = 'Modo Claro'; // Cambia según prefieras
+        if (texto) texto.textContent = 'Modo Claro';
       } else {
         icono.classList.remove('fa-sun');
         icono.classList.add('fa-moon');
-        if (texto) texto.textContent = 'Modo Oscuro'; // Cambia según prefieras
+        if (texto) texto.textContent = 'Modo Oscuro';
       }
     };
 
