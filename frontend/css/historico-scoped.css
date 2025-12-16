@@ -37,7 +37,30 @@
 .area-contenido .scroll-right{right:8px}
 
 
-@media (max-width:600px){
+@media (max-width:768px){
+  .area-contenido .hscroll-wrap {
+    overflow-x: visible;
+    overflow-y: visible;
+  }
+  
+  .area-contenido .columnas {
+    flex-direction: column;
+    flex-wrap: wrap;
+    min-height: auto;
+  }
+  
+  .area-contenido .columna {
+    min-width: 100%;
+    max-width: 100%;
+  }
+  
+  .area-contenido .scroll-btn {
+    display: none;
+  }
+}
+
+
+@media (max-width:768px){
   .area-contenido .columnas{min-width:200px}
   .area-contenido .scroll-btn{width:34px;height:34px}
 }

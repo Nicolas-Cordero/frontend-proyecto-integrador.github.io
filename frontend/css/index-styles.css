@@ -811,14 +811,10 @@ body {
 
 /* ===== RESPONSIVIDAD PARA MÓVIL ===== */
 @media (max-width: 768px) {
-  .enlaces-navegacion {
+  .enlace-navegacion {
     display: none;
   }
-  
-  .boton-menu-movil {
-    display: block;
-  }
-  
+
   .contenedor-navegacion {
     padding: 0 var(--spacing-lg);
   }

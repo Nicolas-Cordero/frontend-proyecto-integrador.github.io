@@ -17,6 +17,8 @@
 class HistoricoApp {
   constructor() {
     this.contenedorColumnas = document.getElementById('contenedorColumnas');
+    this.carreraSelector = null;
+    this.usuarioActual = null;
     this.inicializar();
   }
 
@@ -85,6 +87,8 @@ class HistoricoApp {
       throw err;
     }
 
+    this.usuarioActual = usuario;
+
     const rut = usuario.rut || (usuario.user && usuario.user.rut) || null;
     const carreras = usuario.carreras || (usuario.user && usuario.user.carreras) || [];
 
@@ -102,36 +106,37 @@ class HistoricoApp {
       throw new Error('Sesión sin carreras');
     }
 
-    // Por cada carrera, solicitar el avance y concatenar resultados
-    const todas = [];
+    // Inicializar el selector de carreras si hay más de una
+    this.inicializarCarreraSelector(carreras);
+
+    // Intentar recuperar la última carrera seleccionada
+    let carreraInicial = this.obtenerCarreraGuardada(carreras);
+    if (!carreraInicial) {
+      carreraInicial = carreras[0]; // Por defecto, la primera
+    }
     
-    console.log('[HistoricoApp] Carreras encontradas:', carreras);
+    console.log('[HistoricoApp] Carrera inicial a mostrar:', carreraInicial);
     
-    for (const c of carreras) {
-      console.log('[HistoricoApp] Procesando carrera:', c);
+    // Cargar solo la carrera inicial, no todas
+    const codigo = carreraInicial.codigo || carreraInicial.code || carreraInicial.cod || null;
+    
+    if (!codigo) {
+      console.warn('[HistoricoApp] Carrera inicial sin código:', carreraInicial);
+      this.renderizarEstadoInicial();
+      throw new Error('Carrera sin código');
+    }
+    
+    let todas = [];
+    try {
+      console.log('[HistoricoApp] Llamando API Avance con RUT:', rut, 'y codcarrera:', codigo);
+      const avance = await this.fetchAvanceForCarrera(rut, codigo);
+      console.log('[HistoricoApp] Respuesta de API Avance:', avance);
       
-      // El endpoint de Avance requiere "codigo", NO "catalogo"
-      // "catalogo" es para la API de Malla
-      const codigo = c.codigo || c.code || c.cod || null;
-      
-      console.log('[HistoricoApp] Código de carrera extraído:', codigo);
-      
-      if (!codigo) {
-        console.warn('[HistoricoApp] Carrera sin código:', c);
-        continue;
+      if (Array.isArray(avance) && avance.length > 0) {
+        todas = avance;
       }
-      try {
-        console.log('[HistoricoApp] Llamando API Avance con RUT:', rut, 'y codcarrera:', codigo);
-        const avance = await this.fetchAvanceForCarrera(rut, codigo);
-        console.log('[HistoricoApp] Respuesta de API Avance:', avance);
-        
-        if (Array.isArray(avance) && avance.length > 0) {
-          todas.push(...avance);
-        }
-      } catch (err) {
-        // Si falla una carrera, seguimos con las demás
-        console.warn('[HistoricoApp] Fallo al cargar avance para', codigo, err.message || err);
-      }
+    } catch (err) {
+      console.warn('[HistoricoApp] Fallo al cargar avance para', codigo, err.message || err);
     }
 
     if (todas.length === 0) {
@@ -142,6 +147,90 @@ class HistoricoApp {
 
     // Renderizar los registros combinados
     this.cargarProyeccionesDesdeDatos(todas);
+  }
+
+  inicializarCarreraSelector(carreras) {
+    const containerSelector = document.getElementById('carreraSelectorContainer');
+    if (!containerSelector) return;
+
+    if (!window.CarreraSelector) {
+      console.warn('[HistoricoApp] CarreraSelector no está disponible');
+      return;
+    }
+
+    this.carreraSelector = new window.CarreraSelector({
+      contenedor: '#carreraSelectorContainer',
+      carreras: carreras,
+      onSeleccionar: (carrera) => this.onCarreraSeleccionada(carrera)
+    });
+
+    // Si hay una carrera guardada, actualizar el selector para que la muestre
+    const carreraGuardada = this.obtenerCarreraGuardada(carreras);
+    if (carreraGuardada && carreras.length > 1) {
+      const index = carreras.findIndex(c => {
+        const codigoC = c.codigo || c.code || c.cod;
+        const codigoGuardado = carreraGuardada.codigo || carreraGuardada.code || carreraGuardada.cod;
+        return codigoC === codigoGuardado;
+      });
+      
+      if (index >= 0) {
+        // Actualizar visualmente el selector
+        const select = document.getElementById('carreraSelect');
+        if (select) {
+          select.value = index.toString();
+        }
+      }
+    }
+  }
+
+  onCarreraSeleccionada(carrera) {
+    console.log('[HistoricoApp] Carrera seleccionada:', carrera);
+    
+    // Guardar la carrera seleccionada
+    this.guardarCarreraSeleccionada(carrera);
+    
+    // Obtener avances solo para esta carrera
+    const rut = this.usuarioActual.rut || (this.usuarioActual.user && this.usuarioActual.user.rut) || null;
+    if (!rut) return;
+
+    const codigo = carrera.codigo || carrera.code || carrera.cod || null;
+    if (!codigo) return;
+
+    this.fetchAvanceForCarrera(rut, codigo).then(avance => {
+      if (Array.isArray(avance) && avance.length > 0) {
+        // Actualizar las proyecciones
+        this.cargarProyeccionesDesdeDatos(avance);
+      }
+    }).catch(err => {
+      console.error('[HistoricoApp] Error al cargar avance para carrera seleccionada:', err);
+    });
+  }
+
+  guardarCarreraSeleccionada(carrera) {
+    try {
+      sessionStorage.setItem('historico_carrera_seleccionada', JSON.stringify(carrera));
+    } catch (err) {
+      console.warn('[HistoricoApp] No se pudo guardar la carrera seleccionada:', err);
+    }
+  }
+
+  obtenerCarreraGuardada(carreras) {
+    try {
+      const guardada = sessionStorage.getItem('historico_carrera_seleccionada');
+      if (!guardada) return null;
+      
+      const carreraGuardada = JSON.parse(guardada);
+      const codigo = carreraGuardada.codigo || carreraGuardada.code || carreraGuardada.cod;
+      
+      // Buscar si esta carrera todavía existe en las carreras actuales del usuario
+      return carreras.find(c => {
+        const codigoActual = c.codigo || c.code || c.cod;
+        return codigoActual === codigo;
+      }) || null;
+    } catch (err) {
+      console.warn('[HistoricoApp] Error al recuperar carrera guardada:', err);
+      return null;
+    }
   }
 
   async loadJSON(ruta) {
@@ -165,35 +254,63 @@ class HistoricoApp {
       return;
     }
 
-    // Calcular estadísticas ANTES de renderizar columnas
-    this.calcularYMostrarEstadisticas(datos);
-
     // Normalizar y agrupar por periodo (año + semestre) para evitar duplicados
     const grupos = {}; // key -> { label, order: {year, sem}, items: [] }
 
     const parsePeriod = (p) => {
       const raw = p ? String(p).trim() : '';
-      if (!raw) return { year: 0, sem: 0 };
+      if (!raw) return { year: 0, sem: 0, label: '' };
+      
       // Extraer año (primer grupo de 4 dígitos)
       const yMatch = raw.match(/(\d{4})/);
       const year = yMatch ? parseInt(yMatch[1], 10) : 0;
-      // Buscar semestre: 5º carácter si es dígito o S1/S2 en el string
+      
+      // Buscar semestre: 5º y 6º carácter del formato YYYYSS
       let sem = 0;
-      if (raw.length >= 5 && /\d/.test(raw.charAt(4))) {
+      let label = '';
+      
+      if (raw.length >= 6) {
+        const semStr = raw.substring(4, 6);
+        if (semStr === '10') {
+          sem = 1;
+          label = 'S1';
+        } else if (semStr === '20') {
+          sem = 2;
+          label = 'S2';
+        } else if (semStr === '15') {
+          sem = 1.5; // Valor intermedio para ordenar entre S1 y S2
+          label = 'Invierno/Verano';
+        } else {
+          sem = parseInt(semStr, 10) || 0;
+          label = `S${sem}`;
+        }
+      } else if (raw.length >= 5 && /\d/.test(raw.charAt(4))) {
         const c = raw.charAt(4);
-        if (c === '1') sem = 1;
-        else if (c === '2') sem = 2;
-        else if (c === '0') sem = 0;
+        if (c === '1') {
+          sem = 1;
+          label = 'S1';
+        } else if (c === '2') {
+          sem = 2;
+          label = 'S2';
+        } else if (c === '0') {
+          sem = 0;
+          label = '';
+        }
       } else {
         const sMatch = raw.match(/S\s?([12])/i);
-        if (sMatch) sem = parseInt(sMatch[1], 10);
+        if (sMatch) {
+          sem = parseInt(sMatch[1], 10);
+          label = `S${sem}`;
+        }
       }
-      return { year, sem };
+      
+      return { year, sem, label };
     };
 
-    const formatPeriodFromObj = ({ year, sem }) => {
+    const formatPeriodFromObj = ({ year, sem, label }) => {
       if (!year) return 'Unknown';
       if (!sem || sem === 0) return String(year);
+      if (label) return `${year} ${label}`;
       return `${year} S${sem}`;
     };
 
@@ -257,88 +374,7 @@ class HistoricoApp {
     });
   }
 
-  // ===== CALCULAR Y MOSTRAR ESTADÍSTICAS =====
-  calcularYMostrarEstadisticas(datos) {
-    console.log('[HistoricoApp] Calculando estadísticas...');
-    
-    if (!Array.isArray(datos) || datos.length === 0) {
-      // Resetear estadísticas a 0
-      this.actualizarEstadisticasDOM({ aprobados: 0, reprobados: 0, pendientes: 0, totalPeriodos: 0 });
-      return;
-    }
 
-    let aprobados = 0;
-    let reprobados = 0;
-    let pendientes = 0;
-    const periodosSet = new Set();
-
-    datos.forEach(item => {
-      const status = (item.status || '').toUpperCase();
-      
-      if (status === 'APROBADO') {
-        aprobados++;
-      } else if (status === 'REPROBADO') {
-        reprobados++;
-      } else {
-        pendientes++;
-      }
-
-      // Contar periodos únicos
-      const periodo = item.period || item.periodo || '';
-      if (periodo) {
-        periodosSet.add(periodo);
-      }
-    });
-
-    const totalPeriodos = periodosSet.size;
-
-    console.log('[HistoricoApp] Estadísticas calculadas:', {
-      aprobados,
-      reprobados,
-      pendientes,
-      totalPeriodos
-    });
-
-    // Actualizar el DOM
-    this.actualizarEstadisticasDOM({ aprobados, reprobados, pendientes, totalPeriodos });
-  }
-
-  actualizarEstadisticasDOM(estadisticas) {
-    const { aprobados, reprobados, pendientes, totalPeriodos } = estadisticas;
-
-    // Buscar elementos del DOM
-    const elementoAprobados = document.getElementById('ramosAprobados');
-    const elementoReprobados = document.getElementById('ramosReprobados');
-    const elementoPendientes = document.getElementById('ramosPendientes');
-    const elementoPeriodos = document.getElementById('totalPeriodos');
-
-    // Animar números
-    if (elementoAprobados) this.animarNumero(elementoAprobados, aprobados);
-    if (elementoReprobados) this.animarNumero(elementoReprobados, reprobados);
-    if (elementoPendientes) this.animarNumero(elementoPendientes, pendientes);
-    if (elementoPeriodos) this.animarNumero(elementoPeriodos, totalPeriodos);
-  }
-
-  animarNumero(elemento, valorFinal) {
-    const duracion = 1000; // 1 segundo
-    const pasos = 30;
-    const intervalo = duracion / pasos;
-    const incremento = valorFinal / pasos;
-    let valorActual = 0;
-    let contador = 0;
-
-    const timer = setInterval(() => {
-      contador++;
-      valorActual += incremento;
-      
-      if (contador >= pasos) {
-        clearInterval(timer);
-        elemento.textContent = valorFinal;
-      } else {
-        elemento.textContent = Math.floor(valorActual);
-      }
-    }, intervalo);
-  }
 
   renderizarEstadoInicial() {
     if (!this.contenedorColumnas) return;
