@@ -317,20 +317,57 @@ class LoginApp {
     }
   }
 
-  manejarInicioSesionExitoso(data) {
-    console.log('✅ Login exitoso, datos del usuario:', data.user);
-    console.log('📊 academicInfo recibido:', data.user.academicInfo);
+  async manejarInicioSesionExitoso(data) {
+    console.log('Login exitoso, datos del usuario:', data.user);
+    console.log('academicInfo recibido:', data.user.academicInfo);
     
-    // Guardar SOLO en sessionStorage
     this.guardarDatosSesion(data);
 
-    // Mostrar toast de éxito
+    const usuarioActual = data.user;
+    if (usuarioActual?.rut) {
+      try {
+        const resultado = await this.sincronizarUsuarioBackend(usuarioActual);
+        if (resultado?.estudianteId) {
+          usuarioActual.estudianteId = resultado.estudianteId;
+          sessionStorage.setItem(CONFIGURACION.CLAVES_ALMACENAMIENTO.DATOS_USUARIO, JSON.stringify(usuarioActual));
+        }
+      } catch (error) {
+        console.warn('No fue posible sincronizar el usuario con el backend.', error);
+      }
+    }
+
     toast.success('¡Bienvenido! Redirigiendo...', 2000);
 
-    // Redirigir al menú principal después de 1.5 segundos
     setTimeout(() => {
       window.location.href = 'main-menu.html';
     }, 1500);
+  }
+
+  async sincronizarUsuarioBackend(usuario) {
+    const payload = {
+      rut: usuario.rut,
+      email: usuario.email || null,
+      name: usuario.name || null,
+      firstName: usuario.firstName || null,
+      lastName: usuario.lastName || null,
+      profilePicture: usuario.profilePicture || null,
+      role: usuario.role || 'student',
+      carreras: Array.isArray(usuario.carreras) ? usuario.carreras : []
+    };
+
+    const resp = await fetch('http://localhost:4000/api/estudiantes/sincronizar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const cuerpo = await resp.json().catch(() => ({}));
+    if (!resp.ok) {
+      const mensaje = cuerpo?.error || 'Error al sincronizar el usuario.';
+      throw new Error(mensaje);
+    }
+
+    return cuerpo;
   }
 
   manejarErrorInicioSesion(errorMessage) {
@@ -361,7 +398,7 @@ class LoginApp {
     // SOLO sessionStorage para desarrollo
     if (data.user) {
       sessionStorage.setItem(CONFIGURACION.CLAVES_ALMACENAMIENTO.DATOS_USUARIO, JSON.stringify(data.user));
-      console.log('✅ Usuario guardado en sessionStorage:', data.user);
+      console.log('Usuario guardado en sessionStorage:', data.user);
     }
   }
 
@@ -377,7 +414,7 @@ class LoginApp {
 
   limpiarDatosSesion() {
     sessionStorage.clear();
-    console.log('✅ SessionStorage limpiado');
+    console.log('SessionStorage limpiado');
   }
 
   // ===== FUNCIONALIDADES ADICIONALES =====

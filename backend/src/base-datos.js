@@ -10,81 +10,142 @@ function asegurarDirectorioDatos() {
   }
 }
 
-function asegurarColumna(baseDatos, tabla, columna, definicion) {
-  try {
-    const columnas = baseDatos.prepare(`PRAGMA table_info(${tabla})`).all();
-    const existe = columnas.some((col) => col.name === columna);
-    if (!existe) {
-      baseDatos.prepare(`ALTER TABLE ${tabla} ADD COLUMN ${columna} ${definicion}`).run();
-      console.log(`[base-datos] Columna agregada: ${tabla}.${columna}`);
-    }
-  } catch (error) {
-    console.warn(`[base-datos] No se pudo agregar columna ${tabla}.${columna}:`, error.message);
+function migrarNombreArchivoBaseDatos() {
+  if (process.env.DATABASE_FILE) {
+    return;
   }
+  const rutaNueva = configuracion.archivoBaseDatos;
+  const directorioDatos = path.dirname(rutaNueva);
+  const rutaAntigua = path.join(directorioDatos, 'simulador.sqlite');
+
+  if (!fs.existsSync(rutaAntigua)) {
+    return;
+  }
+  if (fs.existsSync(rutaNueva)) {
+    return;
+  }
+
+  fs.renameSync(rutaAntigua, rutaNueva);
+  const walAntiguo = `${rutaAntigua}-wal`;
+  const shmAntiguo = `${rutaAntigua}-shm`;
+  const walNuevo = `${rutaNueva}-wal`;
+  const shmNuevo = `${rutaNueva}-shm`;
+  if (fs.existsSync(walAntiguo) && !fs.existsSync(walNuevo)) {
+    fs.renameSync(walAntiguo, walNuevo);
+  }
+  if (fs.existsSync(shmAntiguo) && !fs.existsSync(shmNuevo)) {
+    fs.renameSync(shmAntiguo, shmNuevo);
+  }
+  console.log('[base-datos] Archivo de base de datos renombrado a base_datos.sqlite');
+}
+
+function obtenerMarcaTiempo() {
+  const ahora = new Date();
+  const y = ahora.getFullYear();
+  const m = String(ahora.getMonth() + 1).padStart(2, '0');
+  const d = String(ahora.getDate()).padStart(2, '0');
+  const hh = String(ahora.getHours()).padStart(2, '0');
+  const mm = String(ahora.getMinutes()).padStart(2, '0');
+  const ss = String(ahora.getSeconds()).padStart(2, '0');
+  return `${y}${m}${d}-${hh}${mm}${ss}`;
+}
+
+function existeTabla(baseDatos, nombre) {
+  const fila = baseDatos
+    .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?")
+    .get(nombre);
+  return Boolean(fila);
+}
+
+function requiereReinicioPorEsquema(baseDatos) {
+  if (!existeTabla(baseDatos, 'simulaciones')) {
+    return false;
+  }
+  if (existeTabla(baseDatos, 'usuarios')) {
+    return false;
+  }
+  if (existeTabla(baseDatos, 'estudiantes')) {
+    return true;
+  }
+  return true;
+}
+
+function respaldarYReiniciarArchivoBaseDatos() {
+  const ruta = configuracion.archivoBaseDatos;
+  if (!fs.existsSync(ruta)) {
+    return;
+  }
+  const marca = obtenerMarcaTiempo();
+  const respaldo = `${ruta}.backup-${marca}`;
+  fs.renameSync(ruta, respaldo);
+  const wal = `${ruta}-wal`;
+  const shm = `${ruta}-shm`;
+  if (fs.existsSync(wal)) {
+    fs.renameSync(wal, `${wal}.backup-${marca}`);
+  }
+  if (fs.existsSync(shm)) {
+    fs.renameSync(shm, `${shm}.backup-${marca}`);
+  }
+  console.log(`[base-datos] Base anterior respaldada en: ${path.basename(respaldo)}`);
 }
 
 function inicializarBaseDatos() {
   asegurarDirectorioDatos();
-  const baseDatos = new Database(configuracion.archivoBaseDatos);
+  migrarNombreArchivoBaseDatos();
+  let baseDatos = new Database(configuracion.archivoBaseDatos);
 
   baseDatos.pragma('journal_mode = WAL');
   baseDatos.pragma('foreign_keys = ON');
 
+  if (requiereReinicioPorEsquema(baseDatos)) {
+    try {
+      baseDatos.close();
+    } catch (error) {
+      baseDatos = null;
+    }
+    respaldarYReiniciarArchivoBaseDatos();
+    baseDatos = new Database(configuracion.archivoBaseDatos);
+    baseDatos.pragma('journal_mode = WAL');
+    baseDatos.pragma('foreign_keys = ON');
+  }
+
   const sentenciasDDL = `
-    CREATE TABLE IF NOT EXISTS estudiantes (
+    CREATE TABLE IF NOT EXISTS usuarios (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      rut TEXT UNIQUE,
-      correo TEXT,
-      nombre TEXT,
-      apellido TEXT,
-      nombre_completo TEXT,
-      foto_perfil TEXT,
-      rol TEXT DEFAULT 'estudiante',
+      rut TEXT NOT NULL UNIQUE,
+      email TEXT NOT NULL,
       creado_en TEXT DEFAULT CURRENT_TIMESTAMP,
       actualizado_en TEXT DEFAULT CURRENT_TIMESTAMP
     );
 
     CREATE TABLE IF NOT EXISTS carreras (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      identificador_externo TEXT,
+      codigo TEXT NOT NULL UNIQUE,
       nombre TEXT NOT NULL,
-      codigo_catalogo TEXT,
-      campus TEXT,
-      jornada TEXT,
-      titulo_grado TEXT,
+      catalogo TEXT,
       creado_en TEXT DEFAULT CURRENT_TIMESTAMP,
-      actualizado_en TEXT DEFAULT CURRENT_TIMESTAMP,
-      UNIQUE(identificador_externo, codigo_catalogo)
+      actualizado_en TEXT DEFAULT CURRENT_TIMESTAMP
     );
 
-    CREATE TABLE IF NOT EXISTS estudiantes_carreras (
+    CREATE TABLE IF NOT EXISTS usuarios_carreras (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      estudiante_id INTEGER NOT NULL,
+      usuario_id INTEGER NOT NULL,
       carrera_id INTEGER NOT NULL,
-      generacion INTEGER,
-      semestre_actual INTEGER,
-      total_semestres INTEGER,
-      promedio REAL,
-      ramos_aprobados INTEGER,
-      ramos_cursando INTEGER,
-      estado TEXT,
       creado_en TEXT DEFAULT CURRENT_TIMESTAMP,
       actualizado_en TEXT DEFAULT CURRENT_TIMESTAMP,
-      UNIQUE(estudiante_id, carrera_id),
-      FOREIGN KEY(estudiante_id) REFERENCES estudiantes(id) ON DELETE CASCADE,
+      UNIQUE(usuario_id, carrera_id),
+      FOREIGN KEY(usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE,
       FOREIGN KEY(carrera_id) REFERENCES carreras(id) ON DELETE CASCADE
     );
 
-    CREATE TABLE IF NOT EXISTS ramos (
+    CREATE TABLE IF NOT EXISTS malla_cursos (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       carrera_id INTEGER NOT NULL,
-      codigo TEXT,
-      nombre TEXT NOT NULL,
-      nivel INTEGER,
+      codigo TEXT NOT NULL,
+      asignatura TEXT NOT NULL,
       creditos REAL,
-      horas INTEGER,
-      categoria TEXT,
-      datos_crudos TEXT,
+      nivel INTEGER,
+      prereq TEXT,
       creado_en TEXT DEFAULT CURRENT_TIMESTAMP,
       actualizado_en TEXT DEFAULT CURRENT_TIMESTAMP,
       UNIQUE(carrera_id, codigo),
@@ -93,66 +154,18 @@ function inicializarBaseDatos() {
 
     CREATE TABLE IF NOT EXISTS simulaciones (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      estudiante_id INTEGER NOT NULL,
-      carrera_id INTEGER NOT NULL,
+      usuario_id INTEGER NOT NULL,
+      carrera_codigo TEXT NOT NULL,
+      tipo TEXT NOT NULL,
       titulo TEXT,
-      periodo_objetivo TEXT,
-      creditos_totales INTEGER,
-      notas TEXT,
+      contenido_json TEXT NOT NULL,
       creado_en TEXT DEFAULT CURRENT_TIMESTAMP,
       actualizado_en TEXT DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY(estudiante_id) REFERENCES estudiantes(id) ON DELETE CASCADE,
-      FOREIGN KEY(carrera_id) REFERENCES carreras(id) ON DELETE CASCADE
-    );
-
-    CREATE TABLE IF NOT EXISTS simulaciones_ramos (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      simulacion_id INTEGER NOT NULL,
-      ramo_id INTEGER,
-      codigo TEXT,
-      nombre TEXT NOT NULL,
-      nivel INTEGER,
-      creditos REAL,
-      estado TEXT,
-      prioridad INTEGER,
-      nota_esperada REAL,
-      foto_ramo TEXT,
-      FOREIGN KEY(simulacion_id) REFERENCES simulaciones(id) ON DELETE CASCADE,
-      FOREIGN KEY(ramo_id) REFERENCES ramos(id) ON DELETE SET NULL
+      FOREIGN KEY(usuario_id) REFERENCES usuarios(id) ON DELETE CASCADE
     );
   `;
 
   baseDatos.exec(sentenciasDDL);
-
-  // Migraciones ligeras para instalaciones previas
-  asegurarColumna(baseDatos, 'estudiantes', 'correo', 'TEXT');
-  asegurarColumna(baseDatos, 'estudiantes', 'nombre', 'TEXT');
-  asegurarColumna(baseDatos, 'estudiantes', 'apellido', 'TEXT');
-  asegurarColumna(baseDatos, 'estudiantes', 'nombre_completo', 'TEXT');
-  asegurarColumna(baseDatos, 'estudiantes', 'foto_perfil', 'TEXT');
-  asegurarColumna(baseDatos, 'estudiantes', 'rol', "TEXT DEFAULT 'estudiante'");
-  asegurarColumna(baseDatos, 'estudiantes', 'creado_en', 'TEXT DEFAULT CURRENT_TIMESTAMP');
-  asegurarColumna(baseDatos, 'estudiantes', 'actualizado_en', 'TEXT DEFAULT CURRENT_TIMESTAMP');
-
-  // Migrar columnas de carreras
-  asegurarColumna(baseDatos, 'carreras', 'identificador_externo', 'TEXT');
-  asegurarColumna(baseDatos, 'carreras', 'codigo_catalogo', 'TEXT');
-  asegurarColumna(baseDatos, 'carreras', 'campus', 'TEXT');
-  asegurarColumna(baseDatos, 'carreras', 'jornada', 'TEXT');
-  asegurarColumna(baseDatos, 'carreras', 'titulo_grado', 'TEXT');
-  asegurarColumna(baseDatos, 'carreras', 'creado_en', 'TEXT DEFAULT CURRENT_TIMESTAMP');
-  asegurarColumna(baseDatos, 'carreras', 'actualizado_en', 'TEXT DEFAULT CURRENT_TIMESTAMP');
-
-  // Migrar columnas de estudiantes_carreras
-  asegurarColumna(baseDatos, 'estudiantes_carreras', 'generacion', 'INTEGER');
-  asegurarColumna(baseDatos, 'estudiantes_carreras', 'semestre_actual', 'INTEGER');
-  asegurarColumna(baseDatos, 'estudiantes_carreras', 'total_semestres', 'INTEGER');
-  asegurarColumna(baseDatos, 'estudiantes_carreras', 'promedio', 'REAL');
-  asegurarColumna(baseDatos, 'estudiantes_carreras', 'ramos_aprobados', 'INTEGER');
-  asegurarColumna(baseDatos, 'estudiantes_carreras', 'ramos_cursando', 'INTEGER');
-  asegurarColumna(baseDatos, 'estudiantes_carreras', 'estado', 'TEXT');
-  asegurarColumna(baseDatos, 'estudiantes_carreras', 'creado_en', 'TEXT DEFAULT CURRENT_TIMESTAMP');
-  asegurarColumna(baseDatos, 'estudiantes_carreras', 'actualizado_en', 'TEXT DEFAULT CURRENT_TIMESTAMP');
 
   return baseDatos;
 }

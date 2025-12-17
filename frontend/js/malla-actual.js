@@ -39,7 +39,9 @@
     construirCarga(usuario) {
       const carreraPreferida = this.construirCarrera(usuario);
       return {
+        tipo: 'simulacion_siguiente_semestre',
         estudiante: {
+          estudianteId: usuario.estudianteId,
           rut: usuario.rut,
           email: usuario.email,
           nombre: usuario.name,

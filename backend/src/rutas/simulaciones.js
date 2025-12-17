@@ -3,429 +3,363 @@ const express = require('express');
 const {
   guardarArchivoSimulacion,
   obtenerRutaArchivoSimulacion,
-  eliminarArchivoSimulacion
+  eliminarArchivoSimulacion,
+  normalizarTipo
 } = require('../utilidades/archivos-simulaciones');
 
 const enrutador = express.Router();
 
-function resolverIdEstudiante(baseDatos, identificador) {
-  if (identificador?.studentId || identificador?.estudianteId) {
-    const id = Number(identificador.studentId ?? identificador.estudianteId);
-    return Number.isInteger(id) ? id : null;
-  }
-
-  const rut = identificador?.studentRut ?? identificador?.rutEstudiante;
-  if (rut) {
-    const estudiante = baseDatos.prepare('SELECT id FROM estudiantes WHERE rut = ?').get(rut);
-    return estudiante ? estudiante.id : null;
-  }
-
-  return null;
+function esRutValido(rut) {
+  if (!rut) return false;
+  const limpio = String(rut).trim();
+  if (limpio.length < 7 || limpio.length > 12) return false;
+  return /^[0-9kK]+$/.test(limpio);
 }
 
-function construirContenidoArchivo(simulacion) {
-  return {
-    simulacion: {
-      id: simulacion.id,
-      titulo: simulacion.titulo,
-      periodoObjetivo: simulacion.periodo_objetivo,
-      creditosTotales: simulacion.creditos_totales,
-      notas: simulacion.notas,
-      creadoEn: simulacion.creado_en,
-      actualizadoEn: simulacion.actualizado_en
-    },
-    estudiante: simulacion.estudiante || null,
-    carrera: simulacion.carrera || null,
-    ramos: (simulacion.ramos || []).map((r) => ({
-      codigo: r.codigo,
-      nombre: r.nombre,
-      nivel: r.nivel,
-      creditos: r.creditos,
-      estado: r.estado,
-      prioridad: r.prioridad,
-      notaEsperada: r.notaEsperada
-    }))
-  };
+function esTipoValido(tipo) {
+  return tipo === 'simulacion_siguiente_semestre';
 }
 
-function agregarMetadatosArchivo(simulacion, rutaArchivo) {
-  return {
-    ...simulacion,
-    enlace_json: `/api/simulaciones/${simulacion.id}/archivo`,
-    archivo_local: rutaArchivo || null
-  };
+function normalizarFechaIso(valor) {
+  const fecha = new Date(valor);
+  return Number.isNaN(fecha.getTime()) ? null : fecha;
 }
 
-function obtenerSimulacion(baseDatos, id) {
-  const simulacion = baseDatos.prepare('SELECT * FROM simulaciones WHERE id = ?').get(id);
-  if (!simulacion) {
-    return null;
+function resolverIdUsuario(baseDatos, datos) {
+  const id = Number(datos?.usuarioId ?? datos?.estudianteId ?? datos?.studentId);
+  if (Number.isInteger(id) && id > 0) {
+    return id;
   }
-
-  const estudiante = baseDatos
-    .prepare('SELECT id, rut, correo, nombre, apellido, nombre_completo FROM estudiantes WHERE id = ?')
-    .get(simulacion.estudiante_id);
-
-  const carrera = baseDatos
-    .prepare('SELECT id, nombre, codigo_catalogo FROM carreras WHERE id = ?')
-    .get(simulacion.carrera_id);
-
-  const ramos = baseDatos
-    .prepare(
-      `SELECT id,
-              ramo_id     AS ramoId,
-              codigo,
-              nombre,
-              nivel,
-              creditos,
-              estado,
-              prioridad,
-              nota_esperada AS notaEsperada,
-              foto_ramo     AS fotoRamo
-         FROM simulaciones_ramos
-        WHERE simulacion_id = ?`
-    )
-    .all(simulacion.id)
-    .map((ramo) => ({
-      ...ramo,
-      fotoRamo: ramo.fotoRamo ? JSON.parse(ramo.fotoRamo) : null
-    }));
-
-  const simulacionCompleta = {
-    ...simulacion,
-    estudiante,
-    carrera,
-    ramos
-  };
-
-  let rutaFinal = obtenerRutaArchivoSimulacion(simulacion.id);
-  if (!rutaFinal) {
-    try {
-      rutaFinal = guardarArchivoSimulacion(simulacion.id, construirContenidoArchivo(simulacionCompleta));
-    } catch (error) {
-      console.error('[simulaciones] no se pudo guardar el archivo JSON', error);
-    }
-  }
-
-  return agregarMetadatosArchivo(simulacionCompleta, rutaFinal);
-}
-
-function normalizarCursos(cursos) {
-  if (!Array.isArray(cursos)) {
-    return [];
-  }
-
-  return cursos.map((ramo) => ({
-    codigo: ramo.code || ramo.codigo || null,
-    nombre: ramo.name || ramo.asignatura || ramo.nombre || 'Ramo sin nombre',
-    nivel: ramo.level || ramo.nivel || null,
-    creditos: ramo.credits || ramo.creditos || null,
-    estado: ramo.status || 'planificado',
-    prioridad: ramo.priority || null,
-    notaEsperada: ramo.expectedGrade || null,
-    respaldo: JSON.stringify(ramo)
-  }));
-}
-
-function crearRegistroSimulacion(baseDatos, datos) {
-  const ramosNormalizados = normalizarCursos(datos.cursos);
-  const creditosTotales = ramosNormalizados.reduce((acumulado, ramo) => acumulado + (Number(ramo.creditos) || 0), 0);
-  const marcaTiempo = new Date().toISOString();
-
-  const insertarSimulacion = baseDatos.prepare(`
-    INSERT INTO simulaciones (estudiante_id, carrera_id, titulo, periodo_objetivo, creditos_totales, notas, creado_en, actualizado_en)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `);
-
-  const insercion = insertarSimulacion.run(
-    datos.estudianteId,
-    datos.carreraId,
-    datos.titulo || 'Simulación sin nombre',
-    datos.periodoObjetivo || null,
-    creditosTotales,
-    datos.notas || null,
-    marcaTiempo,
-    marcaTiempo
-  );
-
-  const simulacionId = insercion.lastInsertRowid;
-
-  if (ramosNormalizados.length) {
-    const insertarDetalle = baseDatos.prepare(`
-      INSERT INTO simulaciones_ramos (
-        simulacion_id, ramo_id, codigo, nombre, nivel, creditos, estado, prioridad, nota_esperada, foto_ramo
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    ramosNormalizados.forEach((ramo) => {
-      let ramoVinculado = null;
-      if (ramo.codigo) {
-        ramoVinculado = baseDatos.prepare('SELECT id FROM ramos WHERE carrera_id = ? AND codigo = ?').get(datos.carreraId, ramo.codigo);
-      }
-
-      insertarDetalle.run(
-        simulacionId,
-        ramoVinculado ? ramoVinculado.id : null,
-        ramo.codigo,
-        ramo.nombre,
-        ramo.nivel,
-        ramo.creditos,
-        ramo.estado,
-        ramo.prioridad,
-        ramo.notaEsperada,
-        ramo.respaldo
-      );
-    });
-  }
-
-  return obtenerSimulacion(baseDatos, simulacionId);
-}
-
-function asegurarEstudiante(baseDatos, datos) {
-  const rut = datos.rut || datos.studentRut;
+  const rut = datos?.rut || datos?.studentRut || datos?.rutEstudiante || null;
   if (!rut) {
-    throw new Error('Falta el rut del estudiante.');
-  }
-
-  const correo = datos.correo || datos.email || null;
-  const nombre = datos.nombre || datos.firstName || null;
-  const apellido = datos.apellido || datos.lastName || null;
-  const nombreCompleto = datos.nombreCompleto || datos.fullName || `${nombre || ''} ${apellido || ''}`.trim() || null;
-  const fotoPerfil = datos.fotoPerfil || datos.profilePicture || null;
-  const rol = datos.rol || 'estudiante';
-  const marcaTiempo = new Date().toISOString();
-  const existente = baseDatos.prepare('SELECT id FROM estudiantes WHERE rut = ?').get(rut);
-
-  if (existente) {
-    baseDatos.prepare(`
-      UPDATE estudiantes
-         SET correo = ?, nombre = ?, apellido = ?, nombre_completo = ?, foto_perfil = ?, rol = ?, actualizado_en = ?
-       WHERE id = ?
-    `).run(correo, nombre, apellido, nombreCompleto, fotoPerfil, rol, marcaTiempo, existente.id);
-    return existente.id;
-  }
-
-  const insercion = baseDatos.prepare(`
-    INSERT INTO estudiantes (rut, correo, nombre, apellido, nombre_completo, foto_perfil, rol, creado_en, actualizado_en)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(rut, correo, nombre, apellido, nombreCompleto, fotoPerfil, rol, marcaTiempo, marcaTiempo);
-
-  return insercion.lastInsertRowid;
-}
-
-function asegurarCarrera(baseDatos, datosEntrada) {
-  if (!datosEntrada) {
-    throw new Error('Falta la información de la carrera.');
-  }
-
-  const datos = typeof datosEntrada === 'string' ? { nombre: datosEntrada } : datosEntrada;
-  const identificador =
-    datos.identificador_externo ||
-    datos.externalId ||
-    datos.id ||
-    datos.codigo ||
-    datos.catalog ||
-    datos.catalogo ||
-    datos.catalog_code ||
-    datos.nombre;
-  const nombre = datos.nombre || datos.name;
-  if (!nombre) {
-    throw new Error('La carrera debe tener un nombre.');
-  }
-
-  const codigoCatalogo = datos.codigo_catalogo || datos.catalogo || datos.catalog_code || null;
-  const marcaTiempo = new Date().toISOString();
-  const existente = baseDatos.prepare(
-    `SELECT id FROM carreras WHERE identificador_externo = ? AND (
-        codigo_catalogo = ? OR (codigo_catalogo IS NULL AND ? IS NULL)
-      )`
-  ).get(identificador, codigoCatalogo, codigoCatalogo);
-
-  if (existente) {
-    baseDatos.prepare(`
-      UPDATE carreras
-         SET nombre = ?, campus = ?, jornada = ?, titulo_grado = ?, actualizado_en = ?
-       WHERE id = ?
-    `).run(
-      nombre,
-      datos.campus || null,
-      datos.jornada || null,
-      datos.titulo_grado || datos.titulo || datos.degreeTitle || null,
-      marcaTiempo,
-      existente.id
-    );
-    return existente.id;
-  }
-
-  const insercion = baseDatos.prepare(`
-    INSERT INTO carreras (identificador_externo, nombre, codigo_catalogo, campus, jornada, titulo_grado, creado_en, actualizado_en)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
-    identificador,
-    nombre,
-    codigoCatalogo,
-    datos.campus || null,
-    datos.jornada || null,
-    datos.titulo_grado || datos.titulo || datos.degreeTitle || null,
-    marcaTiempo,
-    marcaTiempo
-  );
-
-  return insercion.lastInsertRowid;
-}
-
-function asegurarRelacionAcademica(baseDatos, datos) {
-  const marcaTiempo = new Date().toISOString();
-  const existente = baseDatos
-    .prepare('SELECT id FROM estudiantes_carreras WHERE estudiante_id = ? AND carrera_id = ?')
-    .get(datos.estudianteId, datos.carreraId);
-
-  if (existente) {
-    baseDatos.prepare(`
-      UPDATE estudiantes_carreras
-         SET generacion = ?, semestre_actual = ?, total_semestres = ?, promedio = ?, ramos_aprobados = ?, ramos_cursando = ?, estado = ?, actualizado_en = ?
-       WHERE id = ?
-    `).run(
-      datos.generacion,
-      datos.semestreActual,
-      datos.totalSemestres,
-      datos.promedio,
-      datos.ramosAprobados,
-      datos.ramosActuales,
-      datos.estado,
-      marcaTiempo,
-      existente.id
-    );
-    return existente.id;
-  }
-
-  const insercion = baseDatos.prepare(`
-    INSERT INTO estudiantes_carreras (
-      estudiante_id, carrera_id, generacion, semestre_actual, total_semestres, promedio, ramos_aprobados, ramos_cursando, estado, creado_en, actualizado_en
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(
-    datos.estudianteId,
-    datos.carreraId,
-    datos.generacion,
-    datos.semestreActual,
-    datos.totalSemestres,
-    datos.promedio,
-    datos.ramosAprobados,
-    datos.ramosActuales,
-    datos.estado,
-    marcaTiempo,
-    marcaTiempo
-  );
-
-  return insercion.lastInsertRowid;
-}
-
-function generarRamosSimulados(cantidad) {
-  const ramos = [];
-  for (let indice = 1; indice <= cantidad; indice += 1) {
-    ramos.push({
-      codigo: `SIM${indice}`,
-      nombre: `Ramo simulado ${indice}`,
-      nivel: indice,
-      creditos: 5
-    });
-  }
-  return ramos;
-}
-
-function normalizarRamoDisponible(ramo) {
-  if (!ramo) {
     return null;
   }
+  const fila = baseDatos.prepare('SELECT id FROM usuarios WHERE rut = ?').get(rut);
+  return fila?.id || null;
+}
 
-  const nombre = ramo.nombre || ramo.asignatura || ramo.name || null;
+function asegurarUsuario(baseDatos, rut, email) {
+  if (!rut) {
+    throw new Error('Debe indicar el rut del estudiante autenticado.');
+  }
+  if (!email) {
+    throw new Error('Debe indicar el email del estudiante autenticado.');
+  }
+  const marcaTiempo = new Date().toISOString();
+  const existente = baseDatos.prepare('SELECT id FROM usuarios WHERE rut = ?').get(rut);
+  if (existente) {
+    baseDatos.prepare('UPDATE usuarios SET email = ?, actualizado_en = ? WHERE id = ?').run(email, marcaTiempo, existente.id);
+    return existente.id;
+  }
+  const insercion = baseDatos
+    .prepare('INSERT INTO usuarios (rut, email, creado_en, actualizado_en) VALUES (?, ?, ?, ?)')
+    .run(rut, email, marcaTiempo, marcaTiempo);
+  return insercion.lastInsertRowid;
+}
+
+function asegurarCarrera(baseDatos, carrera) {
+  const codigo = String(carrera?.codigo || carrera?.code || carrera?.id || '').trim();
+  if (!codigo) {
+    return null;
+  }
+  const nombre = String(carrera?.nombre || carrera?.name || '').trim() || `Carrera ${codigo}`;
+  const catalogo = carrera?.catalogo || carrera?.catalog || carrera?.catalog_code || null;
+  const marcaTiempo = new Date().toISOString();
+  const existente = baseDatos.prepare('SELECT id FROM carreras WHERE codigo = ?').get(codigo);
+  if (existente) {
+    baseDatos.prepare('UPDATE carreras SET nombre = ?, catalogo = ?, actualizado_en = ? WHERE id = ?').run(nombre, catalogo, marcaTiempo, existente.id);
+    return existente.id;
+  }
+  const insercion = baseDatos
+    .prepare('INSERT INTO carreras (codigo, nombre, catalogo, creado_en, actualizado_en) VALUES (?, ?, ?, ?, ?)')
+    .run(codigo, nombre, catalogo, marcaTiempo, marcaTiempo);
+  return insercion.lastInsertRowid;
+}
+
+function extraerCarreraCodigo(carrera, carga) {
+  const codigo = String(carrera?.codigo || carrera?.code || carrera?.id || carga?.codcarrera || carga?.carreraCodigo || '').trim();
+  return codigo || null;
+}
+
+function normalizarCurso(curso) {
+  if (!curso) {
+    return null;
+  }
+  const codigo = curso.codigo || curso.code || null;
+  const nombre = curso.asignatura || curso.nombre || curso.name || null;
   if (!nombre) {
     return null;
   }
-
   return {
-    id: null,
-    codigo: ramo.codigo || ramo.code || null,
+    codigo,
     nombre,
-    nivel: Number(ramo.nivel || ramo.level) || null,
-    creditos: Number(ramo.creditos || ramo.credits || ramo.horas) || 5
+    nivel: Number(curso.nivel || curso.level) || null,
+    creditos: Number(curso.creditos || curso.credits) || null
   };
 }
 
-function seleccionarDesdeLista(lista, cantidad) {
-  const normalizados = lista.map(normalizarRamoDisponible).filter(Boolean);
-  if (!normalizados.length) {
-    return generarRamosSimulados(cantidad);
-  }
-
+function seleccionarCursosAleatorios(cursos, cantidad) {
+  const normalizados = Array.isArray(cursos) ? cursos.map(normalizarCurso).filter(Boolean) : [];
   const copia = [...normalizados];
   const seleccion = [];
   while (seleccion.length < cantidad && copia.length) {
     const indice = Math.floor(Math.random() * copia.length);
     seleccion.push(copia.splice(indice, 1)[0]);
   }
-
-  if (seleccion.length < cantidad) {
-    return [...seleccion, ...generarRamosSimulados(cantidad - seleccion.length)];
+  while (seleccion.length < cantidad) {
+    const i = seleccion.length + 1;
+    seleccion.push({ codigo: `SIM${i}`, nombre: `Ramo simulado ${i}`, nivel: i, creditos: 5 });
   }
-
   return seleccion;
 }
 
-function seleccionarRamosAleatorios(baseDatos, carreraId, cantidad, alternativas = []) {
-  const ramos = baseDatos
-    .prepare('SELECT id, codigo, nombre, nivel, creditos FROM ramos WHERE carrera_id = ? ORDER BY RANDOM()')
-    .all(carreraId);
+function insertarSimulacion(baseDatos, datos) {
+  const marcaTiempo = new Date().toISOString();
+  const insercion = baseDatos.prepare(`
+    INSERT INTO simulaciones (usuario_id, carrera_codigo, tipo, titulo, contenido_json, creado_en, actualizado_en)
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `).run(
+    datos.usuarioId,
+    datos.carreraCodigo,
+    datos.tipo,
+    datos.titulo || null,
+    JSON.stringify(datos.contenidoJson),
+    marcaTiempo,
+    marcaTiempo
+  );
+  return insercion.lastInsertRowid;
+}
 
-  if (!ramos.length) {
-    if (alternativas.length) {
-      return seleccionarDesdeLista(alternativas, cantidad);
+function obtenerFilaSimulacionConUsuario(baseDatos, id) {
+  return baseDatos
+    .prepare(
+      `SELECT s.*, u.rut AS rut_usuario
+         FROM simulaciones s
+         JOIN usuarios u ON u.id = s.usuario_id
+        WHERE s.id = ?`
+    )
+    .get(Number(id));
+}
+
+function compararJson(a, b) {
+  try {
+    return JSON.stringify(a) === JSON.stringify(b);
+  } catch (error) {
+    return false;
+  }
+}
+
+function leerJsonArchivo(ruta) {
+  try {
+    const crudo = require('fs').readFileSync(ruta, 'utf8');
+    return JSON.parse(crudo);
+  } catch (error) {
+    return null;
+  }
+}
+
+function reconciliarSimulacion(baseDatos, fila) {
+  if (!fila) return null;
+  const rut = fila.rut_usuario;
+  const tipo = normalizarTipo(fila.tipo) || null;
+  if (!rut || !tipo) return fila;
+
+  let jsonBd = null;
+  try {
+    jsonBd = JSON.parse(fila.contenido_json);
+  } catch (error) {
+    jsonBd = null;
+  }
+  if (!jsonBd) {
+    jsonBd = { tipo: fila.tipo, simulacionId: fila.id };
+  }
+
+  const ruta = obtenerRutaArchivoSimulacion(fila.id, rut, tipo);
+  const fs = require('fs');
+  const existeArchivo = Boolean(ruta && fs.existsSync(ruta));
+  const fechaBd = normalizarFechaIso(fila.actualizado_en) || normalizarFechaIso(fila.creado_en) || new Date(0);
+  const fechaArchivo = existeArchivo ? fs.statSync(ruta).mtime : new Date(0);
+
+  if (!existeArchivo) {
+    try {
+      guardarArchivoSimulacion(fila.id, rut, jsonBd, tipo);
+    } catch (error) {
+      return fila;
     }
-    return generarRamosSimulados(cantidad);
+    return fila;
   }
 
-  if (ramos.length <= cantidad) {
-    const faltantes = cantidad - ramos.length;
-    return faltantes > 0 ? [...ramos, ...generarRamosSimulados(faltantes)] : ramos;
+  const jsonArchivo = leerJsonArchivo(ruta);
+  if (!jsonArchivo) {
+    try {
+      guardarArchivoSimulacion(fila.id, rut, jsonBd, tipo);
+    } catch (error) {
+      return fila;
+    }
+    return fila;
   }
 
-  const seleccion = [];
-  const disponible = [...ramos];
-  while (seleccion.length < cantidad && disponible.length) {
-    const indice = Math.floor(Math.random() * disponible.length);
-    seleccion.push(disponible.splice(indice, 1)[0]);
+  if (compararJson(jsonBd, jsonArchivo)) {
+    return fila;
   }
-  return seleccion;
+
+  if (fechaArchivo > fechaBd) {
+    try {
+      baseDatos
+        .prepare('UPDATE simulaciones SET contenido_json = ?, actualizado_en = ? WHERE id = ?')
+        .run(JSON.stringify(jsonArchivo), new Date().toISOString(), fila.id);
+    } catch (error) {
+      return fila;
+    }
+    return fila;
+  }
+
+  try {
+    guardarArchivoSimulacion(fila.id, rut, jsonBd, tipo);
+  } catch (error) {
+    return fila;
+  }
+  return fila;
+}
+
+function leerSimulacion(baseDatos, id) {
+  let fila = obtenerFilaSimulacionConUsuario(baseDatos, id);
+  if (!fila) {
+    return null;
+  }
+  fila = reconciliarSimulacion(baseDatos, fila) || fila;
+  let contenido = null;
+  try {
+    contenido = JSON.parse(fila.contenido_json);
+  } catch (error) {
+    contenido = { tipo: fila.tipo, simulacionId: fila.id };
+  }
+
+  const tipo = normalizarTipo(fila.tipo) || null;
+  let rutaFinal = obtenerRutaArchivoSimulacion(fila.id, fila.rut_usuario, tipo);
+  if (!rutaFinal) {
+    try {
+      rutaFinal = guardarArchivoSimulacion(fila.id, fila.rut_usuario, contenido, tipo);
+    } catch (error) {
+      rutaFinal = null;
+    }
+  }
+
+  return {
+    id: fila.id,
+    usuario_id: fila.usuario_id,
+    carrera_codigo: fila.carrera_codigo,
+    tipo: fila.tipo,
+    titulo: fila.titulo,
+    creado_en: fila.creado_en,
+    actualizado_en: fila.actualizado_en,
+    enlace_json: `/api/simulaciones/${fila.id}/archivo`,
+    archivo_local: rutaFinal
+  };
 }
 
 enrutador.post('/', (req, res) => {
   const baseDatos = req.db;
-  const { studentId, studentRut, careerId, title, targetTerm, notes, courses = [] } = req.body || {};
-
-  if (!careerId) {
-    return res.status(400).json({ error: 'Debe indicar el careerId (carreraId) asociado a la simulación.' });
+  const carga = req.body || {};
+  const usuarioId = resolverIdUsuario(baseDatos, carga);
+  if (!usuarioId) {
+    return res.status(400).json({ error: 'No se encontró el usuario asociado a la simulación.' });
+  }
+  const tipo = normalizarTipo(carga.tipo) || 'simulacion_siguiente_semestre';
+  if (!esTipoValido(tipo)) {
+    return res.status(400).json({ error: 'Tipo de simulación no permitido.' });
+  }
+  const carreraCodigo = String(carga.careerId || carga.carreraCodigo || carga.codigoCarrera || '').trim();
+  if (!carreraCodigo) {
+    return res.status(400).json({ error: 'Debe indicar el código de la carrera asociado a la simulación.' });
   }
 
-  const estudianteId = resolverIdEstudiante(baseDatos, { studentId, estudianteId: req.body?.estudianteId, studentRut });
-  if (!estudianteId) {
-    return res.status(400).json({ error: 'No se encontró el estudiante asociado a la simulación.' });
+  let contenidoJson = carga.contenido_json ?? carga.contenidoJson ?? null;
+  if (typeof contenidoJson === 'string') {
+    try {
+      contenidoJson = JSON.parse(contenidoJson);
+    } catch (error) {
+      contenidoJson = null;
+    }
+  }
+  if (!contenidoJson) {
+    return res.status(400).json({ error: 'Debe incluir contenido_json.' });
   }
 
-  const carreraExiste = baseDatos.prepare('SELECT id FROM carreras WHERE id = ?').get(careerId);
-  if (!carreraExiste) {
-    return res.status(404).json({ error: 'La carrera indicada no existe.' });
-  }
-
-  const simulacion = crearRegistroSimulacion(baseDatos, {
-    estudianteId,
-    carreraId: careerId,
-    titulo: title || req.body?.titulo || 'Simulación sin nombre',
-    periodoObjetivo: targetTerm || req.body?.periodoObjetivo || null,
-    notas: notes || req.body?.notas || null,
-    cursos: courses
+  const simulacionId = insertarSimulacion(baseDatos, {
+    usuarioId,
+    carreraCodigo,
+    tipo,
+    titulo: carga.title || carga.titulo || null,
+    contenidoJson
   });
 
-  return res.status(201).json(simulacion);
+  return res.status(201).json(leerSimulacion(baseDatos, simulacionId));
+});
+
+enrutador.post('/probar', (req, res) => {
+  const baseDatos = req.db;
+  const carga = req.body || {};
+  const datosEstudiante = carga.estudiante || carga.usuario || {};
+  const datosCarrera = carga.carrera || (Array.isArray(datosEstudiante.carreras) ? datosEstudiante.carreras[0] : null) || null;
+  const ramosDisponibles = Array.isArray(carga.ramosDisponibles) ? carga.ramosDisponibles : [];
+
+  const rut = datosEstudiante.rut || datosEstudiante.studentRut || null;
+  const email = datosEstudiante.email || datosEstudiante.correo || null;
+  if (!esRutValido(rut)) {
+    return res.status(400).json({ error: 'Rut inválido.' });
+  }
+  if (!rut) {
+    return res.status(400).json({ error: 'Debe indicar el rut del estudiante autenticado.' });
+  }
+  if (!email) {
+    return res.status(400).json({ error: 'Debe indicar el email del estudiante autenticado.' });
+  }
+  if (!datosCarrera) {
+    return res.status(400).json({ error: 'Debe indicar la carrera asociada a la simulación.' });
+  }
+
+  try {
+    const usuarioId = resolverIdUsuario(baseDatos, { usuarioId: datosEstudiante.usuarioId, estudianteId: datosEstudiante.estudianteId, rut })
+      || asegurarUsuario(baseDatos, rut, email);
+
+    const carreraCodigo = extraerCarreraCodigo(datosCarrera, carga);
+    if (!carreraCodigo) {
+      return res.status(400).json({ error: 'Debe indicar el código de la carrera.' });
+    }
+
+    asegurarCarrera(baseDatos, { codigo: carreraCodigo, nombre: datosCarrera?.nombre || datosCarrera?.name, catalogo: datosCarrera?.catalogo || datosCarrera?.catalog });
+
+    const cursos = seleccionarCursosAleatorios(ramosDisponibles, 5);
+    const marcaTiempo = new Date().toISOString();
+    const contenidoJson = {
+      tipo: 'simulacion_siguiente_semestre',
+      creadoEn: marcaTiempo,
+      estudiante: { rut, email },
+      carrera: { codigo: carreraCodigo, nombre: datosCarrera?.nombre || datosCarrera?.name || null, catalogo: datosCarrera?.catalogo || datosCarrera?.catalog || null },
+      cursos
+    };
+
+    const simulacionId = insertarSimulacion(baseDatos, {
+      usuarioId,
+      carreraCodigo,
+      tipo: 'simulacion_siguiente_semestre',
+      titulo: carga.titulo || `Simulación rápida ${new Date().toLocaleDateString('es-CL')}`,
+      contenidoJson
+    });
+
+    return res.status(201).json({ mensaje: 'Simulación generada correctamente.', simulacion: leerSimulacion(baseDatos, simulacionId) });
+  } catch (error) {
+    console.error('[simulaciones] error al generar simulación', error);
+    return res.status(500).json({ error: 'No fue posible generar la simulación solicitada.', detalle: error.message });
+  }
+});
+
+enrutador.post('/proyeccion', (req, res) => {
+  return res.status(501).json({
+    error: 'La simulación de egreso aún no está habilitada para guardado.',
+    mensaje: 'Por ahora solo se guardan simulaciones de siguiente semestre.'
+  });
 });
 
 const rutasPorEstudiante = ['/estudiante/:identificador', '/student/:identifier'];
@@ -433,140 +367,102 @@ const rutasPorEstudiante = ['/estudiante/:identificador', '/student/:identifier'
 enrutador.get(rutasPorEstudiante, (req, res) => {
   const baseDatos = req.db;
   const identificador = req.params.identificador ?? req.params.identifier;
-  let estudianteId;
+  let usuarioId;
 
-  if (/^\d+$/.test(identificador)) {
-    estudianteId = Number(identificador);
+  if (/^\\d+$/.test(identificador)) {
+    usuarioId = Number(identificador);
   } else {
-    const estudiante = baseDatos.prepare('SELECT id FROM estudiantes WHERE rut = ?').get(identificador);
-    estudianteId = estudiante?.id;
+    if (!esRutValido(identificador)) {
+      return res.status(400).json({ error: 'Rut inválido.' });
+    }
+    const fila = baseDatos.prepare('SELECT id FROM usuarios WHERE rut = ?').get(identificador);
+    usuarioId = fila?.id;
   }
 
-  if (!estudianteId) {
+  if (!usuarioId) {
     return res.status(404).json({ error: 'Estudiante no encontrado.' });
   }
 
-  const simulaciones = baseDatos
-    .prepare('SELECT * FROM simulaciones WHERE estudiante_id = ? ORDER BY creado_en DESC')
-    .all(estudianteId)
-    .map((fila) => obtenerSimulacion(baseDatos, fila.id));
+  const filtroTipo = normalizarTipo(req.query?.tipo) || null;
+  const consulta = filtroTipo
+    ? baseDatos.prepare('SELECT id FROM simulaciones WHERE usuario_id = ? AND tipo = ? ORDER BY creado_en DESC')
+    : baseDatos.prepare('SELECT id FROM simulaciones WHERE usuario_id = ? ORDER BY creado_en DESC');
 
+  const filas = filtroTipo ? consulta.all(usuarioId, filtroTipo) : consulta.all(usuarioId);
+  const simulaciones = filas
+    .map((fila) => leerSimulacion(baseDatos, fila.id))
+    .filter(Boolean);
   return res.json(simulaciones);
 });
 
 enrutador.get('/:id/archivo', (req, res) => {
   const baseDatos = req.db;
   const { id } = req.params;
-  const simulacion = obtenerSimulacion(baseDatos, id);
-
-  if (!simulacion) {
+  if (!/^\\d+$/.test(String(id))) {
+    return res.status(400).json({ error: 'Id inválido.' });
+  }
+  const fila = baseDatos
+    .prepare(
+      `SELECT s.contenido_json, s.tipo, u.rut AS rut_usuario
+         FROM simulaciones s
+         JOIN usuarios u ON u.id = s.usuario_id
+        WHERE s.id = ?`
+    )
+    .get(Number(id));
+  if (!fila) {
     return res.status(404).json({ error: 'Simulación no encontrada.' });
   }
-
-  const ruta = obtenerRutaArchivoSimulacion(id);
-  if (!ruta) {
-    return res.status(500).json({ error: 'No fue posible generar el archivo de simulación.' });
+  let contenido = null;
+  try {
+    contenido = JSON.parse(fila.contenido_json);
+  } catch (error) {
+    contenido = { tipo: fila.tipo, simulacionId: Number(id) };
   }
-
+  const tipo = normalizarTipo(fila.tipo) || null;
+  if (!obtenerRutaArchivoSimulacion(id, fila.rut_usuario, tipo)) {
+    try {
+      guardarArchivoSimulacion(id, fila.rut_usuario, contenido, tipo);
+    } catch (error) {
+      return res.status(500).json({ error: 'No fue posible generar el archivo de simulación.' });
+    }
+  }
   res.setHeader('Content-Disposition', `attachment; filename=simulacion-${id}.json`);
   res.type('application/json');
-  return res.sendFile(ruta);
+  return res.json(contenido);
 });
 
 enrutador.get('/:id', (req, res) => {
   const baseDatos = req.db;
   const { id } = req.params;
-  const simulacion = obtenerSimulacion(baseDatos, id);
-
+  const simulacion = leerSimulacion(baseDatos, id);
   if (!simulacion) {
     return res.status(404).json({ error: 'Simulación no encontrada.' });
   }
-
   return res.json(simulacion);
-});
-
-enrutador.post('/probar', (req, res) => {
-  const baseDatos = req.db;
-  const carga = req.body || {};
-  const datosEstudiante = carga.estudiante || carga.usuario || {};
-  const datosCarrera = carga.carrera || carga.carreraPreferida || (datosEstudiante.carreras?.[0]) || null;
-  const ramosDisponibles = Array.isArray(carga.ramosDisponibles) ? carga.ramosDisponibles : [];
-
-  console.log('[simulaciones] carga recibida para probar:', {
-    estudiante: {
-      rut: datosEstudiante.rut || datosEstudiante.studentRut,
-      email: datosEstudiante.email
-    },
-    carrera: datosCarrera ? { nombre: datosCarrera.nombre || datosCarrera.name, catalogo: datosCarrera.catalogo || datosCarrera.catalog } : null
-  });
-
-  if (!datosEstudiante.rut && !datosEstudiante.studentRut) {
-    return res.status(400).json({ error: 'Debe indicar el rut del estudiante autenticado.' });
-  }
-
-  if (!datosCarrera) {
-    return res.status(400).json({ error: 'Debe indicar la carrera asociada a la simulación.' });
-  }
-
-  try {
-    const estudianteId = asegurarEstudiante(baseDatos, datosEstudiante);
-    const carreraId = asegurarCarrera(baseDatos, datosCarrera);
-    asegurarRelacionAcademica(baseDatos, {
-      estudianteId,
-      carreraId,
-      generacion: datosCarrera.generacion || datosCarrera.generation || null,
-      semestreActual: datosCarrera.semestreActual || datosCarrera.currentSemester || null,
-      totalSemestres: datosCarrera.totalSemestres || datosCarrera.totalSemesters || null,
-      promedio: datosCarrera.promedio || datosCarrera.gpa || null,
-      ramosAprobados: datosCarrera.ramosAprobados || datosCarrera.approvedCourses || null,
-      ramosActuales: datosCarrera.ramosActuales || datosCarrera.currentCourses || null,
-      estado: datosCarrera.estado || datosCarrera.status || 'activo'
-    });
-
-    const ramosAleatorios = seleccionarRamosAleatorios(baseDatos, carreraId, 5, ramosDisponibles);
-    const cursos = ramosAleatorios.map((ramo, indice) => ({
-      code: ramo.codigo || `SIM${indice + 1}`,
-      name: ramo.nombre,
-      level: ramo.nivel,
-      credits: ramo.creditos || 5,
-      status: 'planificado',
-      priority: indice + 1
-    }));
-
-    const simulacion = crearRegistroSimulacion(baseDatos, {
-      estudianteId,
-      carreraId,
-      titulo: carga.titulo || `Simulación rápida ${new Date().toLocaleDateString('es-CL')}`,
-      periodoObjetivo: carga.periodoObjetivo || `Semestre ${new Date().getFullYear()}`,
-      notas: 'Generada desde la vista Malla Actual',
-      cursos
-    });
-
-    return res.status(201).json({
-      mensaje: 'Simulación generada correctamente.',
-      simulacion
-    });
-  } catch (error) {
-    console.error('[simulaciones] error al generar simulación automática', error);
-    return res.status(500).json({
-      error: 'No fue posible generar la simulación solicitada.',
-      detalle: error.message
-    });
-  }
 });
 
 enrutador.delete('/:id', (req, res) => {
   const baseDatos = req.db;
   const { id } = req.params;
-  const resultado = baseDatos.prepare('DELETE FROM simulaciones WHERE id = ?').run(id);
-
+  const fila = baseDatos
+    .prepare(
+      `SELECT s.id, s.tipo, u.rut AS rut_usuario
+         FROM simulaciones s
+         JOIN usuarios u ON u.id = s.usuario_id
+        WHERE s.id = ?`
+    )
+    .get(Number(id));
+  if (!fila) {
+    return res.status(404).json({ error: 'Simulación no encontrada.' });
+  }
+  const resultado = baseDatos.prepare('DELETE FROM simulaciones WHERE id = ?').run(Number(id));
   if (!resultado.changes) {
     return res.status(404).json({ error: 'Simulación no encontrada.' });
   }
-
-  eliminarArchivoSimulacion(id);
-
+  eliminarArchivoSimulacion(id, fila.rut_usuario, fila.tipo);
   return res.json({ mensaje: 'Simulación eliminada correctamente.' });
 });
 
 module.exports = enrutador;
+
+

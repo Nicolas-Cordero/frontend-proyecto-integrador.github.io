@@ -1,0 +1,45 @@
+{
+  "tipo": "simulacion_siguiente_semestre",
+  "creadoEn": "2025-12-17T16:44:04.599Z",
+  "estudiante": {
+    "rut": "222222222",
+    "email": "maria@example.com"
+  },
+  "carrera": {
+    "codigo": "8266",
+    "nombre": "ITI",
+    "catalogo": "202410"
+  },
+  "cursos": [
+    {
+      "codigo": "ECIN-00404",
+      "nombre": "Diseño de Sistemas Digitales",
+      "nivel": 5,
+      "creditos": 5
+    },
+    {
+      "codigo": "ECIN-00409",
+      "nombre": "Ing. y Desarrollo Sustentable",
+      "nivel": 4,
+      "creditos": 5
+    },
+    {
+      "codigo": "DCCB-00505",
+      "nombre": "Electromagnetismo",
+      "nivel": 4,
+      "creditos": 6
+    },
+    {
+      "codigo": "DCCB-00401",
+      "nombre": "Cálculo III",
+      "nivel": 3,
+      "creditos": 5
+    },
+    {
+      "codigo": "UNFP-90001",
+      "nombre": "Formación Profesional Electiva",
+      "nivel": 9,
+      "creditos": 5
+    }
+  ]
+}

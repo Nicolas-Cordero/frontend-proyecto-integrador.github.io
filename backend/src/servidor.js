@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 
 const configuracion = require('./configuracion');
 const { inicializarBaseDatos } = require('./base-datos');
@@ -10,6 +12,17 @@ const rutasSimulaciones = require('./rutas/simulaciones');
 
 const aplicacion = express();
 const baseDatos = inicializarBaseDatos();
+
+aplicacion.disable('x-powered-by');
+aplicacion.use(helmet());
+aplicacion.use(
+  rateLimit({
+    windowMs: 60 * 1000,
+    limit: 120,
+    standardHeaders: true,
+    legacyHeaders: false
+  })
+);
 
 aplicacion.use(cors({ origin: configuracion.origenCors }));
 aplicacion.use(express.json({ limit: '2mb' }));
