@@ -19,7 +19,7 @@
         }
 
         const rut = usuario.rut || '222222222';
-        const semestre = '202410';
+        const semestre = catalogo;
 
         const proyeccion = await window.prepararProyeccion(rut, codigo, catalogo, cantCreditos);
 
