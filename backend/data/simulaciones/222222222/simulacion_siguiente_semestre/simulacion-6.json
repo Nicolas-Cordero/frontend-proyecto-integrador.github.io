@@ -1,0 +1,45 @@
+{
+  "tipo": "simulacion_siguiente_semestre",
+  "creadoEn": "2025-12-17T19:51:57.882Z",
+  "estudiante": {
+    "rut": "222222222",
+    "email": "maria@example.com"
+  },
+  "carrera": {
+    "codigo": "8266",
+    "nombre": "ITI",
+    "catalogo": "202410"
+  },
+  "cursos": [
+    {
+      "codigo": "DCCB-00264",
+      "nombre": "Química General",
+      "nivel": 3,
+      "creditos": 6
+    },
+    {
+      "codigo": "ECIN-00618",
+      "nombre": "Int. al Desarrollo Web/Móvil",
+      "nivel": 6,
+      "creditos": 5
+    },
+    {
+      "codigo": "ECIN-00910",
+      "nombre": "Evaluación de Proyectos TI",
+      "nivel": 9,
+      "creditos": 5
+    },
+    {
+      "codigo": "ECIN-00404",
+      "nombre": "Diseño de Sistemas Digitales",
+      "nivel": 5,
+      "creditos": 5
+    },
+    {
+      "codigo": "ECIN-00808",
+      "nombre": "Arquitectura de Sistemas",
+      "nivel": 8,
+      "creditos": 5
+    }
+  ]
+}

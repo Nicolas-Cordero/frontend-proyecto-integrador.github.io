@@ -17,7 +17,7 @@ function esRutValido(rut) {
 }
 
 function esTipoValido(tipo) {
-  return tipo === 'simulacion_siguiente_semestre';
+  return tipo === 'simulacion_siguiente_semestre' || tipo === 'simulacion_egreso';
 }
 
 function normalizarFechaIso(valor) {
@@ -309,9 +309,6 @@ enrutador.post('/probar', (req, res) => {
   if (!esRutValido(rut)) {
     return res.status(400).json({ error: 'Rut inválido.' });
   }
-  if (!rut) {
-    return res.status(400).json({ error: 'Debe indicar el rut del estudiante autenticado.' });
-  }
   if (!email) {
     return res.status(400).json({ error: 'Debe indicar el email del estudiante autenticado.' });
   }
@@ -356,10 +353,74 @@ enrutador.post('/probar', (req, res) => {
 });
 
 enrutador.post('/proyeccion', (req, res) => {
-  return res.status(501).json({
-    error: 'La simulación de egreso aún no está habilitada para guardado.',
-    mensaje: 'Por ahora solo se guardan simulaciones de siguiente semestre.'
-  });
+  const baseDatos = req.db;
+  const carga = req.body || {};
+  const datosEstudiante = carga.estudiante || carga.usuario || {};
+  const datosCarrera = carga.carrera || (Array.isArray(datosEstudiante.carreras) ? datosEstudiante.carreras[0] : null) || null;
+
+  const rut = datosEstudiante.rut || datosEstudiante.studentRut || null;
+  const email = datosEstudiante.email || datosEstudiante.correo || null;
+  if (!esRutValido(rut)) {
+    return res.status(400).json({ error: 'Rut inválido.' });
+  }
+  if (!email) {
+    return res.status(400).json({ error: 'Debe indicar el email del estudiante autenticado.' });
+  }
+  if (!datosCarrera) {
+    return res.status(400).json({ error: 'Debe indicar la carrera asociada a la simulación.' });
+  }
+
+  let contenidoJson = carga.contenido_json ?? carga.contenidoJson ?? null;
+  if (typeof contenidoJson === 'string') {
+    try {
+      contenidoJson = JSON.parse(contenidoJson);
+    } catch (error) {
+      contenidoJson = null;
+    }
+  }
+  if (!contenidoJson) {
+    return res.status(400).json({ error: 'Debe incluir contenido_json con la proyección.' });
+  }
+
+  try {
+    const usuarioId = resolverIdUsuario(baseDatos, { usuarioId: datosEstudiante.usuarioId, estudianteId: datosEstudiante.estudianteId, rut })
+      || asegurarUsuario(baseDatos, rut, email);
+
+    const carreraCodigo = extraerCarreraCodigo(datosCarrera, carga);
+    if (!carreraCodigo) {
+      return res.status(400).json({ error: 'Debe indicar el código de la carrera.' });
+    }
+
+    asegurarCarrera(baseDatos, { codigo: carreraCodigo, nombre: datosCarrera?.nombre || datosCarrera?.name, catalogo: datosCarrera?.catalogo || datosCarrera?.catalog });
+
+    const tipo = normalizarTipo(carga.tipo) || 'simulacion_egreso';
+    if (!esTipoValido(tipo)) {
+      return res.status(400).json({ error: 'Tipo de simulación no permitido.' });
+    }
+
+    const marcaTiempo = new Date().toISOString();
+    const contenidoJsonFinal = {
+      tipo: tipo,
+      creadoEn: marcaTiempo,
+      estudiante: { rut, email },
+      carrera: { codigo: carreraCodigo, nombre: datosCarrera?.nombre || datosCarrera?.name || null, catalogo: datosCarrera?.catalogo || datosCarrera?.catalog || null },
+      parametros: carga.parametros || null,
+      ...contenidoJson
+    };
+
+    const simulacionId = insertarSimulacion(baseDatos, {
+      usuarioId,
+      carreraCodigo,
+      tipo: tipo,
+      titulo: carga.titulo || `Simulación de egreso ${new Date().toLocaleDateString('es-CL')}`,
+      contenidoJson: contenidoJsonFinal
+    });
+
+    return res.status(201).json({ mensaje: 'Simulación de egreso guardada correctamente.', simulacion: leerSimulacion(baseDatos, simulacionId) });
+  } catch (error) {
+    console.error('[simulaciones] error al guardar simulación de egreso', error);
+    return res.status(500).json({ error: 'No fue posible guardar la simulación de egreso.', detalle: error.message });
+  }
 });
 
 const rutasPorEstudiante = ['/estudiante/:identificador', '/student/:identifier'];
@@ -481,5 +542,4 @@ enrutador.delete('/:id', (req, res) => {
 });
 
 module.exports = enrutador;
-
 

@@ -1,0 +1,98 @@
+ENDPOINTS BACKEND
+---------------------
+BASE URL: http://localhost:4000
+---------------------
+
+OBTENER SIMULACIONES DE UN ESTUDIANTE
+======================================
+
+Paso 1: Listar simulaciones del estudiante
+--------------------------------------------
+GET /api/simulaciones/estudiante/:RUT?tipo=
+
+Parámetros:
+- :RUT = RUT del estudiante (ej: 222222222)
+- ?tipo = Tipo de simulación (opcional):
+  * simulacion_siguiente_semestre
+  * simulacion_egreso
+
+Retorna array con información de cada simulación, incluyendo:
+- id: ID de la simulación
+- enlace_json: Ruta para obtener el JSON completo (ej: /api/simulaciones/6/archivo)
+
+Ejemplos:
+
+Listar todas las simulaciones:
+fetch('http://localhost:4000/api/simulaciones/estudiante/222222222')
+  .then(res => res.json())
+  .then(data => console.log(data));
+
+Listar solo simulaciones de siguiente semestre:
+fetch('http://localhost:4000/api/simulaciones/estudiante/222222222?tipo=simulacion_siguiente_semestre')
+  .then(res => res.json())
+  .then(data => console.log(data));
+
+Listar solo simulaciones de egreso:
+fetch('http://localhost:4000/api/simulaciones/estudiante/222222222?tipo=simulacion_egreso')
+  .then(res => res.json())
+  .then(data => console.log(data));
+
+
+Paso 2: Obtener JSON completo de una simulación específica
+-----------------------------------------------------------
+GET /api/simulaciones/:id/archivo
+
+Parámetros:
+- :id = ID de la simulación (obtenido del paso anterior)
+
+Ejemplo completo del flujo:
+
+const rut = '222222222';
+const tipo = 'simulacion_egreso';
+
+fetch(`http://localhost:4000/api/simulaciones/estudiante/${rut}?tipo=${tipo}`)
+  .then(res => res.json())
+  .then(simulaciones => {
+    if (simulaciones.length === 0) {
+      console.log('No hay simulaciones');
+      return;
+    }
+    
+    const simulacionDeseada = simulaciones[0];
+    const idSimulacion = simulacionDeseada.id;
+    
+    return fetch(`http://localhost:4000/api/simulaciones/${idSimulacion}/archivo`);
+  })
+  .then(res => res.json())
+  .then(jsonCompleto => {
+    console.log('JSON de la simulación:', jsonCompleto);
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  });
+
+
+Ejemplo usando async/await:
+
+async function obtenerSimulacionJSON(rut, tipo) {
+  try {
+    const resListado = await fetch(`http://localhost:4000/api/simulaciones/estudiante/${rut}?tipo=${tipo}`);
+    const simulaciones = await resListado.json();
+    
+    if (simulaciones.length === 0) {
+      throw new Error('No hay simulaciones disponibles');
+    }
+    
+    const simulacion = simulaciones[0];
+    const resArchivo = await fetch(`http://localhost:4000/api/simulaciones/${simulacion.id}/archivo`);
+    const jsonCompleto = await resArchivo.json();
+    
+    return jsonCompleto;
+  } catch (error) {
+    console.error('Error al obtener simulación:', error);
+    throw error;
+  }
+}
+
+obtenerSimulacionJSON('222222222', 'simulacion_egreso')
+  .then(json => console.log(json));

@@ -52,6 +52,18 @@ aplicacion.use((error, req, res, next) => {
   res.status(500).json({ error: 'Error interno en el backend.' });
 });
 
-aplicacion.listen(configuracion.puerto, () => {
+const servidor = aplicacion.listen(configuracion.puerto, () => {
   console.log(`Backend de simulaciones escuchando en http://localhost:${configuracion.puerto}`);
+});
+
+servidor.on('error', (error) => {
+  if (error?.code === 'EADDRINUSE') {
+    console.error(`El puerto ${configuracion.puerto} ya está en uso.`);
+    console.error('Cierra el proceso que está usando ese puerto o inicia el backend con otro puerto:');
+    console.error(`BACKEND_PORT=4001 npm start`);
+    process.exitCode = 1;
+    return;
+  }
+  console.error('Error al iniciar el servidor:', error);
+  process.exitCode = 1;
 });
