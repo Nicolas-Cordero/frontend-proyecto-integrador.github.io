@@ -52,6 +52,13 @@
       }
     }
 
+    sessionStorage.setItem('proyeccionEgresoActual', JSON.stringify({
+      semestres: semestres,
+      totalSemestres: semestres.length,
+      totalRamos: semestres.flat().length,
+      ramosReqNoPosibles: ramosPorProcesar
+    }));
+
     return {
       semestres: semestres,
       totalSemestres: semestres.length,
