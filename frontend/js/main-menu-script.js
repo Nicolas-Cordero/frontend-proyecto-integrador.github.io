@@ -677,7 +677,7 @@ class VistaTestingStrategy extends VistaStrategy {
   }
 }
 
-class VistaMisSimulaciones extends VistaStrategy {
+class VistaMisSimulacionesEgreso extends VistaStrategy {
   getIdVista() {
     return 'mis-simulaciones';
   }
@@ -687,7 +687,7 @@ class VistaMisSimulaciones extends VistaStrategy {
     
     resourceManager.limpiarScripts(AppConfig.SCRIPTS_MALLA);
 
-    const respuesta = await fetch(`${AppConfig.RUTAS.HTML}mis-simulaciones.html`);
+    const respuesta = await fetch(`${AppConfig.RUTAS.HTML}mis-simulaciones-egreso.html`);
     if (!respuesta.ok) {
       throw new Error(`Error HTTP: ${respuesta.status}`);
     }
@@ -747,7 +747,7 @@ class NavegacionService {
     this.estrategias.set('malla-actual', new VistaMallaActualStrategy());
     this.estrategias.set('historico', new VistaHistoricoStrategy());
     this.estrategias.set('proyeccion-testing', new VistaTestingStrategy());
-    this.estrategias.set('mis-simulaciones', new VistaMisSimulaciones());
+    this.estrategias.set('mis-simulaciones-egreso', new VistaMisSimulacionesEgreso());
   }
 
   obtenerServicios() {
@@ -883,7 +883,7 @@ class MenuActivoService {
       'malla-actual': () => this.activarPorTexto('Malla Actual', todosElementosMenu),
       'historico': () => this.activarPorTexto('Estadísticas - Histórico', todosElementosMenu),
       'proyeccion-testing': () => this.activarPorTexto('Proyección Testing', todosElementosMenu),
-      'mis-simulaciones': () => this.activarPorTexto('Mis Simulaciones', todosElementosMenu)
+      'mis-simulaciones-egreso': () => this.activarPorTexto('Mis Simulaciones Egreso', todosElementosMenu)
     };
 
     const accion = mapeoTipos[tipoElemento];
@@ -1022,7 +1022,7 @@ class MainMenuApp {
     this.configurarNavegacionHistorico();
     this.configurarNavegacionTesting();
     this.configurarNavegacionAtras();
-    this.configurarNavegacionMisSimulaciones();
+    this.configurarNavegacionMisSimulacionesEgreso();
     this.configurarToggleBarra();
   }
 
@@ -1090,14 +1090,14 @@ class MainMenuApp {
     });
   }
 
-  configurarNavegacionMisSimulaciones() {
+  configurarNavegacionMisSimulacionesEgreso() {
     const elementosMenu = document.querySelectorAll('.elemento-menu');
     elementosMenu.forEach(elemento => {
       const texto = elemento.querySelector('span')?.textContent?.trim();
-      if (texto === 'Mis Simulaciones') {
+      if (texto === 'Mis Simulaciones Egreso') {
         elemento.addEventListener('click', () => {
-          this.cargarMisSimulaciones();
-          this.menuActivoService.establecer('mis-simulaciones');
+          this.cargarMisSimulacionesEgreso();
+          this.menuActivoService.establecer('mis-simulaciones-egreso');
         });
       }
     });
@@ -1198,9 +1198,9 @@ class MainMenuApp {
     }
   }
 
-  cargarMisSimulaciones(){
+  cargarMisSimulacionesEgreso(){
     try {
-      this.navegacionService.navegarA('mis-simulaciones');
+      this.navegacionService.navegarA('mis-simulaciones-egreso');
     } catch (error) {
       console.error('Error al cargar mis simulaciones:', error);
     }
@@ -1273,7 +1273,7 @@ if (typeof window !== 'undefined') {
   window.VistaMallaActualStrategy = VistaMallaActualStrategy;
   window.VistaHistoricoStrategy = VistaHistoricoStrategy;
   window.VistaTestingStrategy = VistaTestingStrategy;
-  window.VistaMisSimulaciones = VistaMisSimulaciones;
+  window.VistaMisSimulaciones = VistaMisSimulacionesEgreso;
   window.NavegacionService = NavegacionService;
   window.BusquedaService = BusquedaService;
   window.MenuActivoService = MenuActivoService;
@@ -1296,6 +1296,7 @@ if (typeof module !== 'undefined' && module.exports) {
     VistaMallaActualStrategy,
     VistaHistoricoStrategy,
     VistaTestingStrategy,
+    VistaMisSimulacionesEgreso,
     NavegacionService,
     BusquedaService,
     MenuActivoService,
