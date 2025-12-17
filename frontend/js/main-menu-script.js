@@ -28,7 +28,7 @@ class AppConfig {
   };
 
   static SCRIPTS_MALLA = ['mallas-api.js', 'mallas-ui.js', 'mallas.js', 'malla-actual.js'];
-  static SCRIPTS_PROYECCION = ['limpiar-malla.js', 'proyeccion-ui.js', 'proyeccion-validador.js', 'proyeccion-procesador.js', 'proyeccion-constructor.js', 'proyeccion-app.js','proyeccion-app.js','mallas-api.js','historico-avance-api.js'];
+  static SCRIPTS_PROYECCION = ['proyeccion-trigger.js','limpiar-malla.js', 'proyeccion-ui.js', 'proyeccion-validador.js', 'proyeccion-procesador.js', 'proyeccion-constructor.js', 'proyeccion-app.js','proyeccion-app.js','mallas-api.js','historico-avance-api.js'];
 
   static APP_CONFIG_MALLA = {
     API_URL: 'http://localhost:3000/api/mallas',
@@ -614,6 +614,7 @@ class VistaHistoricoStrategy extends VistaStrategy {
 
   limpiar(resourceManager) {
     resourceManager.limpiarScripts(AppConfig.SCRIPTS_MALLA);
+    resourceManager.limpiarScripts(['carrera-selector.js', 'mis-simulaciones.js', 'proyeccion-ui.js']);
     if (window.historicoApp) {
       window.historicoApp = null;
     }
@@ -676,6 +677,55 @@ class VistaTestingStrategy extends VistaStrategy {
   }
 }
 
+class VistaMisSimulaciones extends VistaStrategy {
+  getIdVista() {
+    return 'mis-simulaciones';
+  }
+
+  async cargar(areaContenido, servicios) { 
+    const {resourceManager} = servicios;
+    
+    resourceManager.limpiarScripts(AppConfig.SCRIPTS_MALLA);
+
+    const respuesta = await fetch(`${AppConfig.RUTAS.HTML}mis-simulaciones.html`);
+    if (!respuesta.ok) {
+      throw new Error(`Error HTTP: ${respuesta.status}`);
+    }
+    
+    const htmlCompleto = await respuesta.text();
+    const parserDOM = new DOMParser();
+    const docParsed = parserDOM.parseFromString(htmlCompleto, 'text/html');
+    const bodyContent = docParsed.body.innerHTML;
+    
+    areaContenido.innerHTML = bodyContent;
+
+    window.APP_CONFIG = AppConfig.APP_CONFIG_MALLA;
+
+    const scripts = [
+      'poblar-simulaciones.js',
+      'mis-simulaciones.js',
+      'proyeccion-ui.js'
+    ];
+
+    for (const scriptName of scripts) {
+      const ruta = `${AppConfig.RUTAS.JS}${scriptName}?v=${Date.now()}`;
+      await resourceManager.inyectarScript(ruta);
+    }
+
+    window.poblarSimulaciones();
+    const boton = document.getElementById('iniciarFetch');
+    
+    boton.addEventListener('click', () => {window.fetchSimulacion();});
+
+  }
+
+  limpiar(resourceManager) {
+    resourceManager.limpiarScripts(AppConfig.SCRIPTS_PROYECCION);
+    resourceManager.limpiarScripts(['poblar-simulaciones.js', 'mis-simulaciones.js', 'proyeccion-ui.js']);
+  }
+  
+}
+
 class NavegacionService {
   constructor(resourceManager, renderService, usuarioService, apiService) {
     this.resourceManager = resourceManager;
@@ -697,6 +747,7 @@ class NavegacionService {
     this.estrategias.set('malla-actual', new VistaMallaActualStrategy());
     this.estrategias.set('historico', new VistaHistoricoStrategy());
     this.estrategias.set('proyeccion-testing', new VistaTestingStrategy());
+    this.estrategias.set('mis-simulaciones', new VistaMisSimulaciones());
   }
 
   obtenerServicios() {
@@ -831,7 +882,8 @@ class MenuActivoService {
       'home': () => this.activarPorTexto('Malla Actual', todosElementosMenu),
       'malla-actual': () => this.activarPorTexto('Malla Actual', todosElementosMenu),
       'historico': () => this.activarPorTexto('Estadísticas - Histórico', todosElementosMenu),
-      'proyeccion-testing': () => this.activarPorTexto('Proyección Testing', todosElementosMenu)
+      'proyeccion-testing': () => this.activarPorTexto('Proyección Testing', todosElementosMenu),
+      'mis-simulaciones': () => this.activarPorTexto('Mis Simulaciones', todosElementosMenu)
     };
 
     const accion = mapeoTipos[tipoElemento];
@@ -970,6 +1022,7 @@ class MainMenuApp {
     this.configurarNavegacionHistorico();
     this.configurarNavegacionTesting();
     this.configurarNavegacionAtras();
+    this.configurarNavegacionMisSimulaciones();
     this.configurarToggleBarra();
   }
 
@@ -1034,6 +1087,19 @@ class MainMenuApp {
     this.usuarioUIService.configurarClicksPerfil(() => {
       this.cargarPerfil();
       this.menuActivoService.establecer('profile');
+    });
+  }
+
+  configurarNavegacionMisSimulaciones() {
+    const elementosMenu = document.querySelectorAll('.elemento-menu');
+    elementosMenu.forEach(elemento => {
+      const texto = elemento.querySelector('span')?.textContent?.trim();
+      if (texto === 'Mis Simulaciones') {
+        elemento.addEventListener('click', () => {
+          this.cargarMisSimulaciones();
+          this.menuActivoService.establecer('mis-simulaciones');
+        });
+      }
     });
   }
 
@@ -1132,6 +1198,14 @@ class MainMenuApp {
     }
   }
 
+  cargarMisSimulaciones(){
+    try {
+      this.navegacionService.navegarA('mis-simulaciones');
+    } catch (error) {
+      console.error('Error al cargar mis simulaciones:', error);
+    }
+  }
+
   async realizarLoginYRedirigir(email, password) {
     try {
       const res = await this.apiService.login(email, password);
@@ -1199,6 +1273,7 @@ if (typeof window !== 'undefined') {
   window.VistaMallaActualStrategy = VistaMallaActualStrategy;
   window.VistaHistoricoStrategy = VistaHistoricoStrategy;
   window.VistaTestingStrategy = VistaTestingStrategy;
+  window.VistaMisSimulaciones = VistaMisSimulaciones;
   window.NavegacionService = NavegacionService;
   window.BusquedaService = BusquedaService;
   window.MenuActivoService = MenuActivoService;

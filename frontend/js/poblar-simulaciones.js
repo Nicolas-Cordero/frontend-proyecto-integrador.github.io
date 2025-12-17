@@ -18,8 +18,5 @@
     });
   }
 
-  window.renderizarMalla = poblarSimulaciones;
-  document.addEventListener('DOMContentLoaded', () => {
-    poblarSimulaciones();
-  });
+  window.poblarSimulaciones = poblarSimulaciones;
 })();

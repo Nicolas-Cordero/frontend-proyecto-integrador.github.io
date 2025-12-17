@@ -15,10 +15,6 @@
                           
 
   }
-
-  const boton = document.getElementById('iniciarFetch');
-  boton.addEventListener('click', () => {window.fetchSimulacion();});
-
   window.fetchSimulacion = fetchSimulacion;
 
 })();
