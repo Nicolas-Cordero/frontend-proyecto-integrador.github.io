@@ -111,7 +111,11 @@ enrutador.get('/:identificador', (req, res) => {
   let usuario;
 
   if (/^\d+$/.test(identificador)) {
-    usuario = baseDatos.prepare('SELECT id, rut, email FROM usuarios WHERE id = ?').get(Number(identificador));
+    const posibleId = Number(identificador);
+    usuario = baseDatos.prepare('SELECT id, rut, email FROM usuarios WHERE id = ?').get(posibleId);
+    if (!usuario) {
+      usuario = baseDatos.prepare('SELECT id, rut, email FROM usuarios WHERE rut = ?').get(identificador);
+    }
   } else {
     usuario = baseDatos.prepare('SELECT id, rut, email FROM usuarios WHERE rut = ?').get(identificador);
   }

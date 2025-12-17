@@ -369,8 +369,18 @@ enrutador.get(rutasPorEstudiante, (req, res) => {
   const identificador = req.params.identificador ?? req.params.identifier;
   let usuarioId;
 
-  if (/^\\d+$/.test(identificador)) {
-    usuarioId = Number(identificador);
+  if (/^\d+$/.test(String(identificador))) {
+    const posibleId = Number(identificador);
+    const existePorId = baseDatos.prepare('SELECT id FROM usuarios WHERE id = ?').get(posibleId);
+    if (existePorId) {
+      usuarioId = posibleId;
+    } else {
+      if (!esRutValido(identificador)) {
+        return res.status(400).json({ error: 'Rut inválido.' });
+      }
+      const fila = baseDatos.prepare('SELECT id FROM usuarios WHERE rut = ?').get(identificador);
+      usuarioId = fila?.id;
+    }
   } else {
     if (!esRutValido(identificador)) {
       return res.status(400).json({ error: 'Rut inválido.' });
@@ -397,10 +407,17 @@ enrutador.get(rutasPorEstudiante, (req, res) => {
 
 enrutador.get('/:id/archivo', (req, res) => {
   const baseDatos = req.db;
-  const { id } = req.params;
-  if (!/^\\d+$/.test(String(id))) {
+  let id = req.params?.id ?? null;
+  if (!id) {
+    const match = String(req.path || '').match(/^\/(\d+)\/archivo\/?$/);
+    id = match ? match[1] : null;
+  }
+
+  const idNormalizado = String(id || '').trim();
+  if (!/^\d+$/.test(idNormalizado)) {
     return res.status(400).json({ error: 'Id inválido.' });
   }
+  const idNumerico = Number(idNormalizado);
   const fila = baseDatos
     .prepare(
       `SELECT s.contenido_json, s.tipo, u.rut AS rut_usuario
@@ -408,7 +425,7 @@ enrutador.get('/:id/archivo', (req, res) => {
          JOIN usuarios u ON u.id = s.usuario_id
         WHERE s.id = ?`
     )
-    .get(Number(id));
+    .get(idNumerico);
   if (!fila) {
     return res.status(404).json({ error: 'Simulación no encontrada.' });
   }
@@ -416,17 +433,17 @@ enrutador.get('/:id/archivo', (req, res) => {
   try {
     contenido = JSON.parse(fila.contenido_json);
   } catch (error) {
-    contenido = { tipo: fila.tipo, simulacionId: Number(id) };
+    contenido = { tipo: fila.tipo, simulacionId: idNumerico };
   }
   const tipo = normalizarTipo(fila.tipo) || null;
-  if (!obtenerRutaArchivoSimulacion(id, fila.rut_usuario, tipo)) {
+  if (!obtenerRutaArchivoSimulacion(idNormalizado, fila.rut_usuario, tipo)) {
     try {
-      guardarArchivoSimulacion(id, fila.rut_usuario, contenido, tipo);
+      guardarArchivoSimulacion(idNormalizado, fila.rut_usuario, contenido, tipo);
     } catch (error) {
       return res.status(500).json({ error: 'No fue posible generar el archivo de simulación.' });
     }
   }
-  res.setHeader('Content-Disposition', `attachment; filename=simulacion-${id}.json`);
+  res.setHeader('Content-Disposition', `attachment; filename=simulacion-${idNormalizado}.json`);
   res.type('application/json');
   return res.json(contenido);
 });
