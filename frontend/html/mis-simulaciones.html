@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mis simulaciones</title>
+
+  <style>
+    :root{
+      --bg:#0f172a;
+      --card:#020617;
+      --muted:#94a3b8;
+      --text:#e5e7eb;
+      --accent:#38bdf8;
+      --accent-hover:#0ea5e9;
+      --glass: rgba(255,255,255,0.02);
+    }
+    html,body{height:100%;}
+    body {
+      margin:0;
+      font-family: Inter, Arial, Helvetica, sans-serif;
+      background:linear-gradient(180deg,var(--bg) 0%, #071029 100%);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      padding:2rem;
+      box-sizing:border-box;
+    }
+
+    .wrap{
+      max-width:1100px;
+      margin:0 auto;
+      display:grid;
+      grid-template-columns: 1fr;
+      gap:1.25rem;
+      align-items:start;
+    }
+
+    header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:1rem;
+    }
+
+    h1{font-size:1.25rem;margin:0}
+
+    main{
+      display:grid;
+      grid-template-columns: 340px 1fr;
+      gap:1rem;
+    }
+
+    /* responsive */
+    @media (max-width:700px){
+      main{grid-template-columns:1fr}
+    }
+
+    .panel{
+      background:var(--card);
+      padding:1.25rem;
+      border-radius:12px;
+      box-shadow:0 8px 30px rgba(2,6,23,0.6);
+      border:1px solid rgba(255,255,255,0.02);
+    }
+
+    label{display:block;color:var(--muted);font-size:0.9rem;margin-bottom:0.5rem}
+
+    select{
+      width:100%;
+      padding:10px 12px;
+      border-radius:8px;
+      background:transparent;
+      color:var(--text);
+      border:1px solid rgba(255,255,255,0.04);
+      outline:none;
+      appearance:none;
+      font-size:1rem;
+    }
+
+    .actions{display:flex;gap:0.5rem;margin-top:1rem}
+
+    button{
+      display:inline-flex;align-items:center;justify-content:center;
+      gap:0.5rem;padding:0.7rem 0.9rem;border-radius:10px;border:none;cursor:pointer;
+      background:var(--accent);color:#021124;font-weight:600;
+    }
+
+    button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text);font-weight:500}
+
+    button:focus{outline:2px solid rgba(56,189,248,0.2)}
+
+    .hint{margin-top:0.75rem;color:#94a3b8;font-size:0.9rem}
+
+    .contenedorMalla{
+      background:linear-gradient(180deg, rgba(2,6,23,0.6), rgba(2,6,23,0.4));
+      min-height:240px;padding:1rem;border-radius:12px;border:1px solid rgba(255,255,255,0.02);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,0.02);
+    }
+
+    .empty{color:var(--muted);text-align:center;padding:2rem}
+
+    .visually-hidden{position:absolute!important;height:1px;width:1px;overflow:hidden;clip:rect(1px,1px,1px,1px);white-space:nowrap}
+
+    /* utility */
+    .row{display:flex;gap:0.75rem;align-items:center}
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Mis simulaciones</h1>
+      <p class="hint">Selecciona una simulación para ver su proyección</p>
+    </header>
+
+    <main>
+      <aside class="panel" aria-labelledby="panel-title">
+        <h2 id="panel-title" class="visually-hidden">Panel de selección</h2>
+
+        <label for="simulaciones">Elige una simulación</label>
+        <select id="simulaciones" aria-describedby="sim-status">
+          <option value="">— Cargando opciones —</option>
+        </select>
+
+        <div class="actions">
+          <button id="iniciarFetch" aria-label="Ver simulación seleccionada">Ver simulación</button>
+        </div>
+
+        <div id="Datos" class="hint" aria-live="polite">Sin selección</div>
+      </aside>
+
+      <section id="contenedorMalla" class="contenedorMalla" aria-live="polite" tabindex="0">
+        <div class="empty">Selecciona una simulación en el panel para verla aquí.</div>
+      </section>
+    </main>
+  </div>
+
+  <script src="../js/poblar-simulaciones.js"></script>
+  <script src="../js/mis-simulaciones.js"></script>
+  <script src="../js/proyeccion-ui.js"></script>
+
+</body>
+</html>
