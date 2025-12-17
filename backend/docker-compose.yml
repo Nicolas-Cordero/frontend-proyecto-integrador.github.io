@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    container_name: backend-simulaciones
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - BACKEND_PORT=4000
+      - CORS_ORIGIN=http://localhost:3000
+      - NODE_ENV=production
+    restart: unless-stopped
+

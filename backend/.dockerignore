@@ -1,0 +1,13 @@
+node_modules
+npm-debug.log
+data/*.sqlite
+data/*.sqlite-shm
+data/*.sqlite-wal
+data/simulaciones/*
+.env
+.git
+.gitignore
+README.md
+ENDPOINTS.txt
+*.db
+

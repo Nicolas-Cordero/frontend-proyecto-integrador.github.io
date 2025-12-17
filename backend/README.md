@@ -16,10 +16,20 @@ npm install
 
 ## Ejecución
 
+### Opción 1: Ejecución local (requiere Node.js y herramientas de compilación)
+
 ```bash
 npm run dev   # reinicio automático con nodemon
 # o
 npm start
+```
+
+### Opción 2: Ejecución con Docker (recomendado si tienes problemas con dependencias nativas)
+
+Ver [README-DOCKER.md](./README-DOCKER.md) para instrucciones detalladas.
+
+```bash
+docker-compose up --build
 ```
 
 Variables de entorno opcionales (`.env`):
