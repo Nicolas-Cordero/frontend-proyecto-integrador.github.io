@@ -1,0 +1,45 @@
+{
+  "tipo": "simulacion_siguiente_semestre",
+  "creadoEn": "2025-12-17T21:28:34.198Z",
+  "estudiante": {
+    "rut": "333333333",
+    "email": "ximena@example.com"
+  },
+  "carrera": {
+    "codigo": "8266",
+    "nombre": "ITI",
+    "catalogo": "202410"
+  },
+  "cursos": [
+    {
+      "codigo": "SIM1",
+      "nombre": "Ramo simulado 1",
+      "nivel": 1,
+      "creditos": 5
+    },
+    {
+      "codigo": "SIM2",
+      "nombre": "Ramo simulado 2",
+      "nivel": 2,
+      "creditos": 5
+    },
+    {
+      "codigo": "SIM3",
+      "nombre": "Ramo simulado 3",
+      "nivel": 3,
+      "creditos": 5
+    },
+    {
+      "codigo": "SIM4",
+      "nombre": "Ramo simulado 4",
+      "nivel": 4,
+      "creditos": 5
+    },
+    {
+      "codigo": "SIM5",
+      "nombre": "Ramo simulado 5",
+      "nivel": 5,
+      "creditos": 5
+    }
+  ]
+}

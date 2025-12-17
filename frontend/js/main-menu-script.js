@@ -28,7 +28,6 @@ class AppConfig {
   };
 
   static SCRIPTS_MALLA = ['mallas-api.js', 'mallas-ui.js', 'mallas.js', 'malla-actual.js'];
-  static SCRIPTS_PROYECCION = ['limpiar-malla.js', 'proyeccion-ui.js', 'proyeccion-validador.js', 'proyeccion-procesador.js', 'proyeccion-constructor.js', 'proyeccion-app.js','proyeccion-app.js','mallas-api.js','historico-avance-api.js'];
 
   static APP_CONFIG_MALLA = {
     API_URL: 'http://localhost:3000/api/mallas',
@@ -337,25 +336,19 @@ class RenderService {
           <p style="margin: 0; color: var(--text-secondary, #666);">Página de prueba para los módulos de proyección</p>
         </header>
 
-        <section class="card" aria-labelledby="cardTitle">
-          <div class="card-header">
-            <div id="cardTitle"><strong>Proyección - Resultado</strong></div>
-          </div>
+        <main style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+          <section style="border: 1px solid var(--border-color, #ddd); border-radius: 8px; padding: 1.5rem; background: var(--bg-secondary, #f9f9f9);">
+            <h2 style="margin-top: 0; margin-bottom: 1rem; font-size: 1.25rem; color: var(--text-primary, #000);">Contenedor de Malla</h2>
+            <div id="contenedorMalla" style="color: var(--text-primary, #000);"></div>
+          </section>
 
-          <div style="margin: 1rem 0; display: flex; gap: .5rem; align-items: center;">
-            <label for="selectCarrera" style="font-weight:600;">Carrera:</label>
-            <select id="selectCarrera" style="padding: .4rem; min-width: 220px;">
-              <option value="">-- Seleccionar carrera --</option>
-            </select>
-            <label for="cantCreditos" style="font-weight:600;">Cantidad de créditos máxima:</label>
-            <input style="padding: .4rem; min-width: 220px; type="number" id="cantCreditos" name="Cantidad de créditos máxima" min="6" step="1" max="32" placeholder="Ingresa la cantidad máxima de créditos por semestre"/>
-            <button id="botonEjecutarProyeccion" style="padding: .5rem 1rem; background: #22c55e; color: white; border: none; border-radius: .25rem; cursor: pointer; font-weight:600;">Ejecutar proyección</button>
-          </div>
-
-          <div class="hscroll-wrap" aria-live="polite">
-            <div class="columnas" id="resultadoProyeccion"></div>
-          </div>
-        </section>
+          <section style="border: 1px solid var(--border-color, #ddd); border-radius: 8px; padding: 1.5rem; background: var(--bg-secondary, #f9f9f9);">
+            <h2 style="margin-top: 0; margin-bottom: 1rem; font-size: 1.25rem; color: var(--text-primary, #000);">Resultado de Proyección</h2>
+            <div id="resultadoProyeccion" style="color: var(--text-primary, #000);">
+              <p>Esperando ejecución...</p>
+            </div>
+          </section>
+        </main>
       </div>
     `;
   }
@@ -639,40 +632,49 @@ class VistaTestingStrategy extends VistaStrategy {
       'proyeccion-procesador.js',
       'proyeccion-constructor.js',
       'proyeccion-app.js',
-      'historico-avance-api.js',
-      'proyeccion-ui.js',
-      'proyeccion-trigger.js',
-      'limpiar-malla.js'
+      'historico-avance-api.js'
     ];
 
     for (const scriptName of scripts) {
       const ruta = `${AppConfig.RUTAS.JS}${scriptName}?v=${Date.now()}`;
       await resourceManager.inyectarScript(ruta);
     }
-    const selectCarrera = document.getElementById('selectCarrera');
-    this.poblarOpciones(selectCarrera);
-    const cantCreditos = document.getElementById('cantCreditos');
-    const boton = document.getElementById('botonEjecutarProyeccion');
 
-    boton.addEventListener('click', () => {window.ejecutarTesting(selectCarrera.value, selectCarrera.dataset.catalogo, Number(cantCreditos.value));});
-    
+    this.ejecutarTesting();
   }
 
-  poblarOpciones(selectCarrera){
-    const carreras = JSON.parse(sessionStorage.getItem('ucn_user_data')).carreras;
+  ejecutarTesting() {
+    const resultDiv = document.getElementById('resultadoProyeccion');
+    if (!resultDiv) return;
 
-    carreras.forEach(carrera => {
-      const optionElement = document.createElement('option');
-      optionElement.value = carrera.codigo;
-      optionElement.textContent = carrera.nombre;
-      optionElement.dataset.catalogo = carrera.catalogo;
+    const ejecutar = async () => {
+      try {
+        resultDiv.innerHTML = '<p style="color: #22c55e;">⏳ Ejecutando prueba...</p>';
+        
+        if (typeof window.prepararProyeccion !== 'function') {
+          throw new Error('La función prepararProyeccion no está disponible');
+        }
 
-      selectCarrera.appendChild(optionElement);
-    });
+        const proyeccion = await window.prepararProyeccion('222222222', '8266', '202410', 30);
+
+        resultDiv.innerHTML = `
+          <h3 style="color: #22c55e; margin-top: 0;">✅ Proyección generada exitosamente</h3>
+          <pre style="background: var(--bg-code, #fff); color: var(--text-primary, #000); padding: 1rem; border: 1px solid var(--border-color, #ddd); overflow-x: auto; border-radius: 4px; max-height: 500px; overflow-y: auto; font-size: 0.85rem;">${JSON.stringify(proyeccion, null, 2)}</pre>
+        `;
+      } catch (error) {
+        resultDiv.innerHTML = `
+          <h3 style="color: #ef4444; margin-top: 0;">Error en la proyección:</h3>
+          <pre style="color: #ef4444; background: var(--bg-code, #fff); padding: 1rem; border: 1px solid var(--border-color, #ddd); overflow-x: auto; border-radius: 4px; font-size: 0.85rem;">${error.message}\n\nStack: ${error.stack}</pre>
+          <p style="color: var(--text-secondary, #666);">Verifica la consola del navegador (F12) para más detalles.</p>
+        `;
+      }
+    };
+
+    setTimeout(ejecutar, 500);
   }
-  
+
   limpiar(resourceManager) {
-    resourceManager.limpiarScripts(AppConfig.SCRIPTS_PROYECCION);
+    resourceManager.limpiarScripts(AppConfig.SCRIPTS_MALLA);
   }
 }
 
@@ -1054,7 +1056,7 @@ class MainMenuApp {
     const elementosMenu = document.querySelectorAll('.elemento-menu');
     elementosMenu.forEach(elemento => {
       const texto = elemento.querySelector('span')?.textContent?.trim();
-      if (texto === 'Estadísticas - Histórico') {
+      if (texto === 'Histórico Académico') {
         const enlace = elemento.querySelector('a');
         const handler = (e) => {
           e.preventDefault();
@@ -1075,7 +1077,7 @@ class MainMenuApp {
     const elementosMenu = document.querySelectorAll('.elemento-menu');
     elementosMenu.forEach(elemento => {
       const texto = elemento.querySelector('span')?.textContent?.trim();
-      if (texto === 'Proyección Testing') {
+      if (texto === 'Simulación Egreso') {
         elemento.addEventListener('click', (e) => {
           e.preventDefault();
           this.cargarTesting();
@@ -1186,44 +1188,6 @@ document.addEventListener('DOMContentLoaded', () => {
   // Eliminado fallback para evitar doble binding y estados conflictivos
 });
 
-if (typeof window !== 'undefined') {
-  window.AppConfig = AppConfig;
-  window.StorageService = StorageService;
-  window.ApiService = ApiService;
-  window.ResourceManager = ResourceManager;
-  window.RenderService = RenderService;
-  window.UsuarioService = UsuarioService;
-  window.VistaStrategy = VistaStrategy;
-  window.VistaInicioStrategy = VistaInicioStrategy;
-  window.VistaPerfilStrategy = VistaPerfilStrategy;
-  window.VistaMallaActualStrategy = VistaMallaActualStrategy;
-  window.VistaHistoricoStrategy = VistaHistoricoStrategy;
-  window.VistaTestingStrategy = VistaTestingStrategy;
-  window.NavegacionService = NavegacionService;
-  window.BusquedaService = BusquedaService;
-  window.MenuActivoService = MenuActivoService;
-  window.UsuarioUIService = UsuarioUIService;
-  window.MainMenuApp = MainMenuApp;
-}
-
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { 
-    MainMenuApp, 
-    AppConfig,
-    StorageService,
-    ApiService,
-    ResourceManager,
-    RenderService,
-    UsuarioService,
-    VistaStrategy,
-    VistaInicioStrategy,
-    VistaPerfilStrategy,
-    VistaMallaActualStrategy,
-    VistaHistoricoStrategy,
-    VistaTestingStrategy,
-    NavegacionService,
-    BusquedaService,
-    MenuActivoService,
-    UsuarioUIService
-  };
+  module.exports = { MainMenuApp, AppConfig };
 }

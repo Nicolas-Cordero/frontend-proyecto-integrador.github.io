@@ -1,0 +1,32 @@
+<section style="padding: 2rem;">
+  <header style="margin-bottom: 1.5rem;">
+    <h1 style="margin: 0 0 0.5rem 0; font-size: 1.75rem; color: var(--text-primary, #111827);">
+      Simulación Próximo Semestre
+    </h1>
+    <p style="margin: 0; color: var(--text-secondary, #6b7280);">Genera y revisa una simulación rápida del próximo semestre.</p>
+  </header>
+
+  <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1.5rem; align-items: start;">
+    <section style="border: 1px solid var(--border-color, #e5e7eb); border-radius: 8px; background: var(--bg-secondary, #fff);">
+      <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color, #e5e7eb); font-weight: 600;">Generar simulación</div>
+      <div style="padding: 1.25rem;">
+        <p style="margin-top: 0; color: var(--text-secondary, #6b7280);">Usaremos tus datos almacenados en la sesión (rut, email y carrera).</p>
+        <button id="btnGenerarSimulacionProx" style="padding: 0.75rem 1rem; background: #4f46e5; color: white; border: 0; border-radius: 6px; cursor: pointer; font-weight: 600;">
+          Generar Simulación
+        </button>
+
+        <div id="resultadoSimulacionProx" style="margin-top: 1rem; font-size: 0.95rem; color: var(--text-primary, #111827);"></div>
+      </div>
+    </section>
+
+    <section style="border: 1px solid var(--border-color, #e5e7eb); border-radius: 8px; background: var(--bg-secondary, #fff);">
+      <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color, #e5e7eb); font-weight: 600;">Simulaciones Guardadas</div>
+      <div style="padding: 1.25rem;">
+        <button id="btnCargarSimulacionesProx" style="padding: 0.5rem 0.75rem; background: #111827; color: white; border: 0; border-radius: 6px; cursor: pointer; font-weight: 600;">
+          Cargar simulaciones del usuario
+        </button>
+        <ul id="listaSimulacionesProx" style="margin-top: 1rem; padding-left: 1.25rem;"></ul>
+      </div>
+    </section>
+  </div>
+</section>
