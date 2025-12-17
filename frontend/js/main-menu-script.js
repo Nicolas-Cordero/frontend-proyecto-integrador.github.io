@@ -628,6 +628,7 @@ class VistaTestingStrategy extends VistaStrategy {
 
     const scripts = [
       'mallas-api.js',
+      'limpiar-malla.js',
       'proyeccion-validador.js',
       'proyeccion-procesador.js',
       'proyeccion-constructor.js',
@@ -678,6 +679,82 @@ class VistaTestingStrategy extends VistaStrategy {
   }
 }
 
+class VistaSimulacionProxSemestreStrategy extends VistaStrategy {
+  getIdVista() {
+    return 'simulacion-prox-semestre';
+  }
+
+  async cargar(areaContenido, servicios) {
+    const { resourceManager } = servicios;
+
+    resourceManager.limpiarScripts(AppConfig.SCRIPTS_MALLA);
+
+    const respuesta = await fetch(`${AppConfig.RUTAS.HTML}simulacion-prox-semestre.html?v=${Date.now()}`);
+    if (!respuesta.ok) {
+      throw new Error(`Error HTTP: ${respuesta.status}`);
+    }
+    const html = await respuesta.text();
+    areaContenido.innerHTML = html;
+
+    await resourceManager.inyectarScript(`${AppConfig.RUTAS.JS}simulacion-prox-semestre.js?v=${Date.now()}`);
+  }
+
+  limpiar(resourceManager) {
+    resourceManager.limpiarScripts(['simulacion-prox-semestre.js']);
+  }
+}
+
+class VistaMisSimulacionesStrategy extends VistaStrategy {
+  getIdVista() {
+    return 'mis-simulaciones';
+  }
+
+  async cargar(areaContenido, servicios) {
+    const { resourceManager } = servicios;
+
+    resourceManager.limpiarScripts(AppConfig.SCRIPTS_MALLA);
+
+    const respuesta = await fetch(`${AppConfig.RUTAS.HTML}mis-simulaciones.html?v=${Date.now()}`);
+    if (!respuesta.ok) {
+      throw new Error(`Error HTTP: ${respuesta.status}`);
+    }
+
+    const htmlCompleto = await respuesta.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlCompleto, 'text/html');
+
+    resourceManager.inyectarCss(`${AppConfig.RUTAS.CSS}mis-simulaciones.css?v=${Date.now()}`, 'mis-simulaciones-style');
+
+    let inner = doc.body ? doc.body.cloneNode(true) : null;
+    if (inner) {
+      inner.querySelectorAll('script').forEach(s => s.remove());
+      areaContenido.innerHTML = `<div class="mis-simulaciones">${inner.innerHTML}</div>`;
+    } else {
+      areaContenido.innerHTML = `<div class="mis-simulaciones">${htmlCompleto}</div>`;
+    }
+
+    await resourceManager.inyectarScript(`${AppConfig.RUTAS.JS}proyeccion-ui.js?v=${Date.now()}`);
+    await resourceManager.inyectarScript(`${AppConfig.RUTAS.JS}poblar-simulaciones.js?v=${Date.now()}`);
+    await resourceManager.inyectarScript(`${AppConfig.RUTAS.JS}mis-simulaciones-guardadas.js?v=${Date.now()}`);
+    await resourceManager.inyectarScript(`${AppConfig.RUTAS.JS}mis-simulaciones.js?v=${Date.now()}`);
+
+    if (typeof window.renderizarMalla === 'function') {
+      try { window.renderizarMalla(); } catch (_) {}
+    }
+  }
+
+  limpiar(resourceManager) {
+    resourceManager.limpiarScripts([
+      'proyeccion-ui.js',
+      'poblar-simulaciones.js',
+      'mis-simulaciones-guardadas.js',
+      'mis-simulaciones.js'
+    ]);
+    const estilo = document.getElementById('mis-simulaciones-style');
+    if (estilo) estilo.remove();
+  }
+}
+
 class NavegacionService {
   constructor(resourceManager, renderService, usuarioService, apiService) {
     this.resourceManager = resourceManager;
@@ -699,6 +776,8 @@ class NavegacionService {
     this.estrategias.set('malla-actual', new VistaMallaActualStrategy());
     this.estrategias.set('historico', new VistaHistoricoStrategy());
     this.estrategias.set('proyeccion-testing', new VistaTestingStrategy());
+    this.estrategias.set('simulacion-prox-semestre', new VistaSimulacionProxSemestreStrategy());
+    this.estrategias.set('mis-simulaciones', new VistaMisSimulacionesStrategy());
   }
 
   obtenerServicios() {
@@ -833,7 +912,9 @@ class MenuActivoService {
       'home': () => this.activarPorTexto('Malla Actual', todosElementosMenu),
       'malla-actual': () => this.activarPorTexto('Malla Actual', todosElementosMenu),
       'historico': () => this.activarPorTexto('Estadísticas - Histórico', todosElementosMenu),
-      'proyeccion-testing': () => this.activarPorTexto('Proyección Testing', todosElementosMenu)
+      'proyeccion-testing': () => this.activarPorTexto('Proyección Testing', todosElementosMenu),
+      'simulacion-prox-semestre': () => this.activarPorTexto('Simulación Prox Semestre', todosElementosMenu),
+      'mis-simulaciones': () => this.activarPorTexto('Mis Simulaciones', todosElementosMenu)
     };
 
     const accion = mapeoTipos[tipoElemento];
@@ -971,6 +1052,8 @@ class MainMenuApp {
     this.configurarNavegacionMallaActual();
     this.configurarNavegacionHistorico();
     this.configurarNavegacionTesting();
+    this.configurarNavegacionSimulacionProxSemestre();
+    this.configurarNavegacionMisSimulaciones();
     this.configurarNavegacionAtras();
     this.configurarToggleBarra();
   }
@@ -1087,6 +1170,48 @@ class MainMenuApp {
     });
   }
 
+  configurarNavegacionSimulacionProxSemestre() {
+    const elementosMenu = document.querySelectorAll('.elemento-menu');
+    elementosMenu.forEach(elemento => {
+      const texto = elemento.querySelector('span')?.textContent?.trim();
+      if (texto === 'Simulación Prox Semestre') {
+        const handler = (e) => {
+          e.preventDefault();
+          this.cargarSimulacionProxSemestre();
+          this.menuActivoService.establecer('simulacion-prox-semestre');
+        };
+
+        const enlace = elemento.querySelector('a');
+        if (enlace) {
+          enlace.addEventListener('click', handler);
+        } else {
+          elemento.addEventListener('click', handler);
+        }
+      }
+    });
+  }
+
+  configurarNavegacionMisSimulaciones() {
+    const elementosMenu = document.querySelectorAll('.elemento-menu');
+    elementosMenu.forEach(elemento => {
+      const texto = elemento.querySelector('span')?.textContent?.trim();
+      if (texto === 'Mis Simulaciones') {
+        const handler = (e) => {
+          e.preventDefault();
+          this.cargarMisSimulaciones();
+          this.menuActivoService.establecer('mis-simulaciones');
+        };
+
+        const enlace = elemento.querySelector('a');
+        if (enlace) {
+          enlace.addEventListener('click', handler);
+        } else {
+          elemento.addEventListener('click', handler);
+        }
+      }
+    });
+  }
+
   configurarNavegacionAtras() {
     window.addEventListener('navigateBack', () => {
       this.cargarInicio();
@@ -1122,6 +1247,22 @@ class MainMenuApp {
       await this.navegacionService.navegarA('proyeccion-testing');
     } catch (error) {
       console.error('Error al cargar testing:', error);
+    }
+  }
+
+  async cargarSimulacionProxSemestre() {
+    try {
+      await this.navegacionService.navegarA('simulacion-prox-semestre');
+    } catch (error) {
+      console.error('Error al cargar Simulación Próximo Semestre:', error);
+    }
+  }
+
+  async cargarMisSimulaciones() {
+    try {
+      await this.navegacionService.navegarA('mis-simulaciones');
+    } catch (error) {
+      console.error('Error al cargar Mis Simulaciones:', error);
     }
   }
 

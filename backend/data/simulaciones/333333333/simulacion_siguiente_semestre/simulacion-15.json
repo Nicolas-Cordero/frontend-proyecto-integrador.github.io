@@ -1,0 +1,45 @@
+{
+  "tipo": "simulacion_siguiente_semestre",
+  "creadoEn": "2025-12-17T22:01:53.631Z",
+  "estudiante": {
+    "rut": "333333333",
+    "email": "ximena@example.com"
+  },
+  "carrera": {
+    "codigo": "8266",
+    "nombre": "ITI",
+    "catalogo": "202410"
+  },
+  "cursos": [
+    {
+      "codigo": "DCCB-00204",
+      "nombre": "PROGRAMACIÓN",
+      "nivel": 2,
+      "creditos": 8
+    },
+    {
+      "codigo": "DCCB-00107",
+      "nombre": "ÁLGEBRA I",
+      "nivel": 1,
+      "creditos": 6
+    },
+    {
+      "codigo": "DCCB-00402",
+      "nombre": "BASES DE DATOS",
+      "nivel": 4,
+      "creditos": 8
+    },
+    {
+      "codigo": "UNFV-01001",
+      "nombre": "FORMACIÓN GENERAL VALORICA 1",
+      "nivel": 1,
+      "creditos": 2
+    },
+    {
+      "codigo": "DCCB-00106",
+      "nombre": "CÁLCULO I",
+      "nivel": 1,
+      "creditos": 6
+    }
+  ]
+}

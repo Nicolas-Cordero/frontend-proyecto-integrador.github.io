@@ -6,7 +6,7 @@
     <p style="margin: 0; color: var(--text-secondary, #6b7280);">Genera y revisa una simulación rápida del próximo semestre.</p>
   </header>
 
-  <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1.5rem; align-items: start;">
+  <div style="max-width: 960px;">
     <section style="border: 1px solid var(--border-color, #e5e7eb); border-radius: 8px; background: var(--bg-secondary, #fff);">
       <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color, #e5e7eb); font-weight: 600;">Generar simulación</div>
       <div style="padding: 1.25rem;">
@@ -16,16 +16,6 @@
         </button>
 
         <div id="resultadoSimulacionProx" style="margin-top: 1rem; font-size: 0.95rem; color: var(--text-primary, #111827);"></div>
-      </div>
-    </section>
-
-    <section style="border: 1px solid var(--border-color, #e5e7eb); border-radius: 8px; background: var(--bg-secondary, #fff);">
-      <div style="padding: 1rem 1.25rem; border-bottom: 1px solid var(--border-color, #e5e7eb); font-weight: 600;">Simulaciones Guardadas</div>
-      <div style="padding: 1.25rem;">
-        <button id="btnCargarSimulacionesProx" style="padding: 0.5rem 0.75rem; background: #111827; color: white; border: 0; border-radius: 6px; cursor: pointer; font-weight: 600;">
-          Cargar simulaciones del usuario
-        </button>
-        <ul id="listaSimulacionesProx" style="margin-top: 1rem; padding-left: 1.25rem;"></ul>
       </div>
     </section>
   </div>

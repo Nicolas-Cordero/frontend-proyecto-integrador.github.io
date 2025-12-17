@@ -1,0 +1,93 @@
+/* Estilos scoped para la vista Mis Simulaciones */
+.mis-simulaciones {
+  /* Hereda la paleta global del dashboard */
+  color: var(--text);
+  font-family: Inter, Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  padding: 1.5rem;
+  box-sizing: border-box;
+}
+
+.mis-simulaciones .wrap{
+  max-width:1100px;
+  margin:0 auto;
+  display:grid;
+  grid-template-columns: 1fr;
+  gap:1.25rem;
+  align-items:start;
+}
+
+.mis-simulaciones header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:1rem;
+}
+
+.mis-simulaciones h1{font-size:1.25rem;margin:0}
+
+.mis-simulaciones main{
+  display:grid;
+  grid-template-columns: 340px 1fr;
+  gap:1rem;
+}
+
+/* responsive */
+@media (max-width:700px){
+  .mis-simulaciones main{grid-template-columns:1fr}
+}
+
+.mis-simulaciones .panel{
+  background: var(--sidebar-bg);
+  padding:1.25rem;
+  border-radius:12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  border:1px solid var(--border);
+}
+
+.mis-simulaciones label{display:block;color:var(--muted);font-size:0.9rem;margin-bottom:0.5rem}
+
+.mis-simulaciones select{
+  width:100%;
+  padding:10px 12px;
+  border-radius:8px;
+  background:transparent;
+  color:var(--text);
+  border:1px solid var(--border);
+  outline:none;
+  appearance:none;
+  font-size:1rem;
+}
+
+.mis-simulaciones .actions{display:flex;gap:0.5rem;margin-top:1rem}
+
+.mis-simulaciones button{
+  display:inline-flex;align-items:center;justify-content:center;
+  gap:0.5rem;padding:0.7rem 0.9rem;border-radius:10px;border:none;cursor:pointer;
+  background: var(--primary);
+  color: #ffffff;
+  font-weight:600;
+}
+
+.mis-simulaciones button.ghost{background:transparent;border:1px solid var(--border);color:var(--text);font-weight:500}
+
+.mis-simulaciones button:focus{outline:2px solid rgba(56,189,248,0.2)}
+
+.mis-simulaciones .hint{margin-top:0.75rem;color:var(--muted);font-size:0.9rem}
+
+.mis-simulaciones .contenedorMalla{
+  background: var(--surface);
+  min-height:240px;
+  padding:1rem;
+  border-radius:12px;
+  border:1px solid var(--border);
+  box-shadow: inset 0 1px 0 rgba(0,0,0,0.02);
+}
+
+.mis-simulaciones .empty{color:var(--muted);text-align:center;padding:2rem}
+
+.mis-simulaciones .visually-hidden{position:absolute!important;height:1px;width:1px;overflow:hidden;clip:rect(1px,1px,1px,1px);white-space:nowrap}
+
+/* utility */
+.mis-simulaciones .row{display:flex;gap:0.75rem;align-items:center}

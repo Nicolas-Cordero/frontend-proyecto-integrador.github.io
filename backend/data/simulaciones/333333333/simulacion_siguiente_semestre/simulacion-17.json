@@ -1,6 +1,6 @@
 {
   "tipo": "simulacion_siguiente_semestre",
-  "creadoEn": "2025-12-17T21:58:23.329Z",
+  "creadoEn": "2025-12-17T22:01:54.051Z",
   "estudiante": {
     "rut": "333333333",
     "email": "ximena@example.com"
@@ -11,6 +11,12 @@
     "catalogo": "202410"
   },
   "cursos": [
+    {
+      "codigo": "DCCB-00119",
+      "nombre": "INTRODUCCIÓN A LA FÍSICA",
+      "nivel": 1,
+      "creditos": 6
+    },
     {
       "codigo": "UNFV-02002",
       "nombre": "FORMACIÓN GENERAL VALORICA 2",
@@ -24,22 +30,16 @@
       "creditos": 8
     },
     {
-      "codigo": "DCCB-00106",
-      "nombre": "CÁLCULO I",
+      "codigo": "UNFV-01001",
+      "nombre": "FORMACIÓN GENERAL VALORICA 1",
       "nivel": 1,
-      "creditos": 6
+      "creditos": 2
     },
     {
-      "codigo": "DCCB-00204",
-      "nombre": "PROGRAMACIÓN",
-      "nivel": 2,
+      "codigo": "DCCB-00402",
+      "nombre": "BASES DE DATOS",
+      "nivel": 4,
       "creditos": 8
-    },
-    {
-      "codigo": "DCCB-00107",
-      "nombre": "ÁLGEBRA I",
-      "nivel": 1,
-      "creditos": 6
     }
   ]
 }

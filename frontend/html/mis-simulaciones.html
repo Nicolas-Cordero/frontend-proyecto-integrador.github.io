@@ -134,9 +134,23 @@
         <div class="empty">Selecciona una simulación en el panel para verla aquí.</div>
       </section>
     </main>
+
+    <section class="panel" style="margin-top:1rem;" aria-labelledby="lista-title">
+      <div id="lista-title" class="visually-hidden">Listado de simulaciones guardadas</div>
+      <div class="row" style="justify-content:space-between;margin-bottom:0.75rem;">
+        <strong>Simulaciones Guardadas</strong>
+        <div class="row">
+          <button id="btnFiltroProx" class="ghost" aria-pressed="true">Próx. Semestre</button>
+          <button id="btnFiltroEgreso" class="ghost" aria-pressed="false">Egreso</button>
+          <button id="btnRefrescar">Refrescar</button>
+        </div>
+      </div>
+      <ul id="listaMisSimulaciones" style="margin:0;padding-left:1.25rem;"></ul>
+    </section>
   </div>
 
   <script src="../js/poblar-simulaciones.js"></script>
+  <script src="../js/mis-simulaciones-guardadas.js"></script>
   <script src="../js/mis-simulaciones.js"></script>
   <script src="../js/proyeccion-ui.js"></script>
 
