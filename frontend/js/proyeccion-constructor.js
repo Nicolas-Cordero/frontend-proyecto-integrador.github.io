@@ -1,7 +1,7 @@
 (function() {
   'use strict';
 
-  function crearProyeccion(ramosPendientes, ramosAprobados, creditosMaximos = 30) {
+  function crearProyeccion(ramosPendientes, ramosAprobados, creditosMaximos) {
     if (!Array.isArray(ramosPendientes)) ramosPendientes = [];
     if (!Array.isArray(ramosAprobados)) ramosAprobados = [];
 
@@ -51,6 +51,13 @@
         break;
       }
     }
+
+    sessionStorage.setItem('proyeccionEgresoActual', JSON.stringify({
+      semestres: semestres,
+      totalSemestres: semestres.length,
+      totalRamos: semestres.flat().length,
+      ramosReqNoPosibles: ramosPorProcesar
+    }));
 
     return {
       semestres: semestres,

@@ -5,7 +5,8 @@
     try {
       const avanceData = await window.obtenerAvanceParaCarrera(rut, codcarrera);
       const mallaData = await window.obtenerMallas(codcarrera, semestre);
-      const { ramosAprobados, ramosPendientes, codigosAprobados } = window.procesarDatos(avanceData, mallaData);
+      const mallaLimpia = window.limpiarMalla(mallaData);
+      const { ramosAprobados, ramosPendientes} = window.procesarDatos(avanceData, mallaLimpia);
 
       const proyeccion = window.crearProyeccion(ramosPendientes, ramosAprobados, creditosMaximos);
       
