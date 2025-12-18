@@ -198,8 +198,6 @@
     }
 
     onCarreraSeleccionada(carrera) {
-      console.log('[HistoricoEstadisticas] Carrera seleccionada:', carrera);
-      
       if (!this.usuarioActual) return;
 
       // Recargar estadísticas solo para la carrera seleccionada
@@ -234,8 +232,6 @@
       });
 
       const periodosArray = Array.from(periodos).sort();
-      console.log('[HistoricoEstadisticas] Períodos encontrados (TODOS):', periodosArray);
-      console.log('[HistoricoEstadisticas] Total de períodos:', periodos.size);
 
       return {
         aprobados,

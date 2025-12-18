@@ -64,7 +64,7 @@ aplicacion.use((error, req, res, next) => {
 });
 
 const servidor = aplicacion.listen(configuracion.puerto, () => {
-  console.log(`Backend de simulaciones escuchando en http://localhost:${configuracion.puerto}`);
+  console.warn(`Backend de simulaciones escuchando en http://localhost:${configuracion.puerto}`);
 });
 
 servidor.on('error', (error) => {

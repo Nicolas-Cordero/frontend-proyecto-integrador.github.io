@@ -1576,9 +1576,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     actualizarIconoBoton();
   }
-
-  // Fallback: asegurar toggle de barra aunque falle la inicialización previa
-  // Eliminado fallback para evitar doble binding y estados conflictivos
 });
 
 if (typeof window !== 'undefined') {

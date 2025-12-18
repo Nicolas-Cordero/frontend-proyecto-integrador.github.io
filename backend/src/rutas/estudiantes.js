@@ -234,6 +234,27 @@ enrutador.get('/:rut/foto', (req, res) => {
   }
 });
 
+enrutador.get('/:rut/avance', (req, res) => {
+  const baseDatos = req.db;
+  const rut = req.params.rut;
+
+  if (!rut) {
+    return res.status(400).json({ error: 'RUT de estudiante es requerido.' });
+  }
+
+  try {
+    const usuario = baseDatos.prepare('SELECT id FROM usuarios WHERE rut = ?').get(rut);
+    if (!usuario) {
+      return res.json([]);
+    }
+
+    return res.json([]);
+  } catch (error) {
+    console.error('[estudiantes] error al obtener avance', error);
+    return res.json([]);
+  }
+});
+
 enrutador.get('/:identificador', (req, res) => {
   const baseDatos = req.db;
   const { identificador } = req.params;

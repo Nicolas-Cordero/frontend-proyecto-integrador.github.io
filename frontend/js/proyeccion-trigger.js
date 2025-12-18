@@ -67,8 +67,6 @@
           const cuerpo = await resp.json().catch(() => ({}));
           if (!resp.ok) {
             console.error('Error al guardar la proyección en el backend:', cuerpo);
-          } else {
-            console.log('Simulación de egreso guardada exitosamente:', cuerpo);
           }
         } catch (error) {
           console.error('Error al guardar la proyección en el backend:', error);

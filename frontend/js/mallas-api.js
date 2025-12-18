@@ -27,11 +27,7 @@
       url = window.APP_CONFIG?.API_URL || '/api/mallas';
     }
     
-    console.log(`[mallas-api] URL construida: ${url}`);
-    
     try {
-      console.log(`[mallas-api] GET ${url}`);
-      
       const res = await fetch(url);
       
       if (!res.ok) {
@@ -40,7 +36,6 @@
       }
 
       const datos = await res.json();
-      console.log(`[mallas-api] ✓ ${datos.length || 0} mallas obtenidas`);
       
       return datos;
       

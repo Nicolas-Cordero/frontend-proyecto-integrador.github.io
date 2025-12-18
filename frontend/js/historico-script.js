@@ -23,7 +23,6 @@ class HistoricoApp {
   }
 
   inicializar() {
-    console.log('HistoricoApp inicializado');
     // Renderiza un estado inicial (vacío) mientras se integran datos
     this.renderizarEstadoInicial();
     // Intentar cargar los avances desde la API usando la sesión almacenada
@@ -46,7 +45,6 @@ class HistoricoApp {
 
   async fetchAvanceForCarrera(rut, codcarrera) {
     const url = `https://puclaro.ucn.cl/eross/avance/avance.php?rut=${encodeURIComponent(rut)}&codcarrera=${encodeURIComponent(codcarrera)}`;
-    console.log('[HistoricoApp] URL de API:', url);
     try {
       const datos = await this.fetchJsonText(url);
       if (Array.isArray(datos)) return datos;
@@ -54,7 +52,6 @@ class HistoricoApp {
         console.warn('[HistoricoApp] API Avance respondió con error para', codcarrera, ':', datos.error);
         return [];
       }
-      console.log('[HistoricoApp] Respuesta API (no es array):', datos);
       return [];
     } catch (err) {
       console.error('[HistoricoApp] Error al obtener avance para', codcarrera, err);
@@ -115,8 +112,6 @@ class HistoricoApp {
       carreraInicial = carreras[0]; // Por defecto, la primera
     }
     
-    console.log('[HistoricoApp] Carrera inicial a mostrar:', carreraInicial);
-    
     // Cargar solo la carrera inicial, no todas
     const codigo = carreraInicial.codigo || carreraInicial.code || carreraInicial.cod || null;
     
@@ -128,9 +123,7 @@ class HistoricoApp {
     
     let todas = [];
     try {
-      console.log('[HistoricoApp] Llamando API Avance con RUT:', rut, 'y codcarrera:', codigo);
       const avance = await this.fetchAvanceForCarrera(rut, codigo);
-      console.log('[HistoricoApp] Respuesta de API Avance:', avance);
       
       if (Array.isArray(avance) && avance.length > 0) {
         todas = avance;
@@ -184,8 +177,6 @@ class HistoricoApp {
   }
 
   onCarreraSeleccionada(carrera) {
-    console.log('[HistoricoApp] Carrera seleccionada:', carrera);
-    
     // Guardar la carrera seleccionada
     this.guardarCarreraSeleccionada(carrera);
     
@@ -434,7 +425,6 @@ class HistoricoApp {
       return;
     }
 
-    console.log('Proyecciones cargadas:', datos);
     this.cargarProyeccionesDesdeDatos(datos);
   }
 }

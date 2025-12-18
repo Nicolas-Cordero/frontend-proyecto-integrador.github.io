@@ -36,7 +36,6 @@ function migrarNombreArchivoBaseDatos() {
   if (fs.existsSync(shmAntiguo) && !fs.existsSync(shmNuevo)) {
     fs.renameSync(shmAntiguo, shmNuevo);
   }
-  console.log('[base-datos] Archivo de base de datos renombrado a base_datos.sqlite');
 }
 
 function obtenerMarcaTiempo() {
@@ -86,7 +85,6 @@ function respaldarYReiniciarArchivoBaseDatos() {
   if (fs.existsSync(shm)) {
     fs.renameSync(shm, `${shm}.backup-${marca}`);
   }
-  console.log(`[base-datos] Base anterior respaldada en: ${path.basename(respaldo)}`);
 }
 
 function inicializarBaseDatos() {

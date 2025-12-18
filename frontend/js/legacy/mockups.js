@@ -63,7 +63,6 @@ const USUARIOS_MOCK = [
   }
 ];
 
-console.log('⚠️ mockups archived: USUARIOS_MOCK available at js/legacy/mockups.js');
 
 // Exportar para uso en node/test si se desea
 if (typeof module !== 'undefined' && module.exports) {

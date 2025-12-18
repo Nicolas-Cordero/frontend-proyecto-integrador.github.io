@@ -18,7 +18,6 @@
 
     const response = await fetch(url);
     const simulaciones = await response.json();
-    console.log(simulaciones);
 
     simulaciones.forEach(simulacion => {
       const optionElement = document.createElement('option');

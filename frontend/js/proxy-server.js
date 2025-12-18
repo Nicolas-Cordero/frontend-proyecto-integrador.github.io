@@ -26,7 +26,6 @@ const AUTH_TOKEN = 'jf400fejof13f';
  * Esto permite acceder a /html/index.html, /css/*, /js/*, /images/*
  */
 const projectRoot = path.join(__dirname, '..');
-console.log(`[proxy] Sirviendo archivos desde: ${projectRoot}`);
 app.use(express.static(projectRoot));
 
 /**
@@ -37,6 +36,15 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   next();
+});
+
+/**
+ * GET /favicon.ico
+ * 
+ * Sirve el favicon desde la carpeta de imágenes
+ */
+app.get('/favicon.ico', (req, res) => {
+  res.sendFile(path.join(projectRoot, 'images', 'favicon.png'));
 });
 
 /**
@@ -52,23 +60,16 @@ app.use((req, res, next) => {
 app.get('/api/mallas', async (req, res) => {
   try {
     const { codigo, semestre } = req.query;
-    console.log(`[proxy] Request recibido - Query params:`, req.query);
     
     let url = API_BASE_URL;
     const semestreFinal = semestre || '202320';
     
     if (codigo) {
       url = `${API_BASE_URL}?${codigo}-${semestreFinal}`;
-      console.log(`[proxy] GET /api/mallas - Código: ${codigo}, Semestre: ${semestreFinal}`);
     } else {
       url = `${API_BASE_URL}?8606-202320`;
-      console.log(`[proxy] GET /api/mallas - Sin código, usando default: 8606-202320`);
     }
     
-    console.log(`[proxy] URL de API: ${url}`);
-    
-    // Fetch con header de autenticación
-    // maxRedirects: 5 para seguir redirects automáticamente
     const response = await axios.get(url, {
       headers: {
         'X-HAWAII-AUTH': AUTH_TOKEN
@@ -80,8 +81,6 @@ app.get('/api/mallas', async (req, res) => {
     });
 
     const dataLength = Array.isArray(response.data) ? response.data.length : 0;
-    console.log(`[proxy] ✓ API respondió: ${response.status} - ${dataLength} mallas`);
-    console.log(`[proxy] Tipo de respuesta:`, typeof response.data, Array.isArray(response.data) ? 'Array' : 'No Array');
     
     if (dataLength === 0) {
       console.warn(`[proxy] ⚠ ADVERTENCIA: La API devolvió 0 mallas para código ${codigo || 'default'}`);
@@ -104,14 +103,5 @@ app.get('/api/mallas', async (req, res) => {
 
 // Iniciar servidor
 app.listen(PORT, () => {
-  console.log('\n' + '='.repeat(70));
-  console.log('[proxy] ✓ SERVIDOR PROXY INICIADO CORRECTAMENTE');
-  console.log('='.repeat(70));
-  console.log(`[proxy] Escuchando en: http://localhost:${PORT}`);
-  console.log(`[proxy] Sirviendo archivos desde: ${projectRoot}`);
-  console.log('\n[proxy] URLs disponibles:');
-  console.log(`  • Aplicación:  http://localhost:${PORT}/html/index.html`);
-  console.log(`  • API Proxy:   http://localhost:${PORT}/api/mallas`);
-  console.log('\n[proxy] Presiona Ctrl+C para detener el servidor\n');
-  console.log('='.repeat(70) + '\n');
+  console.warn(`[proxy] Servidor iniciado en http://localhost:${PORT}`);
 });

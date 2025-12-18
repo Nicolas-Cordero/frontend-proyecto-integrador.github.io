@@ -17,8 +17,6 @@ const CONFIGURACION = {
   }
 };
 
-// NOTA: Los datos de MOCK_USERS ahora se cargan desde mockups.js
-// Ese archivo debe ser incluido antes de este script en el HTML
 
 // ===== CLASE PRINCIPAL DE LA APLICACIÓN =====
 class LoginApp {
@@ -318,9 +316,6 @@ class LoginApp {
   }
 
   async manejarInicioSesionExitoso(data) {
-    console.log('Login exitoso, datos del usuario:', data.user);
-    console.log('academicInfo recibido:', data.user.academicInfo);
-    
     this.guardarDatosSesion(data);
 
     const usuarioActual = data.user;
@@ -414,7 +409,6 @@ class LoginApp {
     // SOLO sessionStorage para desarrollo
     if (data.user) {
       sessionStorage.setItem(CONFIGURACION.CLAVES_ALMACENAMIENTO.DATOS_USUARIO, JSON.stringify(data.user));
-      console.log('Usuario guardado en sessionStorage:', data.user);
     }
   }
 
@@ -422,7 +416,6 @@ class LoginApp {
     const userData = sessionStorage.getItem(CONFIGURACION.CLAVES_ALMACENAMIENTO.DATOS_USUARIO);
     
     if (userData) {
-      console.log('Sesión existente encontrada');
       // Opcional: redirigir automáticamente
       // window.location.href = 'main-menu.html';
     }
@@ -430,7 +423,6 @@ class LoginApp {
 
   limpiarDatosSesion() {
     sessionStorage.clear();
-    console.log('SessionStorage limpiado');
   }
 
   // ===== FUNCIONALIDADES ADICIONALES =====
@@ -460,7 +452,6 @@ class LoginApp {
 
   alternarMenuMovil() {
     // Implementar funcionalidad de menú móvil si es necesario
-    console.log('Toggle mobile menu');
   }
 
   // ===== UI HELPERS =====
@@ -581,23 +572,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Configurar PWA si es soportado
   if ('serviceWorker' in navigator) {
-    console.log('Service Worker support detected');
     // Implementar service worker para funcionalidad offline
   }
 
   // Configurar eventos globales
   window.addEventListener('online', () => {
-    console.log('Conexión restaurada');
+    // Conexión restaurada
   });
 
   window.addEventListener('offline', () => {
-    console.log('Conexión perdida');
+    // Conexión perdida
   });
-
-  // Log de información del sistema
-  console.log('Sistema de login UCN inicializado');
-  console.log('Versión: 1.0.1');
-  console.log('Entorno:', window.location.hostname === 'localhost' ? 'desarrollo' : 'producción');
 });
 
 // ===== EXPORTAR PARA TESTING =====

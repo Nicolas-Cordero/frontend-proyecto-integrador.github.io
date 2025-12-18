@@ -52,7 +52,6 @@
     const actual = document.getElementById("simulaciones");
     const response = await fetch(`http://localhost:4000/api/simulaciones/${actual.value}/archivo`);
     const malla = await response.json();
-    console.log(malla);
 
     if(malla.tipo == 'simulacion_siguiente_semestre'){
       let temp = {semestres: [[]]};
@@ -65,7 +64,6 @@
           prereq: '',
         })
       }
-      console.log(temp);
       window.renderizarProyeccion(temp, 'contenedorMalla');
     } else {window.renderizarProyeccion(malla, 'contenedorMalla');}
     
@@ -107,7 +105,6 @@
       }
 
       const result = await response.json();
-      console.log('Simulación borrada:', result);
 
       // Mostrar mensaje de éxito
       alert('Simulación borrada correctamente');

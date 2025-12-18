@@ -63,6 +63,14 @@
           option.dataset.catalogo = carrera.catalogo || carrera.catalog || '';
           this.selectorCarrera.appendChild(option);
         });
+        
+        const primeraCarrera = this.carreras[0];
+        if (primeraCarrera) {
+          const codigoPrimera = primeraCarrera.codigo || primeraCarrera.code || '';
+          this.selectorCarrera.value = codigoPrimera;
+          this.carreraSeleccionada = primeraCarrera;
+          this.cargarRamosAdelantables();
+        }
       } else if (this.carreras.length === 1) {
         this.carreraSeleccionada = this.carreras[0];
         this.cargarRamosAdelantables();
@@ -110,8 +118,6 @@
         origen = window.DEFAULT_MALLA;
       }
       
-      console.log('Origen de datos:', origen);
-      
       return origen.map((ramo) => {
         // Normalizar las propiedades que pueden tener diferentes nombres
         const ramoNormalizado = {
@@ -122,7 +128,6 @@
           prereq: ramo.prereq || ramo.prerequisites || ''
         };
         
-        console.log('Ramo normalizado:', ramoNormalizado);
         return ramoNormalizado;
       }).filter((r) => Boolean(r.nombre && r.codigo));
     }
@@ -145,11 +150,9 @@
         const semestre = carrera?.catalogo || carrera?.catalog || usuario.academicInfo?.currentSemester || usuario.currentSemester || null;
 
         if (codigoCarrera) {
-          console.log('Cargando malla desde API para carrera:', codigoCarrera, 'semestre:', semestre);
           try {
             window.DATOS_MALLA_ACTUAL = [];
             const mallaCargada = await window.obtenerMallas(codigoCarrera, semestre);
-            console.log('Malla cargada desde API:', mallaCargada?.length || 0, 'ramos');
             if (mallaCargada && mallaCargada.length > 0) {
               window.DATOS_MALLA_ACTUAL = mallaCargada;
             } else {
@@ -166,8 +169,6 @@
         }
 
         const mallaCompleta = this.obtenerRamosDisponibles();
-
-        console.log('Malla completa:', mallaCompleta);
         
         // Obtener el avance del estudiante
         const avanceData = await this.obtenerAvanceEstudiante(usuario.rut, codigoCarrera);
@@ -175,15 +176,10 @@
         // Procesar datos para obtener ramos aprobados y pendientes
         const { codigosAprobados, ramosPendientes } = this.procesarAvance(avanceData, mallaCompleta);
         
-        console.log('Ramos pendientes:', ramosPendientes);
-        console.log('Códigos aprobados:', Array.from(codigosAprobados));
-        
         // Filtrar ramos adelantables (que cumplen prerequisitos)
         this.ramosAdelantables = ramosPendientes.filter(ramo => 
           this.validarPrerequisitos(ramo, codigosAprobados)
         );
-
-        console.log('Ramos adelantables:', this.ramosAdelantables);
 
         if (this.ramosAdelantables.length === 0) {
           this.mostrarMensajeRamos('No hay ramos disponibles para adelantar en este momento.');
@@ -321,7 +317,6 @@
       }
 
       this.actualizarContador();
-      console.log('Ramos seleccionados:', Array.from(this.ramosSeleccionados));
     }
 
     actualizarContador() {
@@ -344,8 +339,6 @@
       const ramosParaSimulacion = todosRamosDisponibles.filter(ramo => 
         this.ramosSeleccionados.has(ramo.codigo || ramo.code)
       );
-
-      console.log('Ramos para simulación:', ramosParaSimulacion);
 
       return {
         tipo: 'simulacion_siguiente_semestre',

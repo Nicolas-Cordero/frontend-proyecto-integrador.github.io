@@ -93,12 +93,10 @@
 
   async function cargarMallaParaCarrera(codigoCarrera, catalogo = null) {
     try {
-      console.log('[mallas] Cargando malla para carrera:', codigoCarrera, 'catálogo:', catalogo);
       window.DATOS_MALLA_ACTUAL = [];
       
       const semestre = catalogo || '202320';
       let datos = await window.obtenerMallas(codigoCarrera, semestre);
-      console.log('[mallas] Datos recibidos con código', codigoCarrera, 'y semestre', semestre, ':', datos?.length || 0, 'ramos');
       
       if (!datos || datos.length === 0) {
         console.warn('[mallas] No se obtuvieron datos para código', codigoCarrera, 'con semestre', semestre, '- usando DEFAULT_MALLA');
