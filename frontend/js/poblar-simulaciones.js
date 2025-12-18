@@ -6,7 +6,7 @@
     const rut = userData ? userData.rut : '222222222';
     const selectSimulacion = document.getElementById("simulaciones");
 
-    const response = await fetch(`http://localhost:4000/api/simulaciones/estudiante/${rut}?tipo=simulacion_egreso`);
+    const response = await fetch(`http://localhost:4000/api/simulaciones/estudiante/${rut}`);
     const simulaciones = await response.json();
     console.log(simulaciones);
 
@@ -14,6 +14,7 @@
       const optionElement = document.createElement('option');
       optionElement.value = simulacion.id;
       optionElement.textContent = simulacion.titulo;
+      optionElement.dataset.tipo = simulacion.tipo;
       selectSimulacion.appendChild(optionElement);
     });
   }
