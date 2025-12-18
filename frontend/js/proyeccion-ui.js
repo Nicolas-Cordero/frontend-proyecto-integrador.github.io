@@ -77,7 +77,6 @@
       columna.classList.add('columna');
       columna.style.flex = '0 0 auto';
       columna.style.minWidth = '260px';
-      columna.style.maxWidth = '360px';
       columna.style.display = 'flex';
       columna.style.flexDirection = 'column';
       columna.style.gap = '.5rem';
