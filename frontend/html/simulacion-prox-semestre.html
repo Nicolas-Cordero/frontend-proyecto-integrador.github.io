@@ -6,6 +6,7 @@
   <title>Simulación Próximo Semestre</title>
   <link rel="stylesheet" href="../css/main-menu.css">
   <link rel="stylesheet" href="../css/style-mallas.css">
+  <link rel="stylesheet" href="../css/simulacion-prox-semestre.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
@@ -15,6 +16,18 @@
       <h1>Simulación Próximo Semestre</h1>
       <p style="color:var(--muted)">Genera una simulación basada en tu información académica actual.</p>
     </header>
+
+    <div class="panel" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1.5rem">
+      <h2 style="margin-bottom:0.75rem;font-size:1.1rem">Ramos Adelantables</h2>
+      <p style="color:var(--muted);margin-bottom:1rem;font-size:0.9rem">Selecciona los ramos que deseas adelantar en el próximo semestre:</p>
+      <div id="ramosCounter" class="ramos-counter" style="display:none">
+        <i class="fa-solid fa-check-circle"></i>
+        <span>Ramos seleccionados: <span class="count">0</span></span>
+      </div>
+      <div id="ramosAdelantablesContainer" style="max-height:400px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:1rem;background:var(--background)">
+        <p style="color:var(--muted);text-align:center">Cargando ramos disponibles...</p>
+      </div>
+    </div>
 
     <div class="panel" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem">
       <div style="display:flex;gap:0.75rem;align-items:center;justify-content:flex-start">
@@ -28,6 +41,9 @@
     </div>
   </section>
 
+  <script src="../js/proyeccion-validador.js"></script>
+  <script src="../js/proyeccion-procesador.js"></script>
+  <script src="../js/mallas-api.js"></script>
   <script src="../js/simulacion-prox-semestre.js"></script>
 </body>
 </html>

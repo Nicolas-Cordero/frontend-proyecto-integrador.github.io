@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Mis simulaciones</title>
 
-  <style src="../css/mis-simulaciones.css"></style>
+  <link rel="stylesheet" href="../css/mis-simulaciones.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
   <div class="wrap">
@@ -18,13 +19,24 @@
       <aside class="panel" aria-labelledby="panel-title">
         <h2 id="panel-title" class="visually-hidden">Panel de selección</h2>
 
-        <label for="simulaciones">Elige una simulación</label>
-        <select id="simulaciones" aria-describedby="sim-status">
-          <option value="">— Cargando opciones —</option>
-        </select>
+        <div class="panel-controls">
+          <div class="select-wrapper">
+            <label for="simulaciones">Elige una simulación</label>
+            <select id="simulaciones" aria-describedby="sim-status">
+              <option value="">— Cargando opciones —</option>
+            </select>
+          </div>
 
-        <div class="actions">
-          <button id="iniciarFetch" aria-label="Ver simulación seleccionada">Ver simulación</button>
+          <div class="actions">
+            <button id="iniciarFetch" aria-label="Ver simulación seleccionada">
+              <i class="fa-solid fa-eye"></i>
+              <span>Ver simulación</span>
+            </button>
+            <button id="borrarSimulacion" aria-label="Borrar simulación seleccionada" disabled>
+              <i class="fa-solid fa-trash"></i>
+              <span>Borrar</span>
+            </button>
+          </div>
         </div>
 
         <div id="Datos" class="hint" aria-live="polite">Sin selección</div>

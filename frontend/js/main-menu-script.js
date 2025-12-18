@@ -699,6 +699,9 @@ class VistaMisSimulacionesEgreso extends VistaStrategy {
     
     areaContenido.innerHTML = bodyContent;
 
+    // Cargar CSS específico de mis-simulaciones
+    resourceManager.inyectarCss(`${AppConfig.RUTAS.CSS}mis-simulaciones.css?v=${Date.now()}`, 'css-mis-simulaciones');
+
     window.APP_CONFIG = AppConfig.APP_CONFIG_MALLA;
 
     const scripts = [
@@ -715,13 +718,16 @@ class VistaMisSimulacionesEgreso extends VistaStrategy {
     window.poblarSimulaciones();
     const boton = document.getElementById('iniciarFetch');
     
-    boton.addEventListener('click', () => {window.fetchSimulacion();});
+    if (boton) {
+      boton.addEventListener('click', () => {window.fetchSimulacion();});
+    }
 
   }
 
   limpiar(resourceManager) {
     resourceManager.limpiarScripts(AppConfig.SCRIPTS_PROYECCION);
     resourceManager.limpiarScripts(['poblar-simulaciones.js', 'mis-simulaciones.js', 'proyeccion-ui.js']);
+    resourceManager.limpiarCss(['css-mis-simulaciones']);
   }
   
 }

@@ -1,0 +1,45 @@
+{
+  "tipo": "simulacion_siguiente_semestre",
+  "creadoEn": "2025-12-18T04:21:44.706Z",
+  "estudiante": {
+    "rut": "333333333",
+    "email": "ximena@example.com"
+  },
+  "carrera": {
+    "codigo": "8266",
+    "nombre": "ITI",
+    "catalogo": "202410"
+  },
+  "cursos": [
+    {
+      "codigo": "UNFP-90002",
+      "nombre": "Formación Profesional Electiva",
+      "nivel": 9,
+      "creditos": 5
+    },
+    {
+      "codigo": "DCCB-00106",
+      "nombre": "Cálculo I",
+      "nivel": 1,
+      "creditos": 6
+    },
+    {
+      "codigo": "SSED-00102",
+      "nombre": "Comunicación Efectiva I",
+      "nivel": 1,
+      "creditos": 2
+    },
+    {
+      "codigo": "UNFP-80001",
+      "nombre": "Formación Profesional Electiva",
+      "nivel": 8,
+      "creditos": 5
+    },
+    {
+      "codigo": "UNFV-01001",
+      "nombre": "Formación General Valórica 1",
+      "nivel": 1,
+      "creditos": 2
+    }
+  ]
+}

@@ -1,97 +1,278 @@
 
-    :root{
-      --bg:#0f172a;
-      --card:#020617;
-      --muted:#94a3b8;
-      --text:#e5e7eb;
-      --accent:#38bdf8;
-      --accent-hover:#0ea5e9;
+    /* Variables del tema - se adaptan según el modo claro/oscuro */
+    :root {
+      --bg: #ffffff;
+      --card: #f8fafc;
+      --muted: #64748b;
+      --text: #0f172a;
+      --accent: #667eea;
+      --accent-hover: #5568d3;
+      --border: #e2e8f0;
+      --glass: rgba(0,0,0,0.02);
+    }
+
+    /* Modo oscuro */
+    [data-theme="dark"] {
+      --bg: #0f172a;
+      --card: #020617;
+      --muted: #94a3b8;
+      --text: #e5e7eb;
+      --accent: #38bdf8;
+      --accent-hover: #0ea5e9;
+      --border: rgba(255,255,255,0.1);
       --glass: rgba(255,255,255,0.02);
     }
-    html,body{height:100%;}
+
+    html, body {
+      height: 100%;
+    }
+
     body {
-      margin:0;
+      margin: 0;
       font-family: Inter, Arial, Helvetica, sans-serif;
-      background:linear-gradient(180deg,var(--bg) 0%, #071029 100%);
-      color:var(--text);
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-      padding:2rem;
-      box-sizing:border-box;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      padding: 2rem;
+      box-sizing: border-box;
     }
 
     .wrap{
-      max-width:1100px;
-      margin:0 auto;
-      display:grid;
-      grid-template-columns: 1fr;
-      gap:1.25rem;
-      align-items:start;
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
     }
 
     header{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
     }
 
-    h1{font-size:1.25rem;margin:0}
+    h1{
+      font-size: 1.5rem;
+      margin: 0;
+    }
 
     main{
-      display:grid;
-      grid-template-columns: 340px 1fr;
-      gap:1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
     }
 
-    /* responsive */
-    @media (max-width:700px){
-      main{grid-template-columns:1fr}
-    }
-
+    /* Panel de control horizontal en la parte superior */
     .panel{
-      background:var(--card);
-      padding:1.25rem;
-      border-radius:12px;
-      box-shadow:0 8px 30px rgba(2,6,23,0.6);
-      border:1px solid rgba(255,255,255,0.02);
+      background: var(--card);
+      padding: 1.25rem;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      border: 1px solid var(--border);
+      width: 100%;
+      max-width: 100%;
     }
 
-    label{display:block;color:var(--muted);font-size:0.9rem;margin-bottom:0.5rem}
+    /* Layout horizontal del selector y botones */
+    .panel-controls {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      max-width: 900px;
+    }
+
+    .select-wrapper {
+      flex: 1;
+      min-width: 300px;
+      max-width: 500px;
+    }
+
+    /* Responsive: en pantallas pequeñas vuelve a vertical */
+    @media (max-width: 768px) {
+      .panel-controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .select-wrapper {
+        min-width: 100%;
+      }
+
+      .actions {
+        width: 100%;
+      }
+
+      .actions button {
+        flex: 1;
+      }
+    }
+
+    label{
+      display: block;
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
 
     select{
-      width:100%;
-      padding:10px 12px;
-      border-radius:8px;
-      background:transparent;
-      color:var(--text);
-      border:1px solid rgba(255,255,255,0.04);
-      outline:none;
-      appearance:none;
-      font-size:1rem;
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      outline: none;
+      appearance: none;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }
 
-    .actions{display:flex;gap:0.5rem;margin-top:1rem}
+    select:hover {
+      border-color: var(--accent);
+    }
 
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .actions{
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 0;
+    }
+
+    .actions button{
+      flex: 1;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:0.5rem;
+      padding:0.75rem 1rem;
+      border-radius:10px;
+      border:none;
+      cursor:pointer;
+      font-weight:600;
+      transition: all 0.3s ease;
+      font-size: 0.95rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Botón Ver simulación - Morado/Púrpura */
+    .actions #iniciarFetch,
+    button#iniciarFetch {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+      color: white !important;
+    }
+
+    .actions #iniciarFetch:hover:not(:disabled),
+    button#iniciarFetch:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(102, 126, 234, 0.5) !important;
+    }
+
+    /* Botón Borrar - Rojo */
+    .actions #borrarSimulacion,
+    button#borrarSimulacion {
+      background: linear-gradient(135deg, #f56565 0%, #c53030 100%) !important;
+      color: white !important;
+    }
+
+    .actions #borrarSimulacion:hover:not(:disabled),
+    button#borrarSimulacion:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(245, 101, 101, 0.5) !important;
+    }
+
+    /* Estado deshabilitado */
+    .actions button:disabled {
+      opacity: 0.5 !important;
+      cursor: not-allowed !important;
+      transform: none !important;
+    }
+
+    .actions button:active:not(:disabled) {
+      transform: translateY(0) !important;
+    }
+
+    /* Estilos generales de botón */
     button{
       display:inline-flex;align-items:center;justify-content:center;
       gap:0.5rem;padding:0.7rem 0.9rem;border-radius:10px;border:none;cursor:pointer;
       background:var(--accent);color:#021124;font-weight:600;
     }
 
-    button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--text);font-weight:500}
-
-    button:focus{outline:2px solid rgba(56,189,248,0.2)}
-
-    .hint{margin-top:0.75rem;color:#94a3b8;font-size:0.9rem}
-
-    .contenedorMalla{
-      background:linear-gradient(180deg, rgba(2,6,23,0.6), rgba(2,6,23,0.4));
-      min-height:240px;padding:1rem;border-radius:12px;border:1px solid rgba(255,255,255,0.02);
-      box-shadow:inset 0 1px 0 rgba(255,255,255,0.02);
+    button.ghost{
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-weight: 500;
     }
 
-    .empty{color:var(--muted);text-align:center;padding:2rem}
+    button:focus{
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .hint{
+      margin-top: 0.75rem;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .contenedorMalla{
+      background: var(--card);
+      min-height: 500px;
+      height: calc(100vh - 320px);
+      padding: 1rem;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      overflow-y: auto;
+      overflow-x: auto;
+      width: 100%;
+    }
+
+    /* Asegurar que el contenedor de malla no afecte el panel superior */
+    main > section {
+      align-self: flex-start;
+    }
+
+    .empty{
+      color: var(--muted);
+      text-align: center;
+      padding: 2rem;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Scrollbar personalizado */
+    .contenedorMalla::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    .contenedorMalla::-webkit-scrollbar-track {
+      background: var(--bg);
+      border-radius: 4px;
+    }
+
+    .contenedorMalla::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    .contenedorMalla::-webkit-scrollbar-thumb:hover {
+      background: var(--muted);
+    }
 
     .visually-hidden{position:absolute!important;height:1px;width:1px;overflow:hidden;clip:rect(1px,1px,1px,1px);white-space:nowrap}
 
