@@ -1,0 +1,22 @@
+{
+  "tipo": "simulacion_egreso",
+  "creadoEn": "2025-12-18T21:37:05.638Z",
+  "estudiante": {
+    "rut": "333333333",
+    "email": "ximena@example.com"
+  },
+  "carrera": {
+    "codigo": "8616",
+    "nombre": "ICI",
+    "catalogo": "202310"
+  },
+  "parametros": {
+    "rut": "333333333",
+    "codcarrera": "8616",
+    "creditosMaximos": 34
+  },
+  "semestres": [],
+  "totalSemestres": 0,
+  "totalRamos": 0,
+  "ramosReqNoPosibles": []
+}

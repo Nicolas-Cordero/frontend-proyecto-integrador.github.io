@@ -19,14 +19,29 @@
         }
 
         const rut = usuario.rut || '222222222';
-        const semestre = catalogo;
+        
+        let carrera = null;
+        if (Array.isArray(usuario.carreras) && usuario.carreras.length) {
+          carrera = usuario.carreras.find(c => 
+            (c.codigo && c.codigo === codigo) || 
+            (c.code && c.code === codigo) ||
+            (c.cod && c.cod === codigo)
+          );
+        }
+        
+        const semestre = catalogo || carrera?.catalogo || carrera?.catalog || null;
 
-        const proyeccion = await window.prepararProyeccion(rut, codigo, catalogo, cantCreditos);
+        const proyeccion = await window.prepararProyeccion(rut, codigo, semestre, cantCreditos);
 
-        const carreraUsuario = Array.isArray(usuario.carreras) && usuario.carreras.length ? usuario.carreras[0] : null;
-        const carrera = typeof carreraUsuario === 'object' && carreraUsuario
-          ? carreraUsuario
-          : { nombre: `Carrera ${codigo}`, catalogo: codigo, codigo: codigo };
+        if (!carrera) {
+          carrera = { nombre: `Carrera ${codigo}`, catalogo: semestre || codigo, codigo: codigo };
+        } else {
+          carrera = {
+            codigo: carrera.codigo || carrera.code || carrera.cod || codigo,
+            nombre: carrera.nombre || carrera.name || `Carrera ${codigo}`,
+            catalogo: carrera.catalogo || carrera.catalog || semestre || codigo
+          };
+        }
 
         try {
           const resp = await fetch('http://localhost:4000/api/simulaciones/proyeccion', {

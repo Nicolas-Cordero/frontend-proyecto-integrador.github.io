@@ -1,0 +1,45 @@
+{
+  "tipo": "simulacion_siguiente_semestre",
+  "creadoEn": "2025-12-18T22:01:22.611Z",
+  "estudiante": {
+    "rut": "333333333",
+    "email": "ximena@example.com"
+  },
+  "carrera": {
+    "codigo": "8616",
+    "nombre": "ICI",
+    "catalogo": "202310"
+  },
+  "cursos": [
+    {
+      "codigo": "SSED-00102",
+      "nombre": "Comunicación Efectiva I",
+      "nivel": 1,
+      "creditos": 2
+    },
+    {
+      "codigo": "ECIN-08616",
+      "nombre": "Práctica Pre-Profesional",
+      "nivel": 7,
+      "creditos": 12
+    },
+    {
+      "codigo": "UNFP-90005",
+      "nombre": "Formación Profesional Electiva",
+      "nivel": 9,
+      "creditos": 5
+    },
+    {
+      "codigo": "UNFP-90003",
+      "nombre": "Formación Profesional Electiva",
+      "nivel": 9,
+      "creditos": 5
+    },
+    {
+      "codigo": "SIM5",
+      "nombre": "Ramo simulado 5",
+      "nivel": 5,
+      "creditos": 5
+    }
+  ]
+}

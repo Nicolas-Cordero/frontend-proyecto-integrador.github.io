@@ -1,0 +1,45 @@
+{
+  "tipo": "simulacion_siguiente_semestre",
+  "creadoEn": "2025-12-18T22:00:58.717Z",
+  "estudiante": {
+    "rut": "333333333",
+    "email": "ximena@example.com"
+  },
+  "carrera": {
+    "codigo": "8266",
+    "nombre": "ITI",
+    "catalogo": "202410"
+  },
+  "cursos": [
+    {
+      "codigo": "ECIN-00115",
+      "nombre": "Proy. Intro. a la Ingeniería",
+      "nivel": 1,
+      "creditos": 5
+    },
+    {
+      "codigo": "UNFE-10001",
+      "nombre": "Formación General Electiva I",
+      "nivel": 1,
+      "creditos": 2
+    },
+    {
+      "codigo": "UNFP-40001",
+      "nombre": "Formación Profesional Electiva",
+      "nivel": 4,
+      "creditos": 5
+    },
+    {
+      "codigo": "SIM4",
+      "nombre": "Ramo simulado 4",
+      "nivel": 4,
+      "creditos": 5
+    },
+    {
+      "codigo": "SIM5",
+      "nombre": "Ramo simulado 5",
+      "nivel": 5,
+      "creditos": 5
+    }
+  ]
+}

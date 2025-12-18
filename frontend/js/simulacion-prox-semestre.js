@@ -10,16 +10,65 @@
       this.resultado = document.getElementById('resultadoSimulacion');
       this.ramosContainer = document.getElementById('ramosAdelantablesContainer');
       this.ramosCounter = document.getElementById('ramosCounter');
+      this.selectorCarrera = document.getElementById('selectCarreraSimulacion');
+      this.selectorCarreraContainer = document.getElementById('selectorCarreraContainer');
       this.generando = false;
       this.ramosAdelantables = [];
       this.ramosSeleccionados = new Set();
+      this.carreraSeleccionada = null;
+      this.carreras = [];
       this.configurarEventos();
-      this.cargarRamosAdelantables();
+      this.inicializarCarreras();
     }
 
     configurarEventos() {
       if (!this.btn) return;
       this.btn.addEventListener('click', () => this.generar());
+      
+      if (this.selectorCarrera) {
+        this.selectorCarrera.addEventListener('change', (e) => {
+          const carreraCodigo = e.target.value;
+          if (carreraCodigo) {
+            const carrera = this.carreras.find(c => 
+              (c.codigo && c.codigo === carreraCodigo) ||
+              (c.code && c.code === carreraCodigo)
+            );
+            if (carrera) {
+              this.carreraSeleccionada = carrera;
+              this.ramosSeleccionados.clear();
+              this.actualizarContador();
+              window.DATOS_MALLA_ACTUAL = [];
+              this.cargarRamosAdelantables();
+            }
+          }
+        });
+      }
+    }
+
+    inicializarCarreras() {
+      const usuario = this.getUsuario();
+      if (!usuario) return;
+
+      this.carreras = Array.isArray(usuario.carreras) ? usuario.carreras : [];
+      
+      if (this.carreras.length > 1 && this.selectorCarreraContainer && this.selectorCarrera) {
+        this.selectorCarreraContainer.style.display = 'block';
+        this.selectorCarrera.innerHTML = '<option value="">-- Seleccionar carrera --</option>';
+        
+        this.carreras.forEach(carrera => {
+          const option = document.createElement('option');
+          const codigo = carrera.codigo || carrera.code || '';
+          option.value = codigo;
+          option.textContent = carrera.nombre || carrera.name || codigo;
+          option.dataset.catalogo = carrera.catalogo || carrera.catalog || '';
+          this.selectorCarrera.appendChild(option);
+        });
+      } else if (this.carreras.length === 1) {
+        this.carreraSeleccionada = this.carreras[0];
+        this.cargarRamosAdelantables();
+      } else {
+        this.cargarRamosAdelantables();
+      }
     }
 
     getUsuario() {
@@ -29,6 +78,14 @@
     }
 
     construirCarrera(usuario) {
+      if (this.carreraSeleccionada) {
+        return {
+          codigo: this.carreraSeleccionada.codigo || this.carreraSeleccionada.code || '',
+          nombre: this.carreraSeleccionada.nombre || this.carreraSeleccionada.name || 'Carrera sin nombre',
+          catalogo: this.carreraSeleccionada.catalogo || this.carreraSeleccionada.catalog || null
+        };
+      }
+      
       if (Array.isArray(usuario.carreras) && usuario.carreras.length) {
         const c0 = usuario.carreras[0];
         if (c0 && typeof c0 === 'object') return c0;
@@ -78,26 +135,42 @@
           return;
         }
 
-        // Cargar la malla completa explícitamente si no está disponible
-        let mallaCompleta = this.obtenerRamosDisponibles();
-        
-        if (!mallaCompleta || mallaCompleta.length === 0) {
-          console.log('Cargando malla desde API...');
+        if (this.carreras.length > 1 && !this.carreraSeleccionada) {
+          this.mostrarMensajeRamos('Por favor selecciona una carrera para ver los ramos disponibles.');
+          return;
+        }
+
+        const carrera = this.carreraSeleccionada || (this.carreras.length > 0 ? this.carreras[0] : null);
+        const codigoCarrera = carrera?.codigo || carrera?.code || null;
+        const semestre = carrera?.catalogo || carrera?.catalog || usuario.academicInfo?.currentSemester || usuario.currentSemester || null;
+
+        if (codigoCarrera) {
+          console.log('Cargando malla desde API para carrera:', codigoCarrera, 'semestre:', semestre);
           try {
-            const mallaCargada = await window.obtenerMallas();
+            window.DATOS_MALLA_ACTUAL = [];
+            const mallaCargada = await window.obtenerMallas(codigoCarrera, semestre);
+            console.log('Malla cargada desde API:', mallaCargada?.length || 0, 'ramos');
             if (mallaCargada && mallaCargada.length > 0) {
               window.DATOS_MALLA_ACTUAL = mallaCargada;
-              mallaCompleta = this.obtenerRamosDisponibles();
+            } else {
+              console.warn('No se obtuvieron datos de malla, usando DEFAULT_MALLA');
+              window.DATOS_MALLA_ACTUAL = window.DEFAULT_MALLA || [];
             }
           } catch (error) {
             console.warn('Error al cargar malla desde API, usando DEFAULT_MALLA', error);
+            window.DATOS_MALLA_ACTUAL = window.DEFAULT_MALLA || [];
           }
+        } else {
+          console.warn('No hay código de carrera disponible');
+          window.DATOS_MALLA_ACTUAL = window.DEFAULT_MALLA || [];
         }
+
+        const mallaCompleta = this.obtenerRamosDisponibles();
 
         console.log('Malla completa:', mallaCompleta);
         
         // Obtener el avance del estudiante
-        const avanceData = await this.obtenerAvanceEstudiante(usuario.rut);
+        const avanceData = await this.obtenerAvanceEstudiante(usuario.rut, codigoCarrera);
         
         // Procesar datos para obtener ramos aprobados y pendientes
         const { codigosAprobados, ramosPendientes } = this.procesarAvance(avanceData, mallaCompleta);
@@ -124,11 +197,24 @@
       }
     }
 
-    async obtenerAvanceEstudiante(rut) {
+    async obtenerAvanceEstudiante(rut, codigoCarrera = null) {
       try {
-        const response = await fetch(`http://localhost:4000/api/estudiantes/${rut}/avance`);
-        if (!response.ok) return [];
-        return await response.json();
+        let url = `http://localhost:4000/api/estudiantes/${rut}/avance`;
+        if (codigoCarrera) {
+          url += `?carrera=${encodeURIComponent(codigoCarrera)}`;
+        }
+        const response = await fetch(url);
+        if (!response.ok) {
+          if (response.status === 404) {
+            return [];
+          }
+          return [];
+        }
+        const avanceData = await response.json();
+        if (!codigoCarrera || !Array.isArray(avanceData)) {
+          return avanceData;
+        }
+        return avanceData;
       } catch (error) {
         console.warn('Error al obtener avance del estudiante:', error);
         return [];
@@ -311,6 +397,11 @@
       if (this.generando) return;
       const usuario = this.getUsuario();
       if (!usuario) { alert('Debes iniciar sesión nuevamente para generar una simulación.'); return; }
+
+      if (this.carreras.length > 1 && !this.carreraSeleccionada) {
+        alert('Por favor selecciona una carrera antes de generar la simulación.');
+        return;
+      }
 
       // Validar que se hayan seleccionado ramos
       if (this.ramosSeleccionados.size === 0) {

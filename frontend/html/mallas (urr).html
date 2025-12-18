@@ -9,10 +9,17 @@
 <body>
   <header class="cabecera-malla">
     <div>
-      <h1>Malla Curricular - Ingeniería Civil en Computación e Informática</h1>
+      <h1>Malla Curricular</h1>
       <p>Visualiza tu avance y genera simulaciones rápidas</p>
     </div>
   </header>
+
+  <div id="selectorCarreraMallaContainer" style="display:none;margin:1rem;padding:0.75rem;background:var(--surface, #fff);border:1px solid var(--border, #ddd);border-radius:8px">
+    <label for="selectCarreraMalla" style="display:block;margin-bottom:0.5rem;font-weight:600;color:var(--text, #333)">Carrera:</label>
+    <select id="selectCarreraMalla" style="padding:0.5rem;min-width:200px;border:1px solid var(--border, #ddd);border-radius:6px;background:var(--surface, #fff);color:var(--text, #333);cursor:pointer">
+      <option value="">-- Seleccionar carrera --</option>
+    </select>
+  </div>
 
   <main id="contenedorMalla"></main>
   <script src="../js/mallas-api.js"></script>

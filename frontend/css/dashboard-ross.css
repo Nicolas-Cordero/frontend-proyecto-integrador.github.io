@@ -1,0 +1,164 @@
+.dashboard-ross {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.dashboard-ross-header {
+  margin-bottom: 2rem;
+}
+
+.dashboard-ross-header h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--text-primary, #1a1a1a);
+  margin-bottom: 0.5rem;
+}
+
+.dashboard-ross-header p {
+  color: var(--muted, #666);
+  font-size: 0.95rem;
+}
+
+.dashboard-ross-selector {
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.dashboard-ross-selector label {
+  font-weight: 500;
+  color: var(--text-primary, #1a1a1a);
+}
+
+.dashboard-ross-selector select {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  background: white;
+  color: var(--text-primary, #1a1a1a);
+  cursor: pointer;
+  min-width: 200px;
+}
+
+.dashboard-ross-selector select:hover {
+  border-color: var(--primary-color, #667eea);
+}
+
+.dashboard-ross-selector select:focus {
+  outline: none;
+  border-color: var(--primary-color, #667eea);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.dashboard-ross-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.dashboard-ross-stat-card {
+  background: white;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.dashboard-ross-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-ross-stat-card-title {
+  font-size: 0.875rem;
+  color: var(--muted, #666);
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.dashboard-ross-stat-card-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary, #1a1a1a);
+}
+
+.dashboard-ross-charts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.dashboard-ross-chart-container {
+  background: white;
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-ross-chart-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-primary, #1a1a1a);
+  margin-bottom: 0.25rem;
+}
+
+.dashboard-ross-chart-subtitle {
+  font-size: 0.875rem;
+  font-weight: 400;
+  color: var(--muted, #666);
+  margin-bottom: 1rem;
+}
+
+.dashboard-ross-chart-wrapper {
+  position: relative;
+  height: 300px;
+}
+
+.dashboard-ross-loading {
+  text-align: center;
+  padding: 3rem;
+  color: var(--muted, #666);
+}
+
+.dashboard-ross-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  color: #dc2626;
+  margin-bottom: 2rem;
+}
+
+.dashboard-ross-empty {
+  text-align: center;
+  padding: 3rem;
+  color: var(--muted, #666);
+}
+
+.dashboard-ross-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+@media (max-width: 768px) {
+  .dashboard-ross {
+    padding: 1rem;
+  }
+
+  .dashboard-ross-charts {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-ross-chart-wrapper {
+    height: 250px;
+  }
+}
+

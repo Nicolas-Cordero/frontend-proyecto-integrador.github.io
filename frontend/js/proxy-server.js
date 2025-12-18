@@ -18,7 +18,7 @@ const app = express();
 const PORT = 3000;
 
 // Credenciales de la API real
-const API_URL = 'https://losvilos.ucn.cl/hawaii/api/mallas?8606-202320';
+const API_BASE_URL = 'https://losvilos.ucn.cl/hawaii/api/mallas';
 const AUTH_TOKEN = 'jf400fejof13f';
 
 /**
@@ -44,24 +44,57 @@ app.use((req, res, next) => {
  * 
  * Obtiene mallas desde API remota con autenticación
  * Responde con JSON de mallas o error
+ * 
+ * Parámetros de query:
+ * - codigo: Código de la carrera (ej: 8266, 8616)
+ * - semestre: Semestre (opcional, ej: 202320)
  */
 app.get('/api/mallas', async (req, res) => {
   try {
-    console.log('[proxy] GET /api/mallas - Iniciando...');
+    const { codigo, semestre } = req.query;
+    console.log(`[proxy] Request recibido - Query params:`, req.query);
+    
+    let url = API_BASE_URL;
+    const semestreFinal = semestre || '202320';
+    
+    if (codigo) {
+      url = `${API_BASE_URL}?${codigo}-${semestreFinal}`;
+      console.log(`[proxy] GET /api/mallas - Código: ${codigo}, Semestre: ${semestreFinal}`);
+    } else {
+      url = `${API_BASE_URL}?8606-202320`;
+      console.log(`[proxy] GET /api/mallas - Sin código, usando default: 8606-202320`);
+    }
+    
+    console.log(`[proxy] URL de API: ${url}`);
     
     // Fetch con header de autenticación
-    const response = await axios.get(API_URL, {
+    // maxRedirects: 5 para seguir redirects automáticamente
+    const response = await axios.get(url, {
       headers: {
         'X-HAWAII-AUTH': AUTH_TOKEN
+      },
+      maxRedirects: 5,
+      validateStatus: function (status) {
+        return status >= 200 && status < 400;
       }
     });
 
-    console.log(`[proxy] ✓ API respondió: ${response.status}`);
+    const dataLength = Array.isArray(response.data) ? response.data.length : 0;
+    console.log(`[proxy] ✓ API respondió: ${response.status} - ${dataLength} mallas`);
+    console.log(`[proxy] Tipo de respuesta:`, typeof response.data, Array.isArray(response.data) ? 'Array' : 'No Array');
+    
+    if (dataLength === 0) {
+      console.warn(`[proxy] ⚠ ADVERTENCIA: La API devolvió 0 mallas para código ${codigo || 'default'}`);
+    }
+    
     res.json(response.data);
     
   } catch (error) {
     console.error(`[proxy] ✗ Error: ${error.message}`);
     console.error('[proxy] Respuesta de error:', error.response?.status, error.response?.statusText);
+    if (error.response?.data) {
+      console.error('[proxy] Datos de error:', JSON.stringify(error.response.data, null, 2));
+    }
     res.status(error.response?.status || 500).json({ 
       error: error.message,
       details: error.response?.data || null

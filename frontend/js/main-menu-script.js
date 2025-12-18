@@ -332,6 +332,26 @@ class RenderService {
     `;
   }
 
+  generarDashboardRoss() {
+    return `
+      <div class="dashboard-ross">
+        <div class="dashboard-ross-header">
+          <h1>Dashboard Ross</h1>
+          <p>Estadísticas y análisis de simulaciones académicas</p>
+        </div>
+        <div class="dashboard-ross-selector" id="dashboardRossSelectorCarrera" style="display: none;">
+          <label for="selectCarreraDashboard">Filtrar por carrera:</label>
+          <select id="selectCarreraDashboard">
+            <option value="">Todas las carreras</option>
+          </select>
+        </div>
+        <div id="dashboardRossContenedor">
+          <div class="dashboard-ross-loading">Cargando estadísticas...</div>
+        </div>
+      </div>
+    `;
+  }
+
   generarTesting() {
     return `
       <div style="padding: 2rem;">
@@ -669,7 +689,11 @@ class VistaTestingStrategy extends VistaStrategy {
     const cantCreditos = document.getElementById('cantCreditos');
     const boton = document.getElementById('botonEjecutarProyeccion');
 
-    boton.addEventListener('click', () => {window.ejecutarTesting(selectCarrera.value, selectCarrera.dataset.catalogo, Number(cantCreditos.value));});
+    boton.addEventListener('click', () => {
+      const selectedOption = selectCarrera.options[selectCarrera.selectedIndex];
+      const catalogo = selectedOption?.dataset.catalogo || null;
+      window.ejecutarTesting(selectCarrera.value, catalogo, Number(cantCreditos.value));
+    });
     
   }
 
@@ -841,6 +865,62 @@ class VistaSimulacionProxSemestreStrategy extends VistaStrategy {
     resourceManager.limpiarScripts(['simulacion-prox-semestre.js']);
   }
 }
+
+class VistaDashboardRossStrategy extends VistaStrategy {
+  getIdVista() {
+    return 'dashboard-ross';
+  }
+
+  async cargar(areaContenido, servicios) {
+    const { usuarioService, renderService, resourceManager } = servicios;
+    
+    resourceManager.limpiarCss(['historico-scoped-style']);
+    resourceManager.limpiarScripts(AppConfig.SCRIPTS_MALLA);
+
+    const usuario = usuarioService.obtenerUsuario();
+    if (!usuario) {
+      throw new Error('No hay datos de usuario disponibles');
+    }
+
+    const html = renderService.generarDashboardRoss();
+    areaContenido.innerHTML = html;
+
+    resourceManager.inyectarCss(
+      `${AppConfig.RUTAS.CSS}dashboard-ross.css?v=${Date.now()}`,
+      'dashboard-ross-style'
+    );
+
+    await resourceManager.inyectarScript(`${AppConfig.RUTAS.JS}dashboard-ross.js?v=${Date.now()}`);
+
+    await new Promise((resolve) => {
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          if (window.DashboardRossApp) {
+            if (window.dashboardRossApp) {
+              window.dashboardRossApp.destruirGraficos();
+            }
+            const app = new window.DashboardRossApp();
+            app.inicializar(usuario).catch(err => {
+              console.error('[VistaDashboardRoss] Error al inicializar:', err);
+            });
+            window.dashboardRossApp = app;
+          }
+          resolve();
+        }, 100);
+      });
+    });
+  }
+
+  limpiar(resourceManager) {
+    if (window.dashboardRossApp) {
+      window.dashboardRossApp.destruirGraficos();
+      window.dashboardRossApp = null;
+    }
+    resourceManager.limpiarCss(['dashboard-ross-style']);
+    resourceManager.limpiarScripts(['dashboard-ross.js']);
+  }
+}
+
 class NavegacionService {
   constructor(resourceManager, renderService, usuarioService, apiService) {
     this.resourceManager = resourceManager;
@@ -861,6 +941,7 @@ class NavegacionService {
     this.estrategias.set('perfil', new VistaPerfilStrategy());
     this.estrategias.set('malla-actual', new VistaMallaActualStrategy());
     this.estrategias.set('historico', new VistaHistoricoStrategy());
+    this.estrategias.set('dashboard-ross', new VistaDashboardRossStrategy());
     this.estrategias.set('proyeccion-testing', new VistaTestingStrategy());
     this.estrategias.set('simulacion-prox-semestre', new VistaSimulacionProxSemestreStrategy());
     this.estrategias.set('mis-simulaciones-egreso', new VistaMisSimulacionesEgreso());
@@ -999,6 +1080,7 @@ class MenuActivoService {
       'home': () => this.activarPorTexto('Malla Actual', todosElementosMenu),
       'malla-actual': () => this.activarPorTexto('Malla Actual', todosElementosMenu),
       'historico': () => this.activarPorTexto('Estadísticas - Histórico', todosElementosMenu),
+      'dashboard-ross': () => this.activarPorTexto('Dashboard Ross', todosElementosMenu),
       'proyeccion-testing': () => this.activarPorTexto('Simulación Egreso', todosElementosMenu),
       'mis-simulaciones-egreso': () => this.activarPorTexto('Mis Simulaciones Egreso', todosElementosMenu),
       'mis-simulaciones-prox-semestre': () => this.activarPorTexto('Mis simulaciones Próximo Semestre', todosElementosMenu),
@@ -1177,6 +1259,7 @@ class MainMenuApp {
     this.configurarNavegacionPerfil();
     this.configurarNavegacionMallaActual();
     this.configurarNavegacionHistorico();
+    this.configurarNavegacionDashboardRoss();
     this.configurarNavegacionTesting();
     this.configurarNavegacionSimulacionProxSemestre();
     this.configurarNavegacionAtras();
@@ -1310,6 +1393,20 @@ class MainMenuApp {
     });
   }
 
+  configurarNavegacionDashboardRoss() {
+    const elementosMenu = document.querySelectorAll('.elemento-menu');
+    elementosMenu.forEach(elemento => {
+      const texto = elemento.querySelector('span')?.textContent?.trim();
+      if (texto === 'Dashboard Ross') {
+        elemento.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.cargarDashboardRoss();
+          this.menuActivoService.establecer('dashboard-ross');
+        });
+      }
+    });
+  }
+
   configurarNavegacionTesting() {
     const elementosMenu = document.querySelectorAll('.elemento-menu');
     elementosMenu.forEach(elemento => {
@@ -1365,6 +1462,14 @@ class MainMenuApp {
       this.navegacionService.navegarA('historico');
     } catch (error) {
       console.error('Error al cargar histórico:', error);
+    }
+  }
+
+  async cargarDashboardRoss() {
+    try {
+      await this.navegacionService.navegarA('dashboard-ross');
+    } catch (error) {
+      console.error('Error al cargar Dashboard Ross:', error);
     }
   }
 
@@ -1488,6 +1593,7 @@ if (typeof window !== 'undefined') {
   window.VistaPerfilStrategy = VistaPerfilStrategy;
   window.VistaMallaActualStrategy = VistaMallaActualStrategy;
   window.VistaHistoricoStrategy = VistaHistoricoStrategy;
+  window.VistaDashboardRossStrategy = VistaDashboardRossStrategy;
   window.VistaTestingStrategy = VistaTestingStrategy;
   window.VistaMisSimulaciones = VistaMisSimulacionesEgreso;
   window.NavegacionService = NavegacionService;

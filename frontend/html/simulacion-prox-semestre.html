@@ -18,6 +18,12 @@
     </header>
 
     <div class="panel" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem;margin-bottom:1.5rem">
+      <div id="selectorCarreraContainer" style="display:none;margin-bottom:1rem;padding:0.75rem;background:var(--background);border:1px solid var(--border);border-radius:8px">
+        <label for="selectCarreraSimulacion" style="display:block;margin-bottom:0.5rem;font-weight:600;color:var(--text)">Carrera:</label>
+        <select id="selectCarreraSimulacion" style="padding:0.5rem;min-width:200px;border:1px solid var(--border);border-radius:6px;background:var(--surface);color:var(--text);cursor:pointer">
+          <option value="">-- Seleccionar carrera --</option>
+        </select>
+      </div>
       <h2 style="margin-bottom:0.75rem;font-size:1.1rem">Ramos Adelantables</h2>
       <p style="color:var(--muted);margin-bottom:1rem;font-size:0.9rem">Selecciona los ramos que deseas adelantar en el próximo semestre:</p>
       <div id="ramosCounter" class="ramos-counter" style="display:none">

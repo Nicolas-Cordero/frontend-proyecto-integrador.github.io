@@ -423,6 +423,69 @@ enrutador.post('/proyeccion', (req, res) => {
   }
 });
 
+enrutador.get('/estadisticas', (req, res) => {
+  const baseDatos = req.db;
+  const carreraFiltro = req.query?.carrera || null;
+
+  try {
+    let consulta;
+    let parametros;
+
+    if (carreraFiltro) {
+      consulta = baseDatos.prepare(`
+        SELECT s.id, s.contenido_json, s.tipo, s.creado_en, s.carrera_codigo,
+               u.rut AS rut_usuario, c.nombre AS carrera_nombre
+        FROM simulaciones s
+        JOIN usuarios u ON u.id = s.usuario_id
+        LEFT JOIN carreras c ON c.codigo = s.carrera_codigo
+        WHERE s.carrera_codigo = ?
+        ORDER BY s.creado_en DESC
+      `);
+      parametros = [carreraFiltro];
+    } else {
+      consulta = baseDatos.prepare(`
+        SELECT s.id, s.contenido_json, s.tipo, s.creado_en, s.carrera_codigo,
+               u.rut AS rut_usuario, c.nombre AS carrera_nombre
+        FROM simulaciones s
+        JOIN usuarios u ON u.id = s.usuario_id
+        LEFT JOIN carreras c ON c.codigo = s.carrera_codigo
+        ORDER BY s.creado_en DESC
+      `);
+      parametros = [];
+    }
+
+    const filas = carreraFiltro ? consulta.all(carreraFiltro) : consulta.all();
+    const simulaciones = [];
+
+    for (const fila of filas) {
+      let contenido = null;
+      try {
+        contenido = JSON.parse(fila.contenido_json);
+      } catch (error) {
+        contenido = { tipo: fila.tipo, simulacionId: fila.id };
+      }
+
+      simulaciones.push({
+        id: fila.id,
+        tipo: fila.tipo,
+        creado_en: fila.creado_en,
+        carrera_codigo: fila.carrera_codigo,
+        carrera_nombre: fila.carrera_nombre,
+        rut_usuario: fila.rut_usuario,
+        contenido: contenido
+      });
+    }
+
+    return res.json({
+      total: simulaciones.length,
+      simulaciones: simulaciones
+    });
+  } catch (error) {
+    console.error('[estudiantes] error al obtener estadísticas', error);
+    return res.status(500).json({ error: 'Error al obtener estadísticas.' });
+  }
+});
+
 const rutasPorEstudiante = ['/estudiante/:identificador', '/student/:identifier'];
 
 enrutador.get(rutasPorEstudiante, (req, res) => {

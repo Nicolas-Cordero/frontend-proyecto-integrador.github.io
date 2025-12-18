@@ -1,0 +1,304 @@
+{
+  "tipo": "simulacion_egreso",
+  "creadoEn": "2025-12-18T22:02:19.434Z",
+  "estudiante": {
+    "rut": "333333333",
+    "email": "ximena@example.com"
+  },
+  "carrera": {
+    "codigo": "8616",
+    "nombre": "ICI",
+    "catalogo": "202310"
+  },
+  "parametros": {
+    "rut": "333333333",
+    "codcarrera": "8616",
+    "semestre": "202310",
+    "creditosMaximos": 32
+  },
+  "semestres": [
+    [
+      {
+        "codigo": "DCCB-00107",
+        "asignatura": "Álgebra I",
+        "creditos": 6,
+        "nivel": 1,
+        "prereq": ""
+      },
+      {
+        "codigo": "DCCB-00106",
+        "asignatura": "Cálculo I",
+        "creditos": 6,
+        "nivel": 1,
+        "prereq": ""
+      },
+      {
+        "codigo": "UNFV-01001",
+        "asignatura": "Formación General Valórica 1",
+        "creditos": 2,
+        "nivel": 1,
+        "prereq": ""
+      },
+      {
+        "codigo": "ECIN-00100",
+        "asignatura": "Pr. Intro. a la Ingeniería",
+        "creditos": 5,
+        "nivel": 1,
+        "prereq": ""
+      },
+      {
+        "codigo": "UNFV-02002",
+        "asignatura": "Formación General Valórica 2",
+        "creditos": 2,
+        "nivel": 2,
+        "prereq": ""
+      },
+      {
+        "codigo": "UNFE-10001",
+        "asignatura": "Formación General Electiva I",
+        "creditos": 2,
+        "nivel": 3,
+        "prereq": ""
+      },
+      {
+        "codigo": "SSED-02020",
+        "asignatura": "Comunicación Efectiva II",
+        "creditos": 2,
+        "nivel": 4,
+        "prereq": "SSED-00102"
+      },
+      {
+        "codigo": "ECIN-00600",
+        "asignatura": "Termodinámica",
+        "creditos": 5,
+        "nivel": 4,
+        "prereq": "DCCB-00264,DCCB-00265"
+      },
+      {
+        "codigo": "UNFV-03003",
+        "asignatura": "Formación General Valórica 3",
+        "creditos": 2,
+        "nivel": 6,
+        "prereq": ""
+      }
+    ],
+    [
+      {
+        "codigo": "DCCB-00505",
+        "asignatura": "Electromagnetismo",
+        "creditos": 6,
+        "nivel": 4,
+        "prereq": "DCCB-00107,DCCB-00216,DCCB-00401"
+      },
+      {
+        "codigo": "ECIN-00519",
+        "asignatura": "Ciencia de Datos",
+        "creditos": 5,
+        "nivel": 5,
+        "prereq": "ECIN-00200,ECIN-00500"
+      },
+      {
+        "codigo": "ECIN-00605",
+        "asignatura": "Contabilidad de Dirección",
+        "creditos": 5,
+        "nivel": 5,
+        "prereq": "ECIN-00402"
+      },
+      {
+        "codigo": "UNFP-05001",
+        "asignatura": "Electivo Cs de la Ingeniería",
+        "creditos": 5,
+        "nivel": 5,
+        "prereq": "DCCB-00301"
+      },
+      {
+        "codigo": "ECIN-00505",
+        "asignatura": "Investigación Operativa I",
+        "creditos": 5,
+        "nivel": 5,
+        "prereq": "DCCB-00266,DCCB-00401"
+      },
+      {
+        "codigo": "ECIN-00098",
+        "asignatura": "Emprendimiento",
+        "creditos": 3,
+        "nivel": 6,
+        "prereq": ""
+      },
+      {
+        "codigo": "UNFV-04004",
+        "asignatura": "Formación General Valórica 4",
+        "creditos": 2,
+        "nivel": 7,
+        "prereq": ""
+      }
+    ],
+    [
+      {
+        "codigo": "ECIN-00802",
+        "asignatura": "Adm. de la Producción II",
+        "creditos": 5,
+        "nivel": 6,
+        "prereq": "ECIN-00504,ECIN-00505"
+      },
+      {
+        "codigo": "ECIN-00603",
+        "asignatura": "Ingeniería Económica",
+        "creditos": 5,
+        "nivel": 6,
+        "prereq": "ECIN-00605"
+      },
+      {
+        "codigo": "ECIN-00604",
+        "asignatura": "Investigación Operativa II",
+        "creditos": 5,
+        "nivel": 6,
+        "prereq": "ECIN-00500,ECIN-00505"
+      },
+      {
+        "codigo": "UNFP-70001",
+        "asignatura": "Formación Profesional Electiva",
+        "creditos": 5,
+        "nivel": 7,
+        "prereq": ""
+      },
+      {
+        "codigo": "ECIN-00800",
+        "asignatura": "Ing. y Desarollo Sustentable",
+        "creditos": 5,
+        "nivel": 7,
+        "prereq": "ECIN-00505,ECIN-00519,ECIN-00605,ECIN-00704"
+      },
+      {
+        "codigo": "UNFP-80001",
+        "asignatura": "Formación Profesional Electiva",
+        "creditos": 5,
+        "nivel": 8,
+        "prereq": ""
+      }
+    ],
+    [
+      {
+        "codigo": "ECIN-00703",
+        "asignatura": "Cadena de Suministros",
+        "creditos": 5,
+        "nivel": 7,
+        "prereq": "ECIN-00604,ECIN-00802"
+      },
+      {
+        "codigo": "ECIN-08616",
+        "asignatura": "Práctica Pre-Profesional",
+        "creditos": 12,
+        "nivel": 7,
+        "prereq": ""
+      },
+      {
+        "codigo": "ECIN-00606",
+        "asignatura": "Pr. Form. Eva. Proy. Inversión",
+        "creditos": 5,
+        "nivel": 7,
+        "prereq": "ECIN-00403,ECIN-00603"
+      },
+      {
+        "codigo": "ECIN-00700",
+        "asignatura": "Simulación",
+        "creditos": 5,
+        "nivel": 7,
+        "prereq": "ECIN-00604"
+      },
+      {
+        "codigo": "ECIN-00903",
+        "asignatura": "Gestión de Capital Humano",
+        "creditos": 5,
+        "nivel": 8,
+        "prereq": "DCCB-00505,ECIN-00402,ECIN-00500,ECIN-00504,ECIN-00505,ECIN-00519,ECIN-00600,ECIN-00605,ECIN-00704"
+      }
+    ],
+    [
+      {
+        "codigo": "ECIN-00901",
+        "asignatura": "Gestión de Activos",
+        "creditos": 5,
+        "nivel": 8,
+        "prereq": "ECIN-00603,ECIN-00703"
+      },
+      {
+        "codigo": "ECIN-00905",
+        "asignatura": "Organización Digital",
+        "creditos": 5,
+        "nivel": 8,
+        "prereq": "ECIN-00301"
+      },
+      {
+        "codigo": "ECIN-00803",
+        "asignatura": "Planificación Estratégica",
+        "creditos": 5,
+        "nivel": 8,
+        "prereq": "DCCB-00505,ECIN-00402,ECIN-00500,ECIN-00504,ECIN-00505,ECIN-00519,ECIN-00600,ECIN-00605,ECIN-00704"
+      },
+      {
+        "codigo": "ECIN-00804",
+        "asignatura": "Proyecto Cadena de Suministros",
+        "creditos": 5,
+        "nivel": 8,
+        "prereq": "ECIN-00606,ECIN-00703"
+      },
+      {
+        "codigo": "UNFP-90001",
+        "asignatura": "Formación Profesional Electiva",
+        "creditos": 5,
+        "nivel": 9,
+        "prereq": ""
+      },
+      {
+        "codigo": "UNFP-90006",
+        "asignatura": "Formación Profesional Electiva",
+        "creditos": 5,
+        "nivel": 9,
+        "prereq": ""
+      }
+    ],
+    [
+      {
+        "codigo": "UNFP-90005",
+        "asignatura": "Formación Profesional Electiva",
+        "creditos": 5,
+        "nivel": 9,
+        "prereq": ""
+      },
+      {
+        "codigo": "UNFP-90004",
+        "asignatura": "Formación Profesional Electiva",
+        "creditos": 5,
+        "nivel": 9,
+        "prereq": ""
+      },
+      {
+        "codigo": "UNFP-90003",
+        "asignatura": "Formación Profesional Electiva",
+        "creditos": 5,
+        "nivel": 9,
+        "prereq": ""
+      },
+      {
+        "codigo": "UNFP-90002",
+        "asignatura": "Formación Profesional Electiva",
+        "creditos": 5,
+        "nivel": 9,
+        "prereq": ""
+      }
+    ],
+    [
+      {
+        "codigo": "ECIN-01000",
+        "asignatura": "Capstone Project",
+        "creditos": 30,
+        "nivel": 10,
+        "prereq": "ECIN-00301,ECIN-00606,ECIN-00700,ECIN-00703,ECIN-00800,ECIN-00803,ECIN-00804,ECIN-00901,ECIN-00903,ECIN-00905,ECIN-08616"
+      }
+    ]
+  ],
+  "totalSemestres": 7,
+  "totalRamos": 38,
+  "ramosReqNoPosibles": []
+}

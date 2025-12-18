@@ -17,11 +17,17 @@
     
     if (typeof codigoCarrera === 'string' && codigoCarrera.startsWith('http')) {
       url = codigoCarrera;
-    } else if (codigoCarrera && semestre) {
-      url = `http://localhost:3000/api/mallas?codigo=${encodeURIComponent(codigoCarrera)}&semestre=${encodeURIComponent(semestre)}`;
+    } else if (codigoCarrera) {
+      if (semestre) {
+        url = `http://localhost:3000/api/mallas?codigo=${encodeURIComponent(codigoCarrera)}&semestre=${encodeURIComponent(semestre)}`;
+      } else {
+        url = `http://localhost:3000/api/mallas?codigo=${encodeURIComponent(codigoCarrera)}`;
+      }
     } else {
       url = window.APP_CONFIG?.API_URL || '/api/mallas';
     }
+    
+    console.log(`[mallas-api] URL construida: ${url}`);
     
     try {
       console.log(`[mallas-api] GET ${url}`);
