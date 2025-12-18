@@ -1,0 +1,435 @@
+{
+  "tipo": "simulacion_egreso",
+  "creadoEn": "2025-12-18T17:12:46.754Z",
+  "estudiante": {
+    "rut": "222222222",
+    "email": "maria@example.com"
+  },
+  "carrera": {
+    "codigo": "8266",
+    "nombre": "ITI",
+    "catalogo": "202410"
+  },
+  "parametros": {
+    "rut": "222222222",
+    "codcarrera": "8266",
+    "creditosMaximos": 32
+  },
+  "semestres": [
+    [
+      {
+        "codigo": "DCCB-00107",
+        "asignatura": "Álgebra I",
+        "creditos": 6,
+        "nivel": 1,
+        "prereq": ""
+      },
+      {
+        "codigo": "DCCB-00106",
+        "asignatura": "Cálculo I",
+        "creditos": 6,
+        "nivel": 1,
+        "prereq": ""
+      },
+      {
+        "codigo": "UNFV-01001",
+        "asignatura": "Formación General Valórica 1",
+        "creditos": 2,
+        "nivel": 1,
+        "prereq": ""
+      },
+      {
+        "codigo": "DCCB-00119",
+        "asignatura": "Introducción a la Física",
+        "creditos": 6,
+        "nivel": 1,
+        "prereq": ""
+      },
+      {
+        "codigo": "UNFV-02002",
+        "asignatura": "Formación General Valórica 2",
+        "creditos": 2,
+        "nivel": 2,
+        "prereq": ""
+      },
+      {
+        "codigo": "SSED-02020",
+        "asignatura": "Comunicación Efectiva II",
+        "creditos": 2,
+        "nivel": 3,
+        "prereq": "SSED-00102"
+      },
+      {
+        "codigo": "UNFE-10001",
+        "asignatura": "Formación General Electiva I",
+        "creditos": 2,
+        "nivel": 3,
+        "prereq": ""
+      },
+      {
+        "codigo": "DCCB-00264",
+        "asignatura": "Química General",
+        "creditos": 6,
+        "nivel": 3,
+        "prereq": ""
+      }
+    ],
+    [
+      {
+        "codigo": "DCCB-00266",
+        "asignatura": "Álgebra II",
+        "creditos": 6,
+        "nivel": 2,
+        "prereq": "DCCB-00107"
+      },
+      {
+        "codigo": "DCCB-00265",
+        "asignatura": "Cálculo II",
+        "creditos": 6,
+        "nivel": 2,
+        "prereq": "DCCB-00106"
+      },
+      {
+        "codigo": "DCCB-00216",
+        "asignatura": "Mecánica",
+        "creditos": 6,
+        "nivel": 2,
+        "prereq": "DCCB-00106,DCCB-00119"
+      },
+      {
+        "codigo": "ECIN-00201",
+        "asignatura": "Programación",
+        "creditos": 6,
+        "nivel": 2,
+        "prereq": "DCCB-00107,ECIN-00100"
+      },
+      {
+        "codigo": "ECIN-00498",
+        "asignatura": "Emprendimiento",
+        "creditos": 3,
+        "nivel": 4,
+        "prereq": ""
+      },
+      {
+        "codigo": "ECIN-00409",
+        "asignatura": "Ing. y Desarrollo Sustentable",
+        "creditos": 5,
+        "nivel": 4,
+        "prereq": ""
+      }
+    ],
+    [
+      {
+        "codigo": "DCCB-00401",
+        "asignatura": "Cálculo III",
+        "creditos": 5,
+        "nivel": 3,
+        "prereq": "DCCB-00265"
+      },
+      {
+        "codigo": "DCCB-00301",
+        "asignatura": "Ecuaciones Diferenciales",
+        "creditos": 5,
+        "nivel": 3,
+        "prereq": "DCCB-00265,DCCB-00266"
+      },
+      {
+        "codigo": "ECIN-00307",
+        "asignatura": "Programación Orientada a Objet",
+        "creditos": 5,
+        "nivel": 3,
+        "prereq": "ECIN-00201"
+      },
+      {
+        "codigo": "ECIN-00308",
+        "asignatura": "Téc. y met. de Prog. avanzada",
+        "creditos": 2,
+        "nivel": 3,
+        "prereq": "ECIN-00201"
+      },
+      {
+        "codigo": "ECIN-00336",
+        "asignatura": "Estadística",
+        "creditos": 6,
+        "nivel": 4,
+        "prereq": "DCCB-00265"
+      },
+      {
+        "codigo": "ECIN-00408",
+        "asignatura": "Proyecto Diseño e Innovación",
+        "creditos": 4,
+        "nivel": 4,
+        "prereq": "ECIN-00100"
+      },
+      {
+        "codigo": "ECIN-00404",
+        "asignatura": "Diseño de Sistemas Digitales",
+        "creditos": 5,
+        "nivel": 5,
+        "prereq": "DCCB-00266"
+      }
+    ],
+    [
+      {
+        "codigo": "DCCB-00505",
+        "asignatura": "Electromagnetismo",
+        "creditos": 6,
+        "nivel": 4,
+        "prereq": "DCCB-00107,DCCB-00216,DCCB-00401"
+      },
+      {
+        "codigo": "ECIN-00407",
+        "asignatura": "Estructuras de Datos",
+        "creditos": 5,
+        "nivel": 4,
+        "prereq": "ECIN-00307,ECIN-00308"
+      },
+      {
+        "codigo": "UNFP-50001",
+        "asignatura": "Formación Profesional Electiva",
+        "creditos": 5,
+        "nivel": 5,
+        "prereq": ""
+      },
+      {
+        "codigo": "ECIN-00508",
+        "asignatura": "Arq. y Org. de Computadores",
+        "creditos": 5,
+        "nivel": 6,
+        "prereq": "ECIN-00404"
+      },
+      {
+        "codigo": "UNFP-60001",
+        "asignatura": "Formación Profesional Electiva",
+        "creditos": 5,
+        "nivel": 6,
+        "prereq": ""
+      },
+      {
+        "codigo": "ECIN-00506",
+        "asignatura": "Fundamentos de la Computación",
+        "creditos": 5,
+        "nivel": 6,
+        "prereq": "ECIN-00307,ECIN-00308"
+      }
+    ],
+    [
+      {
+        "codigo": "ECIN-00507",
+        "asignatura": "Bases de Datos",
+        "creditos": 5,
+        "nivel": 5,
+        "prereq": "ECIN-00407"
+      },
+      {
+        "codigo": "ECIN-00510",
+        "asignatura": "Electrotecnia",
+        "creditos": 5,
+        "nivel": 5,
+        "prereq": "DCCB-00301,DCCB-00505"
+      },
+      {
+        "codigo": "ECIN-00512",
+        "asignatura": "Introducción a Data Science",
+        "creditos": 5,
+        "nivel": 5,
+        "prereq": "ECIN-00336,ECIN-00407"
+      },
+      {
+        "codigo": "ECIN-00513",
+        "asignatura": "Proy. Integrador Prog. Avanzad",
+        "creditos": 5,
+        "nivel": 5,
+        "prereq": "DCCB-00505,ECIN-00336,ECIN-00407,ECIN-00408,ECIN-00409,ECIN-00498"
+      },
+      {
+        "codigo": "ECIN-00610",
+        "asignatura": "Ingeniería de Software",
+        "creditos": 5,
+        "nivel": 6,
+        "prereq": "ECIN-00407"
+      },
+      {
+        "codigo": "ECIN-00608",
+        "asignatura": "Diseño y Análisis de Algoritmo",
+        "creditos": 5,
+        "nivel": 7,
+        "prereq": "ECIN-00506"
+      },
+      {
+        "codigo": "UNFV-03003",
+        "asignatura": "Formación General Valórica 3",
+        "creditos": 2,
+        "nivel": 7,
+        "prereq": ""
+      }
+    ],
+    [
+      {
+        "codigo": "ECIN-00618",
+        "asignatura": "Int. al Desarrollo Web/Móvil",
+        "creditos": 5,
+        "nivel": 6,
+        "prereq": "ECIN-00507"
+      },
+      {
+        "codigo": "ECIN-00619",
+        "asignatura": "Proyecto Integrador Software",
+        "creditos": 5,
+        "nivel": 6,
+        "prereq": "ECIN-00513"
+      },
+      {
+        "codigo": "UNFP-70001",
+        "asignatura": "Formación Profesional Electiva",
+        "creditos": 5,
+        "nivel": 7,
+        "prereq": ""
+      },
+      {
+        "codigo": "ECIN-00609",
+        "asignatura": "Lenguajes de Programación",
+        "creditos": 5,
+        "nivel": 7,
+        "prereq": "ECIN-00407"
+      },
+      {
+        "codigo": "ECIN-00805",
+        "asignatura": "Sistemas de Información I",
+        "creditos": 5,
+        "nivel": 7,
+        "prereq": "ECIN-00507"
+      },
+      {
+        "codigo": "ECIN-00706",
+        "asignatura": "Sistemas Operativos",
+        "creditos": 5,
+        "nivel": 7,
+        "prereq": "ECIN-00508"
+      },
+      {
+        "codigo": "UNFV-04004",
+        "asignatura": "Formación General Valórica 4",
+        "creditos": 2,
+        "nivel": 8,
+        "prereq": ""
+      }
+    ],
+    [
+      {
+        "codigo": "ECIN-00708",
+        "asignatura": "Proyecto Integrador Plataforma",
+        "creditos": 5,
+        "nivel": 7,
+        "prereq": "ECIN-00619"
+      },
+      {
+        "codigo": "ECIN-00808",
+        "asignatura": "Arquitectura de Sistemas",
+        "creditos": 5,
+        "nivel": 8,
+        "prereq": "ECIN-00706"
+      },
+      {
+        "codigo": "UNFP-80001",
+        "asignatura": "Formación Profesional Electiva",
+        "creditos": 5,
+        "nivel": 8,
+        "prereq": ""
+      },
+      {
+        "codigo": "ECIN-00705",
+        "asignatura": "Gestión de Proyectos TI",
+        "creditos": 5,
+        "nivel": 8,
+        "prereq": "ECIN-00805"
+      },
+      {
+        "codigo": "ECIN-00806",
+        "asignatura": "Redes de Computadores",
+        "creditos": 5,
+        "nivel": 8,
+        "prereq": "ECIN-00706"
+      },
+      {
+        "codigo": "ECIN-00907",
+        "asignatura": "Sistemas de Información II",
+        "creditos": 5,
+        "nivel": 8,
+        "prereq": "ECIN-00805"
+      }
+    ],
+    [
+      {
+        "codigo": "ECIN-00809",
+        "asignatura": "Proyecto Integrador Gestión TI",
+        "creditos": 5,
+        "nivel": 8,
+        "prereq": "ECIN-00708"
+      },
+      {
+        "codigo": "ECIN-00910",
+        "asignatura": "Evaluación de Proyectos TI",
+        "creditos": 5,
+        "nivel": 9,
+        "prereq": "ECIN-00705,ECIN-00907"
+      },
+      {
+        "codigo": "UNFP-90001",
+        "asignatura": "Formación Profesional Electiva",
+        "creditos": 5,
+        "nivel": 9,
+        "prereq": ""
+      },
+      {
+        "codigo": "UNFP-90002",
+        "asignatura": "Formación Profesional Electiva",
+        "creditos": 5,
+        "nivel": 9,
+        "prereq": ""
+      },
+      {
+        "codigo": "UNFP-90003",
+        "asignatura": "Formación Profesional Electiva",
+        "creditos": 5,
+        "nivel": 9,
+        "prereq": ""
+      },
+      {
+        "codigo": "UNFP-90004",
+        "asignatura": "Formación Profesional Electiva",
+        "creditos": 5,
+        "nivel": 9,
+        "prereq": ""
+      }
+    ],
+    [
+      {
+        "codigo": "UNFP-90005",
+        "asignatura": "Formación Profesional Electiva",
+        "creditos": 5,
+        "nivel": 9,
+        "prereq": ""
+      },
+      {
+        "codigo": "ECIN-08606",
+        "asignatura": "Práctica Pre-Profesional",
+        "creditos": 12,
+        "nivel": 9,
+        "prereq": "ECIN-00404,ECIN-00507,ECIN-00510,ECIN-00512,ECIN-00513,ECIN-00610,ECIN-00618"
+      }
+    ],
+    [
+      {
+        "codigo": "ECIN-01000",
+        "asignatura": "Capstone Project",
+        "creditos": 30,
+        "nivel": 10,
+        "prereq": "ECIN-00705,ECIN-00806,ECIN-00808,ECIN-00809,ECIN-00907,ECIN-00910,ECIN-08606"
+      }
+    ]
+  ],
+  "totalSemestres": 10,
+  "totalRamos": 56,
+  "ramosReqNoPosibles": []
+}

@@ -1,0 +1,45 @@
+{
+  "tipo": "simulacion_siguiente_semestre",
+  "creadoEn": "2025-12-18T17:35:35.795Z",
+  "estudiante": {
+    "rut": "222222222",
+    "email": "maria@example.com"
+  },
+  "carrera": {
+    "codigo": "8266",
+    "nombre": "ITI",
+    "catalogo": "202410"
+  },
+  "cursos": [
+    {
+      "codigo": "UNFV-01001",
+      "nombre": "Formación General Valórica 1",
+      "nivel": 1,
+      "creditos": 2
+    },
+    {
+      "codigo": "ECIN-00409",
+      "nombre": "Ing. y Desarrollo Sustentable",
+      "nivel": 4,
+      "creditos": 5
+    },
+    {
+      "codigo": "SSED-01184",
+      "nombre": "Inglés 1",
+      "nivel": 1,
+      "creditos": 4
+    },
+    {
+      "codigo": "ECIN-00498",
+      "nombre": "Emprendimiento",
+      "nivel": 4,
+      "creditos": 3
+    },
+    {
+      "codigo": "SIM5",
+      "nombre": "Ramo simulado 5",
+      "nivel": 5,
+      "creditos": 5
+    }
+  ]
+}

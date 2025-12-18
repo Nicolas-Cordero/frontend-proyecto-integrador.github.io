@@ -290,9 +290,20 @@
 
     mostrarResultado(res) {
       const mensaje = res?.mensaje || 'Simulación creada correctamente.';
-      const enlace = res?.simulacion?.enlace_json;
-      this.resultado.innerHTML = enlace
-        ? `${mensaje}<br><a href="${enlace}" target="_blank" rel="noopener">Descargar JSON</a>`
+      const simulacion = res?.simulacion;
+      let enlaceDescarga = null;
+      
+      if (simulacion?.id) {
+        enlaceDescarga = `http://localhost:4000/api/simulaciones/${simulacion.id}/archivo`;
+      } else if (simulacion?.enlace_json) {
+        // Si viene como ruta relativa, construir la URL completa
+        enlaceDescarga = simulacion.enlace_json.startsWith('http') 
+          ? simulacion.enlace_json 
+          : `http://localhost:4000${simulacion.enlace_json}`;
+      }
+      
+      this.resultado.innerHTML = enlaceDescarga
+        ? `${mensaje}<br><a href="${enlaceDescarga}" target="_blank" rel="noopener" style="color: var(--primary); text-decoration: underline; margin-top: 0.5rem; display: inline-block;">Descargar JSON</a>`
         : mensaje;
     }
 

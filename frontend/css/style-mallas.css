@@ -22,11 +22,11 @@ body {
 .cabecera-malla h1 {
   font-size: 1.8rem;
   margin-bottom: 0.3rem;
-  color: #111827;
+  color: var(--text, #111827);
 }
 
 .cabecera-malla p {
-  color: #6b7280;
+  color: var(--muted, #6b7280);
   font-size: 0.95rem;
 }
 
@@ -61,7 +61,7 @@ body {
 
 /* Columna (Semestre) */
 .semestre {
-  background-color: #ffffff;
+  background-color: var(--sidebar-bg, #ffffff);
   border-radius: 20px;
   padding: 15px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -72,6 +72,7 @@ body {
   text-align: center;
   margin-bottom: 15px;
   font-size: 1.1rem;
+  color: var(--text, #111827);
 }
 
 /* Ramos */

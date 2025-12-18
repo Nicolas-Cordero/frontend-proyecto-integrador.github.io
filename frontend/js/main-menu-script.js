@@ -333,8 +333,8 @@ class RenderService {
     return `
       <div style="padding: 2rem;">
         <header style="margin-bottom: 2rem;">
-          <h1 style="margin: 0 0 0.5rem 0; font-size: 2rem; color: var(--text-primary, #000);">Malla Curricular - Testing</h1>
-          <p style="margin: 0; color: var(--text-secondary, #666);">Página de prueba para los módulos de proyección</p>
+          <h1 style="margin: 0 0 0.5rem 0; font-size: 2rem; color: var(--text-primary, #000);">Simular Egreso</h1>
+          <p style="margin: 0; color: var(--text-secondary, #666);">Simula la toma de ramos más eficiente hasta lograr tu Egreso</p>
         </header>
 
         <section class="card" aria-labelledby="cardTitle">
@@ -679,7 +679,7 @@ class VistaTestingStrategy extends VistaStrategy {
 
 class VistaMisSimulacionesEgreso extends VistaStrategy {
   getIdVista() {
-    return 'mis-simulaciones';
+    return 'mis-simulaciones-egreso';
   }
 
   async cargar(areaContenido, servicios) { 
@@ -715,7 +715,74 @@ class VistaMisSimulacionesEgreso extends VistaStrategy {
       await resourceManager.inyectarScript(ruta);
     }
 
-    window.poblarSimulaciones();
+    // Poblar solo simulaciones de egreso
+    if (window.poblarSimulacionesEgreso) {
+      window.poblarSimulacionesEgreso();
+    } else if (window.poblarSimulaciones) {
+      window.poblarSimulaciones('simulacion_egreso');
+    }
+    
+    const boton = document.getElementById('iniciarFetch');
+    
+    if (boton) {
+      boton.addEventListener('click', () => {window.fetchSimulacion();});
+    }
+
+  }
+
+  limpiar(resourceManager) {
+    resourceManager.limpiarScripts(AppConfig.SCRIPTS_PROYECCION);
+    resourceManager.limpiarScripts(['poblar-simulaciones.js', 'mis-simulaciones.js', 'proyeccion-ui.js']);
+    resourceManager.limpiarCss(['css-mis-simulaciones']);
+  }
+  
+}
+
+class VistaMisSimulacionesProxSemestre extends VistaStrategy {
+  getIdVista() {
+    return 'mis-simulaciones-prox-semestre';
+  }
+
+  async cargar(areaContenido, servicios) { 
+    const {resourceManager} = servicios;
+    
+    resourceManager.limpiarScripts(AppConfig.SCRIPTS_MALLA);
+
+    const respuesta = await fetch(`${AppConfig.RUTAS.HTML}mis-simulaciones-egreso.html`);
+    if (!respuesta.ok) {
+      throw new Error(`Error HTTP: ${respuesta.status}`);
+    }
+    
+    const htmlCompleto = await respuesta.text();
+    const parserDOM = new DOMParser();
+    const docParsed = parserDOM.parseFromString(htmlCompleto, 'text/html');
+    const bodyContent = docParsed.body.innerHTML;
+    
+    areaContenido.innerHTML = bodyContent;
+
+    // Cargar CSS específico de mis-simulaciones
+    resourceManager.inyectarCss(`${AppConfig.RUTAS.CSS}mis-simulaciones.css?v=${Date.now()}`, 'css-mis-simulaciones');
+
+    window.APP_CONFIG = AppConfig.APP_CONFIG_MALLA;
+
+    const scripts = [
+      'poblar-simulaciones.js',
+      'mis-simulaciones.js',
+      'proyeccion-ui.js'
+    ];
+
+    for (const scriptName of scripts) {
+      const ruta = `${AppConfig.RUTAS.JS}${scriptName}?v=${Date.now()}`;
+      await resourceManager.inyectarScript(ruta);
+    }
+
+    // Poblar solo simulaciones de próximo semestre
+    if (window.poblarSimulacionesProxSemestre) {
+      window.poblarSimulacionesProxSemestre();
+    } else if (window.poblarSimulaciones) {
+      window.poblarSimulaciones('simulacion_siguiente_semestre');
+    }
+    
     const boton = document.getElementById('iniciarFetch');
     
     if (boton) {
@@ -783,6 +850,7 @@ class NavegacionService {
     this.estrategias.set('proyeccion-testing', new VistaTestingStrategy());
     this.estrategias.set('simulacion-prox-semestre', new VistaSimulacionProxSemestreStrategy());
     this.estrategias.set('mis-simulaciones-egreso', new VistaMisSimulacionesEgreso());
+    this.estrategias.set('mis-simulaciones-prox-semestre', new VistaMisSimulacionesProxSemestre());
   }
 
   obtenerServicios() {
@@ -917,8 +985,9 @@ class MenuActivoService {
       'home': () => this.activarPorTexto('Malla Actual', todosElementosMenu),
       'malla-actual': () => this.activarPorTexto('Malla Actual', todosElementosMenu),
       'historico': () => this.activarPorTexto('Estadísticas - Histórico', todosElementosMenu),
-      'proyeccion-testing': () => this.activarPorTexto('Proyección Testing', todosElementosMenu),
+      'proyeccion-testing': () => this.activarPorTexto('Simulación Egreso', todosElementosMenu),
       'mis-simulaciones-egreso': () => this.activarPorTexto('Mis Simulaciones Egreso', todosElementosMenu),
+      'mis-simulaciones-prox-semestre': () => this.activarPorTexto('Mis simulaciones Próximo Semestre', todosElementosMenu),
       'simulacion-prox-semestre': () => this.activarPorTexto('Simulación Prox Semestre', todosElementosMenu)
     };
 
@@ -1060,6 +1129,8 @@ class MainMenuApp {
     this.configurarNavegacionSimulacionProxSemestre();
     this.configurarNavegacionAtras();
     this.configurarNavegacionMisSimulacionesEgreso();
+    this.configurarNavegacionMisSimulacionesProxSemestre();
+    this.configurarNavegacionAyuda();
     this.configurarToggleBarra();
   }
 
@@ -1140,6 +1211,19 @@ class MainMenuApp {
     });
   }
 
+  configurarNavegacionMisSimulacionesProxSemestre() {
+    const elementosMenu = document.querySelectorAll('.elemento-menu');
+    elementosMenu.forEach(elemento => {
+      const texto = elemento.querySelector('span')?.textContent?.trim();
+      if (texto === 'Mis simulaciones Próximo Semestre') {
+        elemento.addEventListener('click', () => {
+          this.cargarMisSimulacionesProxSemestre();
+          this.menuActivoService.establecer('mis-simulaciones-prox-semestre');
+        });
+      }
+    });
+  }
+
   configurarNavegacionMallaActual() {
     const elementosMenu = document.querySelectorAll('.elemento-menu');
     elementosMenu.forEach(elemento => {
@@ -1178,7 +1262,7 @@ class MainMenuApp {
     const elementosMenu = document.querySelectorAll('.elemento-menu');
     elementosMenu.forEach(elemento => {
       const texto = elemento.querySelector('span')?.textContent?.trim();
-      if (texto === 'Proyección Testing') {
+      if (texto === 'Simulación Egreso') {
         elemento.addEventListener('click', (e) => {
           e.preventDefault();
           this.cargarTesting();
@@ -1262,6 +1346,27 @@ class MainMenuApp {
       this.navegacionService.navegarA('mis-simulaciones-egreso');
     } catch (error) {
       console.error('Error al cargar mis simulaciones:', error);
+    }
+  }
+
+  cargarMisSimulacionesProxSemestre(){
+    try {
+      this.navegacionService.navegarA('mis-simulaciones-prox-semestre');
+    } catch (error) {
+      console.error('Error al cargar mis simulaciones próximo semestre:', error);
+    }
+  }
+
+  configurarNavegacionAyuda() {
+    const botonAyuda = document.getElementById('botonAyuda');
+    if (botonAyuda) {
+      botonAyuda.addEventListener('click', () => {
+        const email = 'branco.abalos@alumnos.ucn.cl';
+        const cc = 'nicolas.cordero01@alumnos.ucn.cl';
+        const subject = encodeURIComponent('Ayuda: PredictClass');
+        const mailtoLink = `mailto:${email}?cc=${cc}&subject=${subject}`;
+        window.location.href = mailtoLink;
+      });
     }
   }
 

@@ -241,6 +241,45 @@ body{
   overflow-x:hidden;
 }
 
+.contenido-inicial {
+  position: relative;
+  min-height: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 4rem;
+}
+
+.contenido-inicial::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('../images/coquimbo.jpg');
+  background-size: cover;
+  background-position: center;
+  z-index: 0;
+  opacity: 0.3;
+}
+
+.contenido-inicial::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+.contenido-inicial-texto {
+  position: relative;
+  z-index: 2;
+}
+
 .barra-lateral {
   position: fixed;
   left: 0;

@@ -357,7 +357,34 @@ class HistoricoApp {
 
         const tituloRamo = document.createElement('div');
         tituloRamo.className = 'titulo-ramo';
-        tituloRamo.textContent = reg.course || reg.nrc || 'Curso';
+        const codigo = reg.course || reg.nrc || '';
+        let nombre = reg.asignatura || reg.nombre || reg.name || reg.courseName || '';
+        
+        // Si no hay nombre en los datos, intentar buscarlo en la malla
+        if (!nombre && codigo && window.DATOS_MALLA_ACTUAL && Array.isArray(window.DATOS_MALLA_ACTUAL)) {
+          const ramoEnMalla = window.DATOS_MALLA_ACTUAL.find(r => 
+            (r.codigo || r.code) === codigo
+          );
+          if (ramoEnMalla) {
+            nombre = ramoEnMalla.asignatura || ramoEnMalla.nombre || ramoEnMalla.name || '';
+          }
+        }
+        
+        // También intentar buscar en DEFAULT_MALLA si está disponible
+        if (!nombre && codigo && window.DEFAULT_MALLA && Array.isArray(window.DEFAULT_MALLA)) {
+          const ramoEnMalla = window.DEFAULT_MALLA.find(r => 
+            (r.codigo || r.code) === codigo
+          );
+          if (ramoEnMalla) {
+            nombre = ramoEnMalla.asignatura || ramoEnMalla.nombre || ramoEnMalla.name || '';
+          }
+        }
+        
+        if (codigo && nombre) {
+          tituloRamo.textContent = `${codigo} - ${nombre}`;
+        } else {
+          tituloRamo.textContent = codigo || nombre || 'Curso';
+        }
 
         const meta = document.createElement('div');
         meta.className = 'meta-ramo';
