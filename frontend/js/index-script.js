@@ -329,7 +329,23 @@ class LoginApp {
         const resultado = await this.sincronizarUsuarioBackend(usuarioActual);
         if (resultado?.estudianteId) {
           usuarioActual.estudianteId = resultado.estudianteId;
+          if (resultado.foto_perfil !== undefined) {
+            usuarioActual.foto_perfil = resultado.foto_perfil;
+          }
           sessionStorage.setItem(CONFIGURACION.CLAVES_ALMACENAMIENTO.DATOS_USUARIO, JSON.stringify(usuarioActual));
+        } else {
+          try {
+            const respuesta = await fetch(`http://localhost:4000/api/estudiantes/${usuarioActual.rut}`);
+            if (respuesta.ok) {
+              const datos = await respuesta.json();
+              if (datos.estudiante?.foto_perfil) {
+                usuarioActual.foto_perfil = datos.estudiante.foto_perfil;
+                sessionStorage.setItem(CONFIGURACION.CLAVES_ALMACENAMIENTO.DATOS_USUARIO, JSON.stringify(usuarioActual));
+              }
+            }
+          } catch (error) {
+            console.warn('No se pudo obtener foto_perfil del backend:', error);
+          }
         }
       } catch (error) {
         console.warn('No fue posible sincronizar el usuario con el backend.', error);

@@ -34,61 +34,104 @@ class PerfilConfig {
   };
 }
 
-class StorageService {
-  getItem(key) {
-    try {
-      const valor = sessionStorage.getItem(key);
-      return valor ? JSON.parse(valor) : null;
-    } catch (error) {
-      console.error(`Error al leer ${key}:`, error);
-      return null;
+if (typeof StorageService === 'undefined') {
+  class StorageService {
+    getItem(key) {
+      try {
+        const valor = sessionStorage.getItem(key);
+        return valor ? JSON.parse(valor) : null;
+      } catch (error) {
+        console.error(`Error al leer ${key}:`, error);
+        return null;
+      }
     }
-  }
 
-  setItem(key, valor) {
-    try {
-      sessionStorage.setItem(key, JSON.stringify(valor));
-      return true;
-    } catch (error) {
-      console.error(`Error al guardar ${key}:`, error);
-      return false;
+    setItem(key, valor) {
+      try {
+        sessionStorage.setItem(key, JSON.stringify(valor));
+        return true;
+      } catch (error) {
+        console.error(`Error al guardar ${key}:`, error);
+        return false;
+      }
     }
-  }
 
-  removeItem(key) {
-    try {
-      sessionStorage.removeItem(key);
-      return true;
-    } catch (error) {
-      console.error(`Error al eliminar ${key}:`, error);
-      return false;
+    removeItem(key) {
+      try {
+        sessionStorage.removeItem(key);
+        return true;
+      } catch (error) {
+        console.error(`Error al eliminar ${key}:`, error);
+        return false;
+      }
     }
-  }
 
-  clear() {
-    try {
-      sessionStorage.clear();
-      return true;
-    } catch (error) {
-      console.error('Error al limpiar almacenamiento:', error);
-      return false;
+    clear() {
+      try {
+        sessionStorage.clear();
+        return true;
+      } catch (error) {
+        console.error('Error al limpiar almacenamiento:', error);
+        return false;
+      }
     }
   }
+  window.StorageService = StorageService;
 }
 
-class UsuarioService {
-  constructor(storageService, claveUsuario) {
-    this.storageService = storageService;
-    this.claveUsuario = claveUsuario;
+if (typeof window.UsuarioService === 'undefined') {
+  class UsuarioService {
+    constructor(storageService, claveUsuario) {
+      this.storageService = storageService;
+      this.claveUsuario = claveUsuario;
+    }
+
+    obtenerUsuario() {
+      return this.storageService.getItem(this.claveUsuario);
+    }
+
+    validarSesion() {
+      const usuario = this.obtenerUsuario();
+      return usuario !== null;
+    }
+  }
+  window.UsuarioService = UsuarioService;
+}
+
+class FotoPerfilService {
+  static URL_BASE_API = 'http://localhost:4000/api';
+
+  static async subirFoto(rut, archivo) {
+    if (!rut || !archivo) {
+      throw new Error('RUT y archivo son requeridos');
+    }
+
+    const formData = new FormData();
+    formData.append('foto', archivo);
+
+    try {
+      const respuesta = await fetch(`${this.URL_BASE_API}/estudiantes/${rut}/foto`, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!respuesta.ok) {
+        const error = await respuesta.json().catch(() => ({ error: 'Error desconocido' }));
+        throw new Error(error.error || 'Error al subir la foto');
+      }
+
+      const resultado = await respuesta.json();
+      return resultado;
+    } catch (error) {
+      throw error;
+    }
   }
 
-  obtenerUsuario() {
-    return this.storageService.getItem(this.claveUsuario);
-  }
-
-  validarSesion() {
-    const usuario = this.obtenerUsuario();
-    return usuario !== null;
+  static obtenerUrlFoto(rut) {
+    if (!rut) {
+      return null;
+    }
+    return `${this.URL_BASE_API}/estudiantes/${rut}/foto`;
   }
 }
 
@@ -149,8 +192,25 @@ class PerfilRenderService {
     const elemento = document.getElementById(PerfilConfig.IDS.AVATAR_GRANDE);
     if (!elemento) return;
 
-    const inicial = this.perfilDataService.obtenerInicialAvatar(usuario);
-    elemento.textContent = inicial;
+    elemento.innerHTML = '';
+    elemento.textContent = '';
+
+    if (usuario.foto_perfil && usuario.rut) {
+      const urlFoto = FotoPerfilService.obtenerUrlFoto(usuario.rut);
+      const img = document.createElement('img');
+      img.src = urlFoto;
+      img.alt = usuario.firstName || usuario.name || 'Usuario';
+      img.style.width = '100%';
+      img.style.height = '100%';
+      img.style.objectFit = 'cover';
+      img.style.borderRadius = '50%';
+      img.onerror = () => {
+        elemento.textContent = this.perfilDataService.obtenerInicialAvatar(usuario);
+      };
+      elemento.appendChild(img);
+    } else {
+      elemento.textContent = this.perfilDataService.obtenerInicialAvatar(usuario);
+    }
   }
 
   actualizarNombreCompleto(usuario, elementoId) {
@@ -245,19 +305,111 @@ class PerfilEventService {
   }
 
   configurarBotonesAccion() {
-    const botonCambiarAvatar = document.querySelector('.boton-cambiar-avatar');
-    if (botonCambiarAvatar) {
-      botonCambiarAvatar.addEventListener('click', () => {
-        console.log('Cambiar avatar - funcionalidad pendiente de implementación');
-      });
+    const contenedor = document.querySelector('.contenedor-perfil') || document.body;
+    
+    let inputFile = document.getElementById('input-file-foto-perfil');
+    if (!inputFile) {
+      inputFile = document.createElement('input');
+      inputFile.id = 'input-file-foto-perfil';
+      inputFile.type = 'file';
+      inputFile.accept = 'image/jpeg,image/jpg,image/png,image/gif,image/webp';
+      inputFile.style.display = 'none';
+      document.body.appendChild(inputFile);
     }
+
+    if (contenedor._avatarClickHandler) {
+      contenedor.removeEventListener('click', contenedor._avatarClickHandler);
+    }
+
+    const clickHandler = (event) => {
+      const boton = event.target.closest('.boton-cambiar-avatar');
+      if (boton) {
+        event.preventDefault();
+        event.stopPropagation();
+        inputFile.click();
+      }
+    };
+    contenedor._avatarClickHandler = clickHandler;
+    contenedor.addEventListener('click', clickHandler);
+
+    if (inputFile._changeHandler) {
+      inputFile.removeEventListener('change', inputFile._changeHandler);
+    }
+
+    const changeHandler = async (event) => {
+      const archivo = event.target.files[0];
+      if (!archivo) return;
+
+      const botonCambiarAvatar = contenedor.querySelector('.boton-cambiar-avatar');
+      const iconoOriginal = botonCambiarAvatar ? botonCambiarAvatar.innerHTML : '';
+
+      const tiposPermitidos = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+      if (!tiposPermitidos.includes(archivo.type)) {
+        toast.error('Tipo de archivo no permitido. Solo se permiten imágenes (jpg, png, gif, webp)');
+        inputFile.value = '';
+        return;
+      }
+
+      const tamañoMaximo = 5 * 1024 * 1024;
+      if (archivo.size > tamañoMaximo) {
+        toast.error('El archivo es demasiado grande. El tamaño máximo es 5MB');
+        inputFile.value = '';
+        return;
+      }
+
+      const StorageServiceClass = window.StorageService || StorageService;
+      const storageService = new StorageServiceClass();
+      const usuario = storageService.getItem(PerfilConfig.CLAVES.DATOS_USUARIO);
+      
+      if (!usuario || !usuario.rut) {
+        toast.error('No se pudo obtener la información del usuario');
+        inputFile.value = '';
+        return;
+      }
+
+      try {
+        if (botonCambiarAvatar) {
+          botonCambiarAvatar.disabled = true;
+          botonCambiarAvatar.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        }
+
+        const resultado = await FotoPerfilService.subirFoto(usuario.rut, archivo);
+
+        usuario.foto_perfil = resultado.foto_perfil;
+        storageService.setItem(PerfilConfig.CLAVES.DATOS_USUARIO, usuario);
+
+        setTimeout(() => {
+          if (window.aplicacionPerfilUsuario?.perfilRenderService) {
+            window.aplicacionPerfilUsuario.perfilRenderService.actualizarAvatar(usuario);
+          }
+          if (window.mainMenuApp?.usuarioUIService) {
+            window.mainMenuApp.usuarioUIService.mostrarInformacion(usuario);
+          }
+        }, 100);
+
+        toast.success('Foto de perfil actualizada correctamente');
+      } catch (error) {
+        console.error('Error al subir foto:', error);
+        toast.error(error.message || 'Error al subir la foto de perfil');
+      } finally {
+        if (botonCambiarAvatar) {
+          botonCambiarAvatar.disabled = false;
+          botonCambiarAvatar.innerHTML = iconoOriginal;
+        }
+        inputFile.value = '';
+      }
+    };
+    inputFile._changeHandler = changeHandler;
+    inputFile.addEventListener('change', changeHandler);
   }
 }
 
 class AplicacionPerfilUsuario {
   constructor() {
-    this.storageService = new StorageService();
-    this.usuarioService = new UsuarioService(
+    const StorageServiceClass = window.StorageService || StorageService;
+    this.storageService = new StorageServiceClass();
+    const UsuarioServiceClass = window.UsuarioService || UsuarioService;
+    this.usuarioService = new UsuarioServiceClass(
       this.storageService,
       PerfilConfig.CLAVES.DATOS_USUARIO
     );
@@ -310,17 +462,13 @@ class AplicacionPerfilUsuario {
 
   async cargarEstadisticasAcademicas() {
     const widget = this.obtenerWidgetEstadisticas();
-    if (!widget) return;
+    if (!widget || !this.datosUsuario) return;
 
-    // Cargar solo la primera carrera del usuario
-    const usuario = this.datosUsuario;
-    if (!usuario) return;
-
-    const carreras = usuario.carreras || [];
+    const carreras = this.datosUsuario.carreras || [];
     const primeraCarrera = carreras.length > 0 ? carreras[0] : null;
 
     if (primeraCarrera) {
-      await widget.cargarDesdeUsuario(usuario, primeraCarrera);
+      await widget.cargarDesdeUsuario(this.datosUsuario, primeraCarrera);
     } else {
       widget.actualizar({ aprobados: 0, reprobados: 0, pendientes: 0, totalPeriodos: 0 });
     }
@@ -332,14 +480,25 @@ class AplicacionPerfilUsuario {
   }
 }
 
-if (document.getElementById(PerfilConfig.IDS.AVATAR_GRANDE)) {
-  window.aplicacionPerfilUsuario = new AplicacionPerfilUsuario();
+function inicializarPerfilUsuario() {
+  const avatarElement = document.getElementById(PerfilConfig.IDS.AVATAR_GRANDE);
+  if (avatarElement && !window.aplicacionPerfilUsuario) {
+    window.aplicacionPerfilUsuario = new AplicacionPerfilUsuario();
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', inicializarPerfilUsuario);
+} else {
+  inicializarPerfilUsuario();
+  setTimeout(inicializarPerfilUsuario, 100);
 }
 
 if (typeof window !== 'undefined') {
   window.PerfilConfig = PerfilConfig;
   window.StorageService = StorageService;
   window.UsuarioService = UsuarioService;
+  window.FotoPerfilService = FotoPerfilService;
   window.PerfilDataService = PerfilDataService;
   window.PerfilRenderService = PerfilRenderService;
   window.PerfilEventService = PerfilEventService;
@@ -352,6 +511,7 @@ if (typeof module !== 'undefined' && module.exports) {
     PerfilConfig,
     StorageService,
     UsuarioService,
+    FotoPerfilService,
     PerfilDataService,
     PerfilRenderService,
     PerfilEventService

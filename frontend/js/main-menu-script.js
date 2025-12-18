@@ -210,11 +210,14 @@ class RenderService {
     const nombreUsuario = usuario.username || 'No disponible';
     const rut = usuario.rut || 'No disponible';
     
-    const fotoPerfil = usuario.profilePicture;
-    const rutaImagen = fotoPerfil ? `../${fotoPerfil}` : null;
-    const contenidoAvatar = rutaImagen 
-      ? `<img src="${rutaImagen}" alt="${nombre}">` 
-      : avatar;
+    let contenidoAvatar = avatar;
+    if (usuario.foto_perfil && usuario.rut) {
+      const urlFoto = `http://localhost:4000/api/estudiantes/${usuario.rut}/foto`;
+      contenidoAvatar = `<img src="${urlFoto}" alt="${nombre}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" onerror="this.parentElement.textContent='${avatar}'">`;
+    } else if (usuario.profilePicture) {
+      const rutaImagen = `../${usuario.profilePicture}`;
+      contenidoAvatar = `<img src="${rutaImagen}" alt="${nombre}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+    }
     
     const informacionAcademica = usuario.academicInfo || {};
     const carrera = informacionAcademica.career || 'No especificada';
@@ -235,7 +238,7 @@ class RenderService {
         <div class="perfil-principal">
           <div class="tarjeta-perfil">
             <div class="seccion-avatar-perfil">
-              <div class="avatar-perfil-grande">${contenidoAvatar}</div>
+              <div class="avatar-perfil-grande" id="avatarPerfilGrande">${contenidoAvatar}</div>
               <button class="boton-cambiar-avatar">
                 <i class="fas fa-camera"></i>
               </button>
@@ -472,10 +475,21 @@ class VistaPerfilStrategy extends VistaStrategy {
 
     await resourceManager.inyectarScript(`${AppConfig.RUTAS.JS}carrera-selector.js?v=2025121201`);
     await resourceManager.inyectarScript(`${AppConfig.RUTAS.JS}historico-estadisticas.js?v=2025121201`);
+    await resourceManager.inyectarScript(`${AppConfig.RUTAS.JS}toast-ui.js?v=2025102304`);
+    await resourceManager.inyectarScript(`${AppConfig.RUTAS.JS}perfil-usuario-script.js?v=${Date.now()}`);
 
     await new Promise((resolve) => {
       requestAnimationFrame(() => {
         setTimeout(() => {
+          const avatarElement = document.getElementById('avatarPerfilGrande');
+          if (avatarElement) {
+            if (!window.aplicacionPerfilUsuario && window.AplicacionPerfilUsuario) {
+              window.aplicacionPerfilUsuario = new window.AplicacionPerfilUsuario();
+            } else if (window.aplicacionPerfilUsuario && window.aplicacionPerfilUsuario.perfilEventService) {
+              window.aplicacionPerfilUsuario.perfilEventService.configurarBotonesAccion();
+            }
+          }
+
           const widget = this.obtenerWidgetEstadisticas();
           if (widget && typeof widget.cargarDesdeUsuario === 'function') {
             const carreras = usuario.carreras || [];
@@ -488,7 +502,7 @@ class VistaPerfilStrategy extends VistaStrategy {
             }
           }
           resolve();
-        }, 50);
+        }, 200);
       });
     });
 
@@ -1008,6 +1022,10 @@ class MenuActivoService {
 }
 
 class UsuarioUIService {
+  obtenerUrlFoto(rut) {
+    return `http://localhost:4000/api/estudiantes/${rut}/foto`;
+  }
+
   mostrarInformacion(usuario) {
     const elementoNombreUsuario = document.getElementById(AppConfig.IDS.NOMBRE_USUARIO);
     if (elementoNombreUsuario && usuario.name) {
@@ -1016,11 +1034,31 @@ class UsuarioUIService {
 
     const elementoAvatar = document.getElementById(AppConfig.IDS.AVATAR_USUARIO);
     if (elementoAvatar) {
-      if (usuario.profilePicture) {
+      elementoAvatar.innerHTML = '';
+      elementoAvatar.textContent = '';
+
+      if (usuario.foto_perfil && usuario.rut) {
+        const urlFoto = this.obtenerUrlFoto(usuario.rut);
+        const img = document.createElement('img');
+        img.src = urlFoto;
+        img.alt = usuario.firstName || usuario.name || 'Usuario';
+        img.style.width = '100%';
+        img.style.height = '100%';
+        img.style.objectFit = 'cover';
+        img.style.borderRadius = '50%';
+        img.onerror = () => {
+          const inicial = usuario.firstName ? usuario.firstName.charAt(0).toUpperCase() : 
+                         usuario.name ? usuario.name.charAt(0).toUpperCase() : '?';
+          elementoAvatar.textContent = inicial;
+        };
+        elementoAvatar.appendChild(img);
+      } else if (usuario.profilePicture) {
         const rutaImagen = `../${usuario.profilePicture}`;
-        elementoAvatar.innerHTML = `<img src="${rutaImagen}" alt="${usuario.firstName || ''}">`;
-      } else if (usuario.firstName) {
-        elementoAvatar.textContent = usuario.firstName.charAt(0).toUpperCase();
+        elementoAvatar.innerHTML = `<img src="${rutaImagen}" alt="${usuario.firstName || ''}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+      } else {
+        const inicial = usuario.firstName ? usuario.firstName.charAt(0).toUpperCase() : 
+                       usuario.name ? usuario.name.charAt(0).toUpperCase() : '?';
+        elementoAvatar.textContent = inicial;
       }
     }
 
@@ -1098,21 +1136,35 @@ class MainMenuApp {
     this.inicializar();
   }
 
-  inicializar() {
+  async inicializar() {
     this.areaContenido = document.querySelector(AppConfig.IDS.AREA_CONTENIDO);
     if (this.areaContenido) {
       this.contenidoInicio = this.areaContenido.innerHTML;
       this.navegacionService.inicializar(this.areaContenido, this.contenidoInicio);
     }
 
-    this.cargarDatosUsuario();
+    await this.cargarDatosUsuario();
     this.configurarEventos();
   }
 
-  cargarDatosUsuario() {
-    const usuario = this.usuarioService.obtenerUsuario();
+  async cargarDatosUsuario() {
+    let usuario = this.usuarioService.obtenerUsuario();
     
     if (usuario) {
+      if (usuario.rut && !usuario.foto_perfil) {
+        try {
+          const respuesta = await fetch(`http://localhost:4000/api/estudiantes/${usuario.rut}`);
+          if (respuesta.ok) {
+            const datos = await respuesta.json();
+            if (datos.estudiante?.foto_perfil) {
+              usuario = { ...usuario, foto_perfil: datos.estudiante.foto_perfil };
+              this.storageService.setItem(AppConfig.CLAVES.DATOS_USUARIO, usuario);
+            }
+          }
+        } catch (error) {
+          console.warn('[MainMenuApp] No se pudo obtener foto_perfil del backend:', error);
+        }
+      }
       this.usuarioUIService.mostrarInformacion(usuario);
     } else {
       this.redirigirAlInicioSesion();

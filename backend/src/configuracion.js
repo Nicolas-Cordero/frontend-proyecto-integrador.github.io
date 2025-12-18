@@ -6,6 +6,7 @@ dotenv.config();
 const directorioRaiz = path.resolve(__dirname, '..');
 const directorioDatos = path.join(directorioRaiz, 'data');
 const directorioSimulaciones = path.join(directorioDatos, 'simulaciones');
+const directorioFotosPerfil = path.join(directorioDatos, 'profile-pictures');
 const archivoBaseDatosPorDefecto = path.join(directorioDatos, 'base_datos.sqlite');
 
 module.exports = {
@@ -13,5 +14,6 @@ module.exports = {
   archivoBaseDatos: process.env.DATABASE_FILE || archivoBaseDatosPorDefecto,
   origenCors: process.env.CORS_ORIGIN || '*',
   directorioSimulaciones,
+  directorioFotosPerfil,
   archivoBaseDatosPorDefecto
 };

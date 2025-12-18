@@ -9,12 +9,20 @@ const { inicializarBaseDatos } = require('./base-datos');
 const rutasEstudiantes = require('./rutas/estudiantes');
 const rutasCursos = require('./rutas/cursos');
 const rutasSimulaciones = require('./rutas/simulaciones');
+const fs = require('fs');
 
 const aplicacion = express();
 const baseDatos = inicializarBaseDatos();
 
+if (!fs.existsSync(configuracion.directorioFotosPerfil)) {
+  fs.mkdirSync(configuracion.directorioFotosPerfil, { recursive: true });
+}
+
 aplicacion.disable('x-powered-by');
-aplicacion.use(helmet());
+aplicacion.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  crossOriginEmbedderPolicy: false
+}));
 aplicacion.use(
   rateLimit({
     windowMs: 60 * 1000,
@@ -24,7 +32,10 @@ aplicacion.use(
   })
 );
 
-aplicacion.use(cors({ origin: configuracion.origenCors }));
+aplicacion.use(cors({ 
+  origin: configuracion.origenCors,
+  credentials: false
+}));
 aplicacion.use(express.json({ limit: '2mb' }));
 aplicacion.use(morgan('dev'));
 

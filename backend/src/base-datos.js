@@ -114,6 +114,7 @@ function inicializarBaseDatos() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       rut TEXT NOT NULL UNIQUE,
       email TEXT NOT NULL,
+      foto_perfil TEXT,
       creado_en TEXT DEFAULT CURRENT_TIMESTAMP,
       actualizado_en TEXT DEFAULT CURRENT_TIMESTAMP
     );
@@ -166,6 +167,16 @@ function inicializarBaseDatos() {
   `;
 
   baseDatos.exec(sentenciasDDL);
+
+  try {
+    const columnas = baseDatos.prepare("PRAGMA table_info(usuarios)").all();
+    const tieneFotoPerfil = columnas.some(col => col.name === 'foto_perfil');
+    if (!tieneFotoPerfil) {
+      baseDatos.prepare('ALTER TABLE usuarios ADD COLUMN foto_perfil TEXT').run();
+    }
+  } catch (error) {
+    console.warn('[base-datos] Error al verificar/agregar columna foto_perfil:', error.message);
+  }
 
   return baseDatos;
 }

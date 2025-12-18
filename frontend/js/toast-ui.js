@@ -1,6 +1,7 @@
 // ===== SISTEMA TOAST UI =====
 // Notificaciones tipo Toast que aparecen en la esquina superior derecha
 
+if (typeof ToastUI === 'undefined') {
 class ToastUI {
   constructor() {
     this.container = null;
@@ -318,8 +319,13 @@ class ToastUI {
   }
 }
 
-// Inicializar globalmente
-const toast = new ToastUI();
+window.ToastUI = ToastUI;
+}
+
+// Inicializar globalmente solo si no existe
+if (typeof window.toast === 'undefined') {
+  window.toast = new ToastUI();
+}
 
 // Exportar para módulos
 if (typeof module !== 'undefined' && module.exports) {
