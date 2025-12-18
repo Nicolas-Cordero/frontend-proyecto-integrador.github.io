@@ -572,7 +572,7 @@ describe('PerfilEventService', () => {
 
     const clickHandler = boton.addEventListener.mock.calls.find(call => call[0] === 'click')?.[1];
     if (clickHandler) {
-      clickHandler();
+      clickHandler({ target: boton, preventDefault: () => {}, stopPropagation: () => {} });
       expect(consoleLogSpy).toHaveBeenCalledWith('Cambiar avatar - funcionalidad pendiente de implementación');
     }
 
