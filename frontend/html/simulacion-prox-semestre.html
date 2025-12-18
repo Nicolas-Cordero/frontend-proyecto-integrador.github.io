@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Simulación Próximo Semestre</title>
+  <link rel="stylesheet" href="../css/main-menu.css">
+  <link rel="stylesheet" href="../css/style-mallas.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <section style="padding:1.5rem">
+    <header style="margin-bottom:1rem">
+      <h1>Simulación Próximo Semestre</h1>
+      <p style="color:var(--muted)">Genera una simulación basada en tu información académica actual.</p>
+    </header>
+
+    <div class="panel" style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem">
+      <div style="display:flex;gap:0.75rem;align-items:center;justify-content:flex-start">
+        <button id="botonProbarSimulacion" class="boton-simulacion">
+          <i class="fa-solid fa-flask"></i>
+          <span>Generar Simulación</span>
+        </button>
+        <span id="estadoSimulacion" style="color:var(--muted)">Listo para generar</span>
+      </div>
+      <div id="resultadoSimulacion" style="margin-top:1rem;color:var(--text)"></div>
+    </div>
+  </section>
+
+  <script src="../js/simulacion-prox-semestre.js"></script>
+</body>
+</html>

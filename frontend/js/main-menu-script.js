@@ -726,6 +726,34 @@ class VistaMisSimulacionesEgreso extends VistaStrategy {
   
 }
 
+class VistaSimulacionProxSemestreStrategy extends VistaStrategy {
+  getIdVista() {
+    return 'simulacion-prox-semestre';
+  }
+
+  async cargar(areaContenido, servicios) {
+    const { resourceManager } = servicios;
+
+    resourceManager.limpiarScripts(AppConfig.SCRIPTS_MALLA);
+
+    const respuesta = await fetch(`${AppConfig.RUTAS.HTML}simulacion-prox-semestre.html?v=${Date.now()}`);
+    if (!respuesta.ok) {
+      throw new Error(`Error HTTP: ${respuesta.status}`);
+    }
+
+    const htmlCompleto = await respuesta.text();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlCompleto, 'text/html');
+    const bodyContent = doc.body ? doc.body.innerHTML : htmlCompleto;
+    areaContenido.innerHTML = bodyContent;
+
+    await resourceManager.inyectarScript(`${AppConfig.RUTAS.JS}simulacion-prox-semestre.js?v=${Date.now()}`);
+  }
+
+  limpiar(resourceManager) {
+    resourceManager.limpiarScripts(['simulacion-prox-semestre.js']);
+  }
+}
 class NavegacionService {
   constructor(resourceManager, renderService, usuarioService, apiService) {
     this.resourceManager = resourceManager;
@@ -747,6 +775,7 @@ class NavegacionService {
     this.estrategias.set('malla-actual', new VistaMallaActualStrategy());
     this.estrategias.set('historico', new VistaHistoricoStrategy());
     this.estrategias.set('proyeccion-testing', new VistaTestingStrategy());
+    this.estrategias.set('simulacion-prox-semestre', new VistaSimulacionProxSemestreStrategy());
     this.estrategias.set('mis-simulaciones-egreso', new VistaMisSimulacionesEgreso());
   }
 
@@ -883,7 +912,8 @@ class MenuActivoService {
       'malla-actual': () => this.activarPorTexto('Malla Actual', todosElementosMenu),
       'historico': () => this.activarPorTexto('Estadísticas - Histórico', todosElementosMenu),
       'proyeccion-testing': () => this.activarPorTexto('Proyección Testing', todosElementosMenu),
-      'mis-simulaciones-egreso': () => this.activarPorTexto('Mis Simulaciones Egreso', todosElementosMenu)
+      'mis-simulaciones-egreso': () => this.activarPorTexto('Mis Simulaciones Egreso', todosElementosMenu),
+      'simulacion-prox-semestre': () => this.activarPorTexto('Simulación Prox Semestre', todosElementosMenu)
     };
 
     const accion = mapeoTipos[tipoElemento];
@@ -1021,6 +1051,7 @@ class MainMenuApp {
     this.configurarNavegacionMallaActual();
     this.configurarNavegacionHistorico();
     this.configurarNavegacionTesting();
+    this.configurarNavegacionSimulacionProxSemestre();
     this.configurarNavegacionAtras();
     this.configurarNavegacionMisSimulacionesEgreso();
     this.configurarToggleBarra();
@@ -1151,6 +1182,20 @@ class MainMenuApp {
     });
   }
 
+  configurarNavegacionSimulacionProxSemestre() {
+    const elementosMenu = document.querySelectorAll('.elemento-menu');
+    elementosMenu.forEach(elemento => {
+      const texto = elemento.querySelector('span')?.textContent?.trim();
+      if (texto === 'Simulación Prox Semestre') {
+        elemento.addEventListener('click', (e) => {
+          e.preventDefault();
+          this.cargarSimulacionProxSemestre();
+          this.menuActivoService.establecer('simulacion-prox-semestre');
+        });
+      }
+    });
+  }
+
   configurarNavegacionAtras() {
     window.addEventListener('navigateBack', () => {
       this.cargarInicio();
@@ -1186,6 +1231,14 @@ class MainMenuApp {
       await this.navegacionService.navegarA('proyeccion-testing');
     } catch (error) {
       console.error('Error al cargar testing:', error);
+    }
+  }
+
+  async cargarSimulacionProxSemestre() {
+    try {
+      await this.navegacionService.navegarA('simulacion-prox-semestre');
+    } catch (error) {
+      console.error('Error al cargar simulación prox semestre:', error);
     }
   }
 
