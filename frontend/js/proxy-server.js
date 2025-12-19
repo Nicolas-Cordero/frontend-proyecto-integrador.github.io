@@ -104,4 +104,5 @@ app.get('/api/mallas', async (req, res) => {
 // Iniciar servidor
 app.listen(PORT, () => {
   console.warn(`[proxy] Servidor iniciado en http://localhost:${PORT}`);
+  console.warn('[proxy] Para acceder vaya a http://localhost:3000/html/index.html');
 });
