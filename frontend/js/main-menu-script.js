@@ -669,7 +669,12 @@ class VistaTestingStrategy extends VistaStrategy {
     boton.addEventListener('click', () => {
       const selectedOption = selectCarrera.options[selectCarrera.selectedIndex];
       const catalogo = selectedOption?.dataset.catalogo || null;
-      window.ejecutarTesting(selectCarrera.value, catalogo, Number(cantCreditos.value));
+      if (Number(cantCreditos.value) <= 6 || Number(cantCreditos.value) > 32 || isNaN(Number(cantCreditos.value))) {
+        throw new Error('La cantidad de créditos es inválida. Debe ser un número entre 6 y 32.');
+
+      }else {
+        window.ejecutarTesting(selectCarrera.value, catalogo, Number(cantCreditos.value));
+      }
     });
     
   }
@@ -1635,4 +1640,5 @@ if (typeof module !== 'undefined' && module.exports) {
     UsuarioUIService
   };
 }
+
 
