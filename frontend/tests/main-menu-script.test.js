@@ -18,6 +18,10 @@ const VistaPerfilStrategy = global.VistaPerfilStrategy || window.VistaPerfilStra
 const VistaMallaActualStrategy = global.VistaMallaActualStrategy || window.VistaMallaActualStrategy;
 const VistaHistoricoStrategy = global.VistaHistoricoStrategy || window.VistaHistoricoStrategy;
 const VistaTestingStrategy = global.VistaTestingStrategy || window.VistaTestingStrategy;
+const VistaMisSimulacionesEgreso = global.VistaMisSimulacionesEgreso || window.VistaMisSimulacionesEgreso;
+const VistaMisSimulacionesProxSemestre = global.VistaMisSimulacionesProxSemestre || window.VistaMisSimulacionesProxSemestre;
+const VistaSimulacionProxSemestreStrategy = global.VistaSimulacionProxSemestreStrategy || window.VistaSimulacionProxSemestreStrategy;
+const VistaDashboardRossStrategy = global.VistaDashboardRossStrategy || window.VistaDashboardRossStrategy;
 const NavegacionService = global.NavegacionService || window.NavegacionService;
 const BusquedaService = global.BusquedaService || window.BusquedaService;
 const MenuActivoService = global.MenuActivoService || window.MenuActivoService;
@@ -36,6 +40,10 @@ if (VistaPerfilStrategy) global.VistaPerfilStrategy = VistaPerfilStrategy;
 if (VistaMallaActualStrategy) global.VistaMallaActualStrategy = VistaMallaActualStrategy;
 if (VistaHistoricoStrategy) global.VistaHistoricoStrategy = VistaHistoricoStrategy;
 if (VistaTestingStrategy) global.VistaTestingStrategy = VistaTestingStrategy;
+if (VistaMisSimulacionesEgreso) global.VistaMisSimulacionesEgreso = VistaMisSimulacionesEgreso;
+if (VistaMisSimulacionesProxSemestre) global.VistaMisSimulacionesProxSemestre = VistaMisSimulacionesProxSemestre;
+if (VistaSimulacionProxSemestreStrategy) global.VistaSimulacionProxSemestreStrategy = VistaSimulacionProxSemestreStrategy;
+if (VistaDashboardRossStrategy) global.VistaDashboardRossStrategy = VistaDashboardRossStrategy;
 if (NavegacionService) global.NavegacionService = NavegacionService;
 if (BusquedaService) global.BusquedaService = BusquedaService;
 if (MenuActivoService) global.MenuActivoService = MenuActivoService;
@@ -1339,6 +1347,515 @@ describe('MainMenuApp', () => {
     expect(consoleErrorSpy).toHaveBeenCalledWith('Error al cargar perfil:', expect.any(Error));
 
     consoleErrorSpy.mockRestore();
+  });
+
+  describe('VistaMisSimulacionesEgreso', () => {
+    test('debe tener getIdVista correcto', () => {
+      const estrategia = new global.VistaMisSimulacionesEgreso();
+      expect(estrategia.getIdVista()).toBe('mis-simulaciones-egreso');
+    });
+
+    test('debe cargar vista correctamente', async () => {
+      const estrategia = new global.VistaMisSimulacionesEgreso();
+      const areaContenido = document.createElement('div');
+      const servicios = {
+        resourceManager: new global.ResourceManager(),
+        renderService: new global.RenderService(),
+        usuarioService: new global.UsuarioService(new global.StorageService()),
+        apiService: new global.ApiService()
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        text: jest.fn().mockResolvedValueOnce('<div>Mis Simulaciones Egreso</div>')
+      });
+
+      global.window.poblarSimulacionesEgreso = jest.fn();
+      global.window.poblarSimulaciones = jest.fn();
+
+      await estrategia.cargar(areaContenido, servicios);
+
+      expect(areaContenido.innerHTML).toContain('Mis Simulaciones Egreso');
+    });
+
+    test('debe manejar error al cargar HTML', async () => {
+      const estrategia = new global.VistaMisSimulacionesEgreso();
+      const areaContenido = document.createElement('div');
+      const servicios = {
+        resourceManager: new global.ResourceManager(),
+        renderService: new global.RenderService(),
+        usuarioService: new global.UsuarioService(new global.StorageService()),
+        apiService: new global.ApiService()
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404
+      });
+
+      await expect(estrategia.cargar(areaContenido, servicios)).rejects.toThrow();
+    });
+
+    test('debe usar poblarSimulaciones si poblarSimulacionesEgreso no existe', async () => {
+      const estrategia = new global.VistaMisSimulacionesEgreso();
+      const areaContenido = document.createElement('div');
+      const servicios = {
+        resourceManager: new global.ResourceManager(),
+        renderService: new global.RenderService(),
+        usuarioService: new global.UsuarioService(new global.StorageService()),
+        apiService: new global.ApiService()
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        text: jest.fn().mockResolvedValueOnce('<div>Mis Simulaciones Egreso</div>')
+      });
+
+      global.window.poblarSimulacionesEgreso = undefined;
+      global.window.poblarSimulaciones = jest.fn();
+
+      await estrategia.cargar(areaContenido, servicios);
+
+      expect(global.window.poblarSimulaciones).toHaveBeenCalledWith('simulacion_egreso');
+    });
+  });
+
+  describe('VistaMisSimulacionesProxSemestre', () => {
+    test('debe tener getIdVista correcto', () => {
+      const estrategia = new global.VistaMisSimulacionesProxSemestre();
+      expect(estrategia.getIdVista()).toBe('mis-simulaciones-prox-semestre');
+    });
+
+    test('debe cargar vista correctamente', async () => {
+      const estrategia = new global.VistaMisSimulacionesProxSemestre();
+      const areaContenido = document.createElement('div');
+      const servicios = {
+        resourceManager: new global.ResourceManager(),
+        renderService: new global.RenderService(),
+        usuarioService: new global.UsuarioService(new global.StorageService()),
+        apiService: new global.ApiService()
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        text: jest.fn().mockResolvedValueOnce('<div>Mis Simulaciones Prox Semestre</div>')
+      });
+
+      global.window.poblarSimulacionesProxSemestre = jest.fn();
+      global.window.poblarSimulaciones = jest.fn();
+
+      await estrategia.cargar(areaContenido, servicios);
+
+      expect(areaContenido.innerHTML).toContain('Mis Simulaciones Prox Semestre');
+    });
+
+    test('debe manejar error al cargar HTML', async () => {
+      const estrategia = new global.VistaMisSimulacionesProxSemestre();
+      const areaContenido = document.createElement('div');
+      const servicios = {
+        resourceManager: new global.ResourceManager(),
+        renderService: new global.RenderService(),
+        usuarioService: new global.UsuarioService(new global.StorageService()),
+        apiService: new global.ApiService()
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404
+      });
+
+      await expect(estrategia.cargar(areaContenido, servicios)).rejects.toThrow();
+    });
+  });
+
+  describe('VistaSimulacionProxSemestre', () => {
+    test('debe tener getIdVista correcto', () => {
+      const estrategia = new global.VistaSimulacionProxSemestre();
+      expect(estrategia.getIdVista()).toBe('simulacion-prox-semestre');
+    });
+
+    test('debe cargar vista correctamente', async () => {
+      const estrategia = new global.VistaSimulacionProxSemestre();
+      const areaContenido = document.createElement('div');
+      const servicios = {
+        resourceManager: new global.ResourceManager(),
+        renderService: new global.RenderService(),
+        usuarioService: new global.UsuarioService(new global.StorageService()),
+        apiService: new global.ApiService()
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        text: jest.fn().mockResolvedValueOnce('<div>Simulación Próximo Semestre</div>')
+      });
+
+      await estrategia.cargar(areaContenido, servicios);
+
+      expect(areaContenido.innerHTML).toContain('Simulación Próximo Semestre');
+    });
+
+    test('debe manejar error al cargar HTML', async () => {
+      const estrategia = new global.VistaSimulacionProxSemestre();
+      const areaContenido = document.createElement('div');
+      const servicios = {
+        resourceManager: new global.ResourceManager(),
+        renderService: new global.RenderService(),
+        usuarioService: new global.UsuarioService(new global.StorageService()),
+        apiService: new global.ApiService()
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404
+      });
+
+      await expect(estrategia.cargar(areaContenido, servicios)).rejects.toThrow();
+    });
+  });
+
+  describe('VistaTestingStrategy', () => {
+    test('debe tener getIdVista correcto', () => {
+      const estrategia = new global.VistaTestingStrategy();
+      expect(estrategia.getIdVista()).toBe('proyeccion-testing');
+    });
+
+    test('debe poblar opciones de carrera', () => {
+      const estrategia = new global.VistaTestingStrategy();
+      const selectCarrera = document.createElement('select');
+      const usuario = {
+        carreras: [
+          { codigo: '8266', nombre: 'ITI', catalogo: '202410' },
+          { codigo: '8616', nombre: 'ICI', catalogo: '202310' }
+        ]
+      };
+      sessionStorage.setItem('ucn_user_data', JSON.stringify(usuario));
+
+      estrategia.poblarOpciones(selectCarrera);
+
+      expect(selectCarrera.options.length).toBe(2);
+      expect(selectCarrera.options[0].value).toBe('8266');
+      expect(selectCarrera.options[0].dataset.catalogo).toBe('202410');
+    });
+  });
+
+  describe('RenderService', () => {
+    test('generarHistorico debe generar HTML correcto', () => {
+      const renderService = new global.RenderService();
+      const html = renderService.generarHistorico();
+      expect(html).toContain('Estadísticas - Histórico');
+    });
+
+    test('generarDashboardRoss debe generar HTML correcto', () => {
+      const renderService = new global.RenderService();
+      const html = renderService.generarDashboardRoss();
+      expect(html).toContain('Dashboard Ross');
+    });
+
+    test('generarTesting debe generar HTML correcto', () => {
+      const renderService = new global.RenderService();
+      const html = renderService.generarTesting();
+      expect(html).toContain('Simulación Egreso');
+    });
+  });
+
+  describe('BusquedaService', () => {
+    test('debe filtrar elementos correctamente', () => {
+      const busquedaService = new global.BusquedaService();
+      document.body.innerHTML = `
+        <div class="elemento-menu">
+          <span>Malla Actual</span>
+        </div>
+        <div class="elemento-menu">
+          <span>Dashboard Ross</span>
+        </div>
+        <div class="elemento-inferior cerrar-sesion">
+          <span>Cerrar Sesión</span>
+        </div>
+      `;
+
+      const elementosMenu = document.querySelectorAll('.elemento-menu');
+      const elementosInferior = document.querySelectorAll('.elemento-inferior');
+
+      busquedaService.filtrarElementosSuperiores(elementosMenu, 'malla');
+      busquedaService.filtrarElementosInferiores(elementosInferior, 'cerrar');
+
+      expect(elementosMenu[0].style.display).toBe('');
+      expect(elementosMenu[1].style.display).toBe('none');
+      expect(elementosInferior[0].style.display).toBe('');
+    });
+  });
+
+  describe('MenuActivoService', () => {
+    test('debe activar elemento por tipo', () => {
+      const menuActivoService = new global.MenuActivoService();
+      document.body.innerHTML = `
+        <div id="${global.AppConfig.IDS.NOMBRE_USUARIO}"></div>
+        <div class="elemento-menu">
+          <span>Malla Actual</span>
+        </div>
+        <div class="elemento-menu">
+          <span>Dashboard Ross</span>
+        </div>
+      `;
+
+      menuActivoService.establecer('malla-actual');
+      const elementosMenu = document.querySelectorAll('.elemento-menu');
+      const activo = Array.from(elementosMenu).find(el => el.classList.contains('active'));
+      expect(activo).toBeDefined();
+    });
+
+    test('debe activar perfil correctamente', () => {
+      const menuActivoService = new global.MenuActivoService();
+      document.body.innerHTML = `
+        <div id="${global.AppConfig.IDS.NOMBRE_USUARIO}"></div>
+      `;
+
+      menuActivoService.establecer('profile');
+      const nombreUsuario = document.getElementById(global.AppConfig.IDS.NOMBRE_USUARIO);
+      expect(nombreUsuario.classList.contains('active')).toBe(true);
+    });
+  });
+
+  describe('UsuarioUIService', () => {
+    test('debe actualizar UI de usuario correctamente', async () => {
+      const usuarioUIService = new global.UsuarioUIService();
+      document.body.innerHTML = `
+        <div id="${global.AppConfig.IDS.NOMBRE_USUARIO}"></div>
+        <div id="${global.AppConfig.IDS.AVATAR_USUARIO}"></div>
+      `;
+
+      const usuario = {
+        name: 'Test User',
+        foto_perfil: 'profile.jpg',
+        rut: '222222222'
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        blob: jest.fn().mockResolvedValueOnce(new Blob())
+      });
+
+      await usuarioUIService.actualizar(usuario);
+
+      const nombreUsuario = document.getElementById(global.AppConfig.IDS.NOMBRE_USUARIO);
+      expect(nombreUsuario.textContent).toBe('Test User');
+    });
+
+    test('debe manejar usuario sin foto_perfil', async () => {
+      const usuarioUIService = new global.UsuarioUIService();
+      document.body.innerHTML = `
+        <div id="${global.AppConfig.IDS.NOMBRE_USUARIO}"></div>
+        <div id="${global.AppConfig.IDS.AVATAR_USUARIO}"></div>
+      `;
+
+      const usuario = {
+        name: 'Test User',
+        rut: '222222222'
+      };
+
+      await usuarioUIService.actualizar(usuario);
+
+      const nombreUsuario = document.getElementById(global.AppConfig.IDS.NOMBRE_USUARIO);
+      expect(nombreUsuario.textContent).toBe('Test User');
+    });
+  });
+
+  describe('NavegacionService', () => {
+    test('navegarA debe manejar vista no encontrada', async () => {
+      const navegacionService = new global.NavegacionService(
+        new global.ResourceManager(),
+        new global.RenderService(),
+        new global.UsuarioService(new global.StorageService()),
+        new global.ApiService()
+      );
+      const areaContenido = document.createElement('div');
+      navegacionService.inicializar(areaContenido, '<div>Inicio</div>');
+
+      await navegacionService.navegarA('vista-inexistente');
+
+      expect(areaContenido.innerHTML).toBe('<div>Inicio</div>');
+    });
+
+    test('navegarA debe manejar error al cargar vista', async () => {
+      const navegacionService = new global.NavegacionService(
+        new global.ResourceManager(),
+        new global.RenderService(),
+        new global.UsuarioService(new global.StorageService()),
+        new global.ApiService()
+      );
+      const areaContenido = document.createElement('div');
+      navegacionService.inicializar(areaContenido, '<div>Inicio</div>');
+
+      const estrategia = navegacionService.estrategias.get('inicio');
+      const cargarSpy = jest.spyOn(estrategia, 'cargar').mockRejectedValue(new Error('Error de carga'));
+
+      try {
+        await navegacionService.navegarA('inicio');
+      } catch (error) {
+        expect(error.message).toBe('Error de carga');
+      }
+
+      cargarSpy.mockRestore();
+    });
+
+    test('navegarA debe manejar areaContenido no definida', async () => {
+      const navegacionService = new global.NavegacionService(
+        new global.ResourceManager(),
+        new global.RenderService(),
+        new global.UsuarioService(new global.StorageService()),
+        new global.ApiService()
+      );
+
+      await navegacionService.navegarA('inicio');
+
+      expect(navegacionService.vistaActual).toBeNull();
+    });
+  });
+
+  describe('MainMenuApp - métodos adicionales', () => {
+    beforeEach(() => {
+      const usuario = { name: 'Test' };
+      sessionStorage.setItem(global.AppConfig.CLAVES.DATOS_USUARIO, JSON.stringify(usuario));
+    });
+
+    test('cargarMallaActual debe manejar errores', async () => {
+      app = new global.MainMenuApp();
+      const navegarSpy = jest.spyOn(app.navegacionService, 'navegarA').mockRejectedValue(new Error('Error'));
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      await app.cargarMallaActual();
+
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      navegarSpy.mockRestore();
+      consoleErrorSpy.mockRestore();
+    });
+
+    test('cargarHistorico debe manejar errores', () => {
+      app = new global.MainMenuApp();
+      const navegarSpy = jest.spyOn(app.navegacionService, 'navegarA').mockImplementation(() => {
+        throw new Error('Error');
+      });
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      app.cargarHistorico();
+
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      navegarSpy.mockRestore();
+      consoleErrorSpy.mockRestore();
+    });
+
+    test('cargarDashboardRoss debe manejar errores', async () => {
+      app = new global.MainMenuApp();
+      const navegarSpy = jest.spyOn(app.navegacionService, 'navegarA').mockRejectedValue(new Error('Error'));
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      await app.cargarDashboardRoss();
+
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      navegarSpy.mockRestore();
+      consoleErrorSpy.mockRestore();
+    });
+
+    test('cargarTesting debe manejar errores', async () => {
+      app = new global.MainMenuApp();
+      const navegarSpy = jest.spyOn(app.navegacionService, 'navegarA').mockRejectedValue(new Error('Error'));
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      await app.cargarTesting();
+
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      navegarSpy.mockRestore();
+      consoleErrorSpy.mockRestore();
+    });
+
+    test('cargarSimulacionProxSemestre debe manejar errores', async () => {
+      app = new global.MainMenuApp();
+      const navegarSpy = jest.spyOn(app.navegacionService, 'navegarA').mockRejectedValue(new Error('Error'));
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      await app.cargarSimulacionProxSemestre();
+
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      navegarSpy.mockRestore();
+      consoleErrorSpy.mockRestore();
+    });
+
+    test('cargarInicio debe manejar errores', () => {
+      app = new global.MainMenuApp();
+      const cargarInicioSpy = jest.spyOn(app.navegacionService, 'cargarInicio').mockImplementation(() => {
+        throw new Error('Error');
+      });
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      app.cargarInicio();
+
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      cargarInicioSpy.mockRestore();
+      consoleErrorSpy.mockRestore();
+    });
+
+    test('cargarMisSimulacionesEgreso debe manejar errores', () => {
+      app = new global.MainMenuApp();
+      const navegarSpy = jest.spyOn(app.navegacionService, 'navegarA').mockImplementation(() => {
+        throw new Error('Error');
+      });
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      app.cargarMisSimulacionesEgreso();
+
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      navegarSpy.mockRestore();
+      consoleErrorSpy.mockRestore();
+    });
+
+    test('cargarMisSimulacionesProxSemestre debe manejar errores', () => {
+      app = new global.MainMenuApp();
+      const navegarSpy = jest.spyOn(app.navegacionService, 'navegarA').mockImplementation(() => {
+        throw new Error('Error');
+      });
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      app.cargarMisSimulacionesProxSemestre();
+
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      navegarSpy.mockRestore();
+      consoleErrorSpy.mockRestore();
+    });
+
+    test('realizarLoginYRedirigir debe manejar respuesta inválida', async () => {
+      app = new global.MainMenuApp();
+      global.window.location = { href: '' };
+      const loginSpy = jest.spyOn(app.apiService, 'login').mockResolvedValue({});
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      await expect(app.realizarLoginYRedirigir('test@example.com', 'password')).rejects.toThrow();
+
+      loginSpy.mockRestore();
+      consoleErrorSpy.mockRestore();
+    });
+
+    test('realizarLoginYRedirigir debe manejar error de login', async () => {
+      app = new global.MainMenuApp();
+      const loginSpy = jest.spyOn(app.apiService, 'login').mockRejectedValue(new Error('Error de login'));
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
+
+      await expect(app.realizarLoginYRedirigir('test@example.com', 'password')).rejects.toThrow();
+
+      loginSpy.mockRestore();
+      consoleErrorSpy.mockRestore();
+    });
+
+    test('configurarNavegacionAyuda debe configurar botón de ayuda', () => {
+      document.body.innerHTML = `<button id="botonAyuda"></button>`;
+      app = new global.MainMenuApp();
+      global.window.location = { href: '' };
+
+      app.configurarNavegacionAyuda();
+
+      const boton = document.getElementById('botonAyuda');
+      boton.click();
+      expect(global.window.location.href).toContain('mailto:');
+    });
   });
 });
 

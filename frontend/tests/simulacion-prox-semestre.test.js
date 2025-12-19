@@ -510,6 +510,32 @@ describe('SimulacionProxSemestreApp', () => {
     });
   });
 
+  describe('configurarEventos', () => {
+    beforeEach(() => {
+      sessionStorage.setItem('ucn_user_data', JSON.stringify({
+        rut: '333333333',
+        carreras: [
+          { codigo: '8266', nombre: 'ITI', catalogo: '202410' },
+          { codigo: '8616', nombre: 'ICI', catalogo: '202310' }
+        ]
+      }));
+      app = new SimulacionProxSemestreApp();
+    });
+
+    test('debe manejar cambio de carrera sin valor', () => {
+      const event = { target: { value: '' } };
+      mockSelectorCarrera.dispatchEvent(new Event('change'));
+      expect(app.carreraSeleccionada).toBeDefined();
+    });
+
+    test('debe manejar carrera no encontrada en cambio', () => {
+      mockSelectorCarrera.value = '9999';
+      const event = new Event('change', { bubbles: true });
+      mockSelectorCarrera.dispatchEvent(event);
+      expect(app.ramosSeleccionados.size).toBe(0);
+    });
+  });
+
   describe('generar', () => {
     beforeEach(() => {
       sessionStorage.setItem('ucn_user_data', JSON.stringify({
@@ -559,6 +585,102 @@ describe('SimulacionProxSemestreApp', () => {
       window.alert = jest.fn();
       await app.generar();
       expect(window.alert).toHaveBeenCalled();
+    });
+
+    test('debe manejar respuesta con error', async () => {
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        json: jest.fn().mockResolvedValueOnce({
+          error: 'Error al generar',
+          detalle: 'Detalle del error'
+        })
+      });
+      window.alert = jest.fn();
+      await app.generar();
+      expect(window.alert).toHaveBeenCalled();
+    });
+
+    test('debe manejar respuesta sin detalle', async () => {
+      global.fetch.mockResolvedValueOnce({
+        ok: false,
+        json: jest.fn().mockResolvedValueOnce({
+          error: 'Error al generar'
+        })
+      });
+      window.alert = jest.fn();
+      await app.generar();
+      expect(window.alert).toHaveBeenCalled();
+    });
+  });
+
+  describe('mostrarResultado', () => {
+    beforeEach(() => {
+      document.body.innerHTML = `
+        <div id="resultadoSimulacion"></div>
+      `;
+      sessionStorage.setItem('ucn_user_data', JSON.stringify({
+        rut: '222222222',
+        carreras: []
+      }));
+      app = new SimulacionProxSemestreApp();
+      app.resultado = document.getElementById('resultadoSimulacion');
+    });
+
+    test('debe mostrar resultado con enlace de descarga', () => {
+      const res = {
+        mensaje: 'Simulación creada',
+        simulacion: { id: 1 }
+      };
+      app.mostrarResultado(res);
+      expect(app.resultado.innerHTML).toContain('Simulación creada');
+      expect(app.resultado.innerHTML).toContain('Descargar JSON');
+    });
+
+    test('debe mostrar resultado con enlace relativo', () => {
+      const res = {
+        mensaje: 'Simulación creada',
+        simulacion: { enlace_json: '/api/simulaciones/1/archivo' }
+      };
+      app.mostrarResultado(res);
+      expect(app.resultado.innerHTML).toContain('Descargar JSON');
+    });
+
+    test('debe mostrar resultado sin enlace', () => {
+      const res = {
+        mensaje: 'Simulación creada',
+        simulacion: {}
+      };
+      app.mostrarResultado(res);
+      expect(app.resultado.innerHTML).toContain('Simulación creada');
+    });
+  });
+
+  describe('actualizarEstado', () => {
+    beforeEach(() => {
+      document.body.innerHTML = `
+        <button id="botonProbarSimulacion">Generar</button>
+        <div id="estadoSimulacion"></div>
+      `;
+      app = new SimulacionProxSemestreApp();
+      app.btn = document.getElementById('botonProbarSimulacion');
+      app.estado = document.getElementById('estadoSimulacion');
+    });
+
+    test('debe actualizar estado bloqueado', () => {
+      app.actualizarEstado(true, 'Generando...');
+      expect(app.btn.disabled).toBe(true);
+      expect(app.estado.textContent).toBe('Generando...');
+    });
+
+    test('debe actualizar estado desbloqueado', () => {
+      app.actualizarEstado(false, 'Listo');
+      expect(app.btn.disabled).toBe(false);
+      expect(app.estado.textContent).toBe('Listo');
+    });
+
+    test('debe usar texto por defecto', () => {
+      app.actualizarEstado(true);
+      expect(app.estado.textContent).toBe('Generando…');
     });
   });
 });

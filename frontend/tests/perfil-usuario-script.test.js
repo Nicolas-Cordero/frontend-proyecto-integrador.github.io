@@ -10,6 +10,7 @@ const UsuarioService = modulos.UsuarioService || global.UsuarioService || window
 const PerfilDataService = modulos.PerfilDataService || global.PerfilDataService || window.PerfilDataService;
 const PerfilRenderService = modulos.PerfilRenderService || global.PerfilRenderService || window.PerfilRenderService;
 const PerfilEventService = modulos.PerfilEventService || global.PerfilEventService || window.PerfilEventService;
+const FotoPerfilService = modulos.FotoPerfilService || global.FotoPerfilService || window.FotoPerfilService;
 const AplicacionPerfilUsuario = modulos.AplicacionPerfilUsuario || global.AplicacionPerfilUsuario || window.AplicacionPerfilUsuario;
 
 if (PerfilConfig) global.PerfilConfig = PerfilConfig;
@@ -18,6 +19,7 @@ if (UsuarioService) global.UsuarioService = UsuarioService;
 if (PerfilDataService) global.PerfilDataService = PerfilDataService;
 if (PerfilRenderService) global.PerfilRenderService = PerfilRenderService;
 if (PerfilEventService) global.PerfilEventService = PerfilEventService;
+if (FotoPerfilService) global.FotoPerfilService = FotoPerfilService;
 if (AplicacionPerfilUsuario) global.AplicacionPerfilUsuario = AplicacionPerfilUsuario;
 
 describe('PerfilConfig', () => {
@@ -686,6 +688,649 @@ describe('AplicacionPerfilUsuario', () => {
 
     renderizarSpy.mockRestore();
     consoleErrorSpy.mockRestore();
+  });
+
+  describe('PerfilRenderService - métodos adicionales', () => {
+    let renderService;
+    let dataService;
+
+    beforeEach(() => {
+      dataService = new global.PerfilDataService(new global.UsuarioService(new global.StorageService()));
+      renderService = new global.PerfilRenderService(dataService);
+      document.body.innerHTML = `
+        <div id="${global.PerfilConfig.IDS.AVATAR_GRANDE}"></div>
+        <div id="${global.PerfilConfig.IDS.NOMBRE_COMPLETO_PERFIL}"></div>
+        <div id="${global.PerfilConfig.IDS.ROL_PERFIL}"></div>
+        <div id="${global.PerfilConfig.IDS.CORREO_PERFIL}"></div>
+        <div id="${global.PerfilConfig.IDS.NOMBRE_COMPLETO_DETALLE}"></div>
+        <div id="${global.PerfilConfig.IDS.RUT_DETALLE}"></div>
+        <div id="${global.PerfilConfig.IDS.NOMBRE_USUARIO_DETALLE}"></div>
+        <div id="${global.PerfilConfig.IDS.CORREO_DETALLE}"></div>
+        <div id="${global.PerfilConfig.IDS.CARRERA_DETALLE}"></div>
+        <div id="${global.PerfilConfig.IDS.GENERACION_DETALLE}"></div>
+        <div id="${global.PerfilConfig.IDS.NIVEL_ACTUAL_DETALLE}"></div>
+        <div id="${global.PerfilConfig.IDS.PROMEDIO_DETALLE}"></div>
+      `;
+    });
+
+    test('actualizarAvatar debe manejar usuario sin foto_perfil', () => {
+      const usuario = { rut: '222222222' };
+      renderService.actualizarAvatar(usuario);
+      const avatar = document.getElementById(global.PerfilConfig.IDS.AVATAR_GRANDE);
+      expect(avatar).toBeDefined();
+    });
+
+    test('actualizarAvatar debe manejar error al cargar imagen', () => {
+      const usuario = { rut: '222222222', foto_perfil: 'profile.jpg', firstName: 'Test' };
+      renderService.actualizarAvatar(usuario);
+      const avatar = document.getElementById(global.PerfilConfig.IDS.AVATAR_GRANDE);
+      const img = avatar.querySelector('img');
+      if (img) {
+        img.onerror();
+        expect(avatar.textContent).toBe('T');
+      }
+    });
+
+    test('actualizarAvatar debe usar name si firstName no existe', () => {
+      const usuario = { rut: '222222222', foto_perfil: 'profile.jpg', name: 'Test User' };
+      renderService.actualizarAvatar(usuario);
+      const avatar = document.getElementById(global.PerfilConfig.IDS.AVATAR_GRANDE);
+      const img = avatar.querySelector('img');
+      if (img) {
+        expect(img.alt).toBe('Test User');
+      }
+    });
+
+    test('actualizarNombreCompleto debe actualizar elemento correctamente', () => {
+      const usuario = { name: 'Test User' };
+      renderService.actualizarNombreCompleto(usuario, global.PerfilConfig.IDS.NOMBRE_COMPLETO_PERFIL);
+      const elemento = document.getElementById(global.PerfilConfig.IDS.NOMBRE_COMPLETO_PERFIL);
+      expect(elemento.textContent).toBe('Test User');
+    });
+
+    test('actualizarRol debe actualizar elemento correctamente', () => {
+      const usuario = { role: 'student' };
+      renderService.actualizarRol(usuario);
+      const elemento = document.getElementById(global.PerfilConfig.IDS.ROL_PERFIL);
+      expect(elemento.textContent).toBe('Estudiante');
+    });
+
+    test('actualizarCorreo debe actualizar elemento correctamente', () => {
+      const usuario = { email: 'test@example.com' };
+      renderService.actualizarCorreo(usuario, global.PerfilConfig.IDS.CORREO_PERFIL);
+      const elemento = document.getElementById(global.PerfilConfig.IDS.CORREO_PERFIL);
+      expect(elemento.textContent).toBe('test@example.com');
+    });
+
+    test('actualizarRut debe actualizar elemento correctamente', () => {
+      const usuario = { rut: '222222222' };
+      renderService.actualizarRut(usuario);
+      const elemento = document.getElementById(global.PerfilConfig.IDS.RUT_DETALLE);
+      expect(elemento.textContent).toBe('222222222');
+    });
+
+    test('actualizarNombreUsuario debe actualizar elemento correctamente', () => {
+      const usuario = { username: 'testuser' };
+      renderService.actualizarNombreUsuario(usuario);
+      const elemento = document.getElementById(global.PerfilConfig.IDS.NOMBRE_USUARIO_DETALLE);
+      expect(elemento.textContent).toBe('testuser');
+    });
+
+    test('actualizarInformacionAcademica debe actualizar todos los elementos', () => {
+      const usuario = {
+        academicInfo: {
+          career: 'ITI',
+          generation: '2021',
+          currentSemester: 5,
+          gpa: 4.5
+        }
+      };
+      renderService.actualizarInformacionAcademica(usuario);
+      expect(document.getElementById(global.PerfilConfig.IDS.CARRERA_DETALLE).textContent).toBe('ITI');
+      expect(document.getElementById(global.PerfilConfig.IDS.GENERACION_DETALLE).textContent).toBe('2021');
+      expect(document.getElementById(global.PerfilConfig.IDS.NIVEL_ACTUAL_DETALLE).textContent).toBe('5');
+      expect(document.getElementById(global.PerfilConfig.IDS.PROMEDIO_DETALLE).textContent).toBe('4.5');
+    });
+
+    test('actualizarInformacionAcademica debe manejar información académica parcial', () => {
+      const usuario = {
+        academicInfo: {
+          career: 'ITI'
+        }
+      };
+      renderService.actualizarInformacionAcademica(usuario);
+      expect(document.getElementById(global.PerfilConfig.IDS.CARRERA_DETALLE).textContent).toBe('ITI');
+    });
+
+    test('actualizarInformacionAcademica debe manejar nivelActual 0', () => {
+      const usuario = {
+        academicInfo: {
+          currentSemester: 0
+        }
+      };
+      renderService.actualizarInformacionAcademica(usuario);
+      const nivelElemento = document.getElementById(global.PerfilConfig.IDS.NIVEL_ACTUAL_DETALLE);
+      expect(nivelElemento.textContent).toBe(global.PerfilConfig.VALORES_POR_DEFECTO.NIVEL);
+    });
+
+    test('actualizarInformacionAcademica debe manejar promedio 0', () => {
+      const usuario = {
+        academicInfo: {
+          gpa: 0
+        }
+      };
+      renderService.actualizarInformacionAcademica(usuario);
+      const promedioElemento = document.getElementById(global.PerfilConfig.IDS.PROMEDIO_DETALLE);
+      expect(promedioElemento.textContent).toBe(global.PerfilConfig.VALORES_POR_DEFECTO.PROMEDIO);
+    });
+
+    test('actualizarInformacionAcademica debe manejar nivelActual mayor a 0', () => {
+      const usuario = {
+        academicInfo: {
+          currentSemester: 5
+        }
+      };
+      renderService.actualizarInformacionAcademica(usuario);
+      const nivelElemento = document.getElementById(global.PerfilConfig.IDS.NIVEL_ACTUAL_DETALLE);
+      expect(nivelElemento.textContent).toBe('5° Semestre');
+    });
+
+    test('actualizarInformacionAcademica debe manejar promedio mayor a 0', () => {
+      const usuario = {
+        academicInfo: {
+          gpa: 4.5
+        }
+      };
+      renderService.actualizarInformacionAcademica(usuario);
+      const promedioElemento = document.getElementById(global.PerfilConfig.IDS.PROMEDIO_DETALLE);
+      expect(promedioElemento.textContent).toBe('4.5');
+    });
+
+    test('actualizarInformacionAcademica debe manejar elementos faltantes', () => {
+      document.body.innerHTML = `
+        <div id="${global.PerfilConfig.IDS.CARRERA_DETALLE}"></div>
+      `;
+      const usuario = {
+        academicInfo: {
+          career: 'ITI'
+        }
+      };
+      renderService.actualizarInformacionAcademica(usuario);
+      expect(document.getElementById(global.PerfilConfig.IDS.CARRERA_DETALLE).textContent).toBe('ITI');
+    });
+
+    test('configurarBotonVolver debe configurar evento correctamente', () => {
+      document.body.innerHTML = `<button id="${global.PerfilConfig.IDS.BOTON_VOLVER}"></button>`;
+      renderService.configurarBotonVolver();
+      const boton = document.getElementById(global.PerfilConfig.IDS.BOTON_VOLVER);
+      expect(boton).toBeDefined();
+    });
+  });
+
+  describe('PerfilEventService - casos adicionales', () => {
+    test('configurarBotonesAccion debe manejar input file existente', () => {
+      document.body.innerHTML = `
+        <div class="contenedor-avatar">
+          <button class="boton-cambiar-avatar"></button>
+        </div>
+        <input id="input-file-foto-perfil" type="file">
+      `;
+      const eventService = new global.PerfilEventService();
+      const usuario = { rut: '222222222' };
+      sessionStorage.setItem(global.PerfilConfig.CLAVES.DATOS_USUARIO, JSON.stringify(usuario));
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue({ mensaje: 'Foto actualizada' })
+      });
+
+      global.toast = {
+        success: jest.fn(),
+        error: jest.fn(),
+        loading: jest.fn().mockReturnValue('toast-id'),
+        remove: jest.fn()
+      };
+
+      eventService.configurarBotonesAccion(usuario);
+
+      const inputFile = document.getElementById('input-file-foto-perfil');
+      expect(inputFile).toBeDefined();
+    });
+
+    test('configurarBotonesAccion debe manejar archivo inválido', () => {
+      document.body.innerHTML = `
+        <div class="contenedor-avatar">
+          <button class="boton-cambiar-avatar"></button>
+        </div>
+      `;
+      const eventService = new global.PerfilEventService();
+      const usuario = { rut: '222222222' };
+      sessionStorage.setItem(global.PerfilConfig.CLAVES.DATOS_USUARIO, JSON.stringify(usuario));
+
+      global.toast = {
+        success: jest.fn(),
+        error: jest.fn(),
+        loading: jest.fn().mockReturnValue('toast-id'),
+        remove: jest.fn()
+      };
+
+      eventService.configurarBotonesAccion(usuario);
+
+      const inputFile = document.getElementById('input-file-foto-perfil');
+      const file = new File([''], 'test.txt', { type: 'text/plain' });
+      Object.defineProperty(inputFile, 'files', {
+        value: [file],
+        writable: false
+      });
+
+      const changeEvent = new Event('change', { bubbles: true });
+      inputFile.dispatchEvent(changeEvent);
+
+      expect(global.toast.error).toHaveBeenCalled();
+    });
+
+    test('configurarBotonesAccion debe manejar archivo muy grande', () => {
+      document.body.innerHTML = `
+        <div class="contenedor-avatar">
+          <button class="boton-cambiar-avatar"></button>
+        </div>
+      `;
+      const eventService = new global.PerfilEventService();
+      const usuario = { rut: '222222222' };
+      sessionStorage.setItem(global.PerfilConfig.CLAVES.DATOS_USUARIO, JSON.stringify(usuario));
+
+      global.toast = {
+        success: jest.fn(),
+        error: jest.fn(),
+        loading: jest.fn().mockReturnValue('toast-id'),
+        remove: jest.fn()
+      };
+
+      eventService.configurarBotonesAccion(usuario);
+
+      const inputFile = document.getElementById('input-file-foto-perfil');
+      const file = new File(['x'.repeat(6 * 1024 * 1024)], 'test.jpg', { type: 'image/jpeg' });
+      Object.defineProperty(inputFile, 'files', {
+        value: [file],
+        writable: false
+      });
+
+      const changeEvent = new Event('change', { bubbles: true });
+      inputFile.dispatchEvent(changeEvent);
+
+      expect(global.toast.error).toHaveBeenCalled();
+    });
+
+    test('configurarBotonesAccion debe manejar usuario sin rut', () => {
+      document.body.innerHTML = `
+        <div class="contenedor-avatar">
+          <button class="boton-cambiar-avatar"></button>
+        </div>
+      `;
+      const eventService = new global.PerfilEventService();
+      const usuario = {};
+      sessionStorage.setItem(global.PerfilConfig.CLAVES.DATOS_USUARIO, JSON.stringify(usuario));
+
+      global.toast = {
+        success: jest.fn(),
+        error: jest.fn(),
+        loading: jest.fn().mockReturnValue('toast-id'),
+        remove: jest.fn()
+      };
+
+      eventService.configurarBotonesAccion(usuario);
+
+      const inputFile = document.getElementById('input-file-foto-perfil');
+      const file = new File([''], 'test.jpg', { type: 'image/jpeg' });
+      Object.defineProperty(inputFile, 'files', {
+        value: [file],
+        writable: false
+      });
+
+      const changeEvent = new Event('change', { bubbles: true });
+      inputFile.dispatchEvent(changeEvent);
+
+      expect(global.toast.error).toHaveBeenCalled();
+    });
+
+    test('configurarBotonesAccion debe manejar error al subir foto', async () => {
+      document.body.innerHTML = `
+        <div class="contenedor-avatar">
+          <button class="boton-cambiar-avatar"></button>
+        </div>
+      `;
+      const eventService = new global.PerfilEventService();
+      const usuario = { rut: '222222222' };
+      sessionStorage.setItem(global.PerfilConfig.CLAVES.DATOS_USUARIO, JSON.stringify(usuario));
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: false,
+        json: jest.fn().mockResolvedValue({ error: 'Error al subir' })
+      });
+
+      global.toast = {
+        success: jest.fn(),
+        error: jest.fn(),
+        loading: jest.fn().mockReturnValue('toast-id'),
+        remove: jest.fn()
+      };
+
+      eventService.configurarBotonesAccion(usuario);
+
+      const inputFile = document.getElementById('input-file-foto-perfil');
+      const file = new File([''], 'test.jpg', { type: 'image/jpeg' });
+      Object.defineProperty(inputFile, 'files', {
+        value: [file],
+        writable: false
+      });
+
+      const changeEvent = new Event('change', { bubbles: true });
+      await inputFile.dispatchEvent(changeEvent);
+
+      expect(global.toast.error).toHaveBeenCalled();
+    });
+
+    test('configurarBotonesAccion debe manejar click en botón cambiar avatar', () => {
+      document.body.innerHTML = `
+        <div class="contenedor-avatar">
+          <button class="boton-cambiar-avatar">Cambiar</button>
+        </div>
+      `;
+      const eventService = new global.PerfilEventService();
+      const usuario = { rut: '222222222' };
+      sessionStorage.setItem(global.PerfilConfig.CLAVES.DATOS_USUARIO, JSON.stringify(usuario));
+
+      global.toast = {
+        success: jest.fn(),
+        error: jest.fn(),
+        loading: jest.fn().mockReturnValue('toast-id'),
+        remove: jest.fn()
+      };
+
+      eventService.configurarBotonesAccion(usuario);
+
+      const inputFile = document.getElementById('input-file-foto-perfil');
+      const clickSpy = jest.spyOn(inputFile, 'click');
+      const boton = document.querySelector('.boton-cambiar-avatar');
+      
+      boton.click();
+      
+      expect(clickSpy).toHaveBeenCalled();
+      clickSpy.mockRestore();
+    });
+
+    test('configurarBotonesAccion debe manejar click fuera del botón', () => {
+      document.body.innerHTML = `
+        <div class="contenedor-avatar">
+          <div class="otro-elemento">Otro</div>
+        </div>
+      `;
+      const eventService = new global.PerfilEventService();
+      const usuario = { rut: '222222222' };
+      sessionStorage.setItem(global.PerfilConfig.CLAVES.DATOS_USUARIO, JSON.stringify(usuario));
+
+      global.toast = {
+        success: jest.fn(),
+        error: jest.fn(),
+        loading: jest.fn().mockReturnValue('toast-id'),
+        remove: jest.fn()
+      };
+
+      eventService.configurarBotonesAccion(usuario);
+
+      const inputFile = document.getElementById('input-file-foto-perfil');
+      const clickSpy = jest.spyOn(inputFile, 'click');
+      const otroElemento = document.querySelector('.otro-elemento');
+      
+      otroElemento.click();
+      
+      expect(clickSpy).not.toHaveBeenCalled();
+      clickSpy.mockRestore();
+    });
+
+    test('configurarBotonesAccion debe manejar actualización exitosa con mainMenuApp', async () => {
+      document.body.innerHTML = `
+        <div class="contenedor-avatar">
+          <button class="boton-cambiar-avatar"></button>
+        </div>
+      `;
+      const eventService = new global.PerfilEventService();
+      const usuario = { rut: '222222222' };
+      sessionStorage.setItem(global.PerfilConfig.CLAVES.DATOS_USUARIO, JSON.stringify(usuario));
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          mensaje: 'Foto actualizada',
+          foto_perfil: 'profile.jpg'
+        })
+      });
+
+      global.window.mainMenuApp = {
+        usuarioUIService: {
+          actualizar: jest.fn().mockResolvedValue()
+        }
+      };
+
+      global.window.aplicacionPerfilUsuario = {
+        perfilRenderService: {
+          actualizarAvatar: jest.fn()
+        }
+      };
+
+      global.toast = {
+        success: jest.fn(),
+        error: jest.fn(),
+        loading: jest.fn().mockReturnValue('toast-id'),
+        remove: jest.fn()
+      };
+
+      eventService.configurarBotonesAccion(usuario);
+
+      const inputFile = document.getElementById('input-file-foto-perfil');
+      const file = new File([''], 'test.jpg', { type: 'image/jpeg' });
+      Object.defineProperty(inputFile, 'files', {
+        value: [file],
+        writable: false
+      });
+
+      const changeEvent = new Event('change', { bubbles: true });
+      await inputFile.dispatchEvent(changeEvent);
+
+      expect(global.toast.success).toHaveBeenCalled();
+    });
+
+    test('configurarBotonesAccion debe manejar actualización sin mainMenuApp', async () => {
+      document.body.innerHTML = `
+        <div class="contenedor-avatar">
+          <button class="boton-cambiar-avatar"></button>
+        </div>
+      `;
+      const eventService = new global.PerfilEventService();
+      const usuario = { rut: '222222222' };
+      sessionStorage.setItem(global.PerfilConfig.CLAVES.DATOS_USUARIO, JSON.stringify(usuario));
+
+      global.fetch = jest.fn().mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue({
+          mensaje: 'Foto actualizada',
+          foto_perfil: 'profile.jpg'
+        })
+      });
+
+      global.window.mainMenuApp = undefined;
+      global.window.aplicacionPerfilUsuario = {
+        perfilRenderService: {
+          actualizarAvatar: jest.fn()
+        }
+      };
+
+      global.toast = {
+        success: jest.fn(),
+        error: jest.fn(),
+        loading: jest.fn().mockReturnValue('toast-id'),
+        remove: jest.fn()
+      };
+
+      eventService.configurarBotonesAccion(usuario);
+
+      const inputFile = document.getElementById('input-file-foto-perfil');
+      const file = new File([''], 'test.jpg', { type: 'image/jpeg' });
+      Object.defineProperty(inputFile, 'files', {
+        value: [file],
+        writable: false
+      });
+
+      const changeEvent = new Event('change', { bubbles: true });
+      await inputFile.dispatchEvent(changeEvent);
+
+      expect(global.toast.success).toHaveBeenCalled();
+    });
+  });
+
+  describe('FotoPerfilService', () => {
+    test('obtenerUrlFoto debe retornar null si no hay rut', () => {
+      const url = global.FotoPerfilService.obtenerUrlFoto(null);
+      expect(url).toBeNull();
+    });
+
+    test('obtenerUrlFoto debe retornar URL correcta', () => {
+      const url = global.FotoPerfilService.obtenerUrlFoto('222222222');
+      expect(url).toContain('222222222');
+      expect(url).toContain('/foto');
+    });
+
+    test('subirFoto debe lanzar error si falta rut', async () => {
+      await expect(global.FotoPerfilService.subirFoto(null, new File([''], 'test.jpg'))).rejects.toThrow();
+    });
+
+    test('subirFoto debe lanzar error si falta archivo', async () => {
+      await expect(global.FotoPerfilService.subirFoto('222222222', null)).rejects.toThrow();
+    });
+  });
+
+  describe('PerfilDataService - casos adicionales', () => {
+    let dataService;
+
+    beforeEach(() => {
+      dataService = new global.PerfilDataService(new global.UsuarioService(new global.StorageService()));
+    });
+
+    test('formatearNombreCompleto debe usar firstName y lastName', () => {
+      const usuario = { firstName: 'John', lastName: 'Doe' };
+      const nombre = dataService.formatearNombreCompleto(usuario);
+      expect(nombre).toBe('John Doe');
+    });
+
+    test('formatearNombreCompleto debe retornar Usuario si no hay nombre', () => {
+      const usuario = {};
+      const nombre = dataService.formatearNombreCompleto(usuario);
+      expect(nombre).toBe('Usuario');
+    });
+
+    test('formatearRol debe retornar rol por defecto si no hay role', () => {
+      const usuario = {};
+      const rol = dataService.formatearRol(usuario);
+      expect(rol).toBe(global.PerfilConfig.VALORES_POR_DEFECTO.ROL);
+    });
+
+    test('formatearRol debe retornar rol traducido', () => {
+      const usuario = { role: 'admin' };
+      const rol = dataService.formatearRol(usuario);
+      expect(rol).toBe('Administrador');
+    });
+
+    test('formatearRol debe retornar rol original si no está traducido', () => {
+      const usuario = { role: 'unknown' };
+      const rol = dataService.formatearRol(usuario);
+      expect(rol).toBe('unknown');
+    });
+
+    test('obtenerInicialAvatar debe usar name si firstName no existe', () => {
+      const usuario = { name: 'Test' };
+      const inicial = dataService.obtenerInicialAvatar(usuario);
+      expect(inicial).toBe('T');
+    });
+
+    test('obtenerInicialAvatar debe usar U por defecto', () => {
+      const usuario = {};
+      const inicial = dataService.obtenerInicialAvatar(usuario);
+      expect(inicial).toBe('U');
+    });
+
+    test('obtenerInformacionAcademica debe usar valores por defecto', () => {
+      const usuario = {};
+      const info = dataService.obtenerInformacionAcademica(usuario);
+      expect(info.carrera).toBe(global.PerfilConfig.VALORES_POR_DEFECTO.CARRERA);
+      expect(info.generacion).toBe(global.PerfilConfig.VALORES_POR_DEFECTO.GENERACION);
+    });
+  });
+
+  describe('AplicacionPerfilUsuario - casos adicionales', () => {
+    test('cargarEstadisticasAcademicas debe manejar sin carreras', async () => {
+      const usuario = { rut: '222222222', carreras: [] };
+      sessionStorage.setItem(global.PerfilConfig.CLAVES.DATOS_USUARIO, JSON.stringify(usuario));
+      document.body.innerHTML = `<div id="estadisticasContainer"></div>`;
+
+      global.window.HistoricoEstadisticas = class {
+        constructor() {}
+        actualizar() {}
+      };
+
+      app = new global.AplicacionPerfilUsuario();
+      await app.cargarEstadisticasAcademicas();
+
+      expect(app.estadisticasWidget).toBeDefined();
+    });
+
+    test('cargarEstadisticasAcademicas debe manejar sin widget', async () => {
+      const usuario = { rut: '222222222', carreras: [] };
+      sessionStorage.setItem(global.PerfilConfig.CLAVES.DATOS_USUARIO, JSON.stringify(usuario));
+      document.body.innerHTML = `<div id="estadisticasContainer"></div>`;
+
+      global.window.HistoricoEstadisticas = undefined;
+      global.window.historicoEstadisticas = undefined;
+
+      app = new global.AplicacionPerfilUsuario();
+      await app.cargarEstadisticasAcademicas();
+
+      expect(app.estadisticasWidget).toBeNull();
+    });
+
+    test('cargarEstadisticasAcademicas debe manejar sin datosUsuario', async () => {
+      sessionStorage.clear();
+      document.body.innerHTML = `<div id="estadisticasContainer"></div>`;
+
+      app = new global.AplicacionPerfilUsuario();
+      app.datosUsuario = null;
+      await app.cargarEstadisticasAcademicas();
+
+      expect(app.estadisticasWidget).toBeNull();
+    });
+
+    test('obtenerWidgetEstadisticas debe retornar widget existente', () => {
+      const widget = { test: true };
+      global.window.historicoEstadisticas = widget;
+
+      app = new global.AplicacionPerfilUsuario();
+      const resultado = app.obtenerWidgetEstadisticas();
+
+      expect(resultado).toBe(widget);
+    });
+
+    test('obtenerWidgetEstadisticas debe crear nuevo widget', () => {
+      global.window.historicoEstadisticas = undefined;
+      global.window.HistoricoEstadisticas = class {
+        constructor() {}
+      };
+      document.body.innerHTML = `<div id="estadisticasContainer"></div>`;
+
+      app = new global.AplicacionPerfilUsuario();
+      const resultado = app.obtenerWidgetEstadisticas();
+
+      expect(resultado).toBeDefined();
+      expect(global.window.historicoEstadisticas).toBeDefined();
+    });
   });
 });
 

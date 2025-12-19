@@ -107,28 +107,29 @@ class LoginApp {
   // ===== CONFIGURACIÓN DEL TOGGLE DE TEMA =====
   configurarToggleTema() {
     const botonTema = document.getElementById('botonTema');
-    if (botonTema && typeof temaManager !== 'undefined') {
-      const actualizarIconoBoton = () => {
-        const icono = botonTema.querySelector('i');
-        if (!icono) return;
+    if (!botonTema) return;
+    if (typeof temaManager === 'undefined') return;
 
-        const temaActual = temaManager.obtenerTemaActual();
-        if (temaActual === 'dark') {
-          icono.classList.remove('fa-moon');
-          icono.classList.add('fa-sun');
-        } else {
-          icono.classList.remove('fa-sun');
-          icono.classList.add('fa-moon');
-        }
-      };
+    const actualizarIconoBoton = () => {
+      const icono = botonTema.querySelector('i');
+      if (!icono) return;
 
-      botonTema.addEventListener('click', () => {
-        temaManager.alternarTema();
-        actualizarIconoBoton();
-      });
+      const temaActual = temaManager.obtenerTemaActual();
+      if (temaActual === 'dark') {
+        icono.classList.remove('fa-moon');
+        icono.classList.add('fa-sun');
+      } else {
+        icono.classList.remove('fa-sun');
+        icono.classList.add('fa-moon');
+      }
+    };
 
+    botonTema.addEventListener('click', () => {
+      temaManager.alternarTema();
       actualizarIconoBoton();
-    }
+    });
+
+    actualizarIconoBoton();
   }
 
   validarCampo(fieldName) {
@@ -149,6 +150,10 @@ class LoginApp {
       case 'contrasena':
         isValid = this.validarContrasena(input.value);
         errorMessage = isValid ? '' : `La contraseña debe tener al menos ${CONFIGURACION.VALIDACION.LONGITUD_MINIMA_CONTRASENA} caracteres`;
+        break;
+      default:
+        isValid = input.value && input.value.trim().length > 0;
+        errorMessage = isValid ? '' : 'Este campo es requerido';
         break;
     }
 
@@ -221,7 +226,7 @@ class LoginApp {
     }
     
     const errorElementId = fieldName === 'usuario' ? 'errorUsuario' : fieldName === 'contrasena' ? 'errorContrasena' : `${fieldName}Error`;
-    this.showFieldError(errorElementId, message);
+    this.mostrarErrorCampo(errorElementId, message);
   }
 
   // ===== FUNCIONALIDAD DE LOGIN =====
@@ -382,22 +387,26 @@ class LoginApp {
   }
 
   manejarErrorInicioSesion(errorMessage) {
-    // Mapear mensaje de error a toast
+    if (!errorMessage) {
+      toast.error('Error al iniciar sesión');
+      return;
+    }
+
     let mensajeClaro = errorMessage;
+    const mensajeLower = errorMessage.toLowerCase();
     
-    if (errorMessage && errorMessage.toLowerCase().includes('error')) {
-      if (errorMessage.toLowerCase().includes('correo') || errorMessage.toLowerCase().includes('usuario')) {
+    if (mensajeLower.includes('error')) {
+      if (mensajeLower.includes('correo') || mensajeLower.includes('usuario')) {
         mensajeClaro = 'Correo o usuario equivocado';
-      } else if (errorMessage.toLowerCase().includes('contraseña')) {
+      } else if (mensajeLower.includes('contraseña')) {
         mensajeClaro = 'Contraseña equivocada';
-      } else if (errorMessage.toLowerCase().includes('conectar') || errorMessage.toLowerCase().includes('servicio')) {
+      } else if (mensajeLower.includes('conectar') || mensajeLower.includes('servicio')) {
         mensajeClaro = 'No se pudo conectar con el servicio. Intenta más tarde.';
       }
     }
     
     toast.error(mensajeClaro);
 
-    // Limpiar contraseña
     const passwordInput = document.getElementById('contrasena');
     if (passwordInput) {
       passwordInput.value = '';
@@ -486,11 +495,9 @@ class LoginApp {
     const statusIcon = statusElement.querySelector('.status-icon');
     const statusText = statusElement.querySelector('.status-text');
 
-    // Limpiar clases previas
     statusElement.className = 'status-message';
     statusElement.classList.add(type);
 
-    // Configurar icono según el tipo
     let iconClass = '';
     switch (type) {
       case 'success':
@@ -505,6 +512,9 @@ class LoginApp {
       case 'info':
         iconClass = 'fas fa-info-circle';
         break;
+      default:
+        iconClass = 'fas fa-info-circle';
+        break;
     }
 
     if (statusIcon) {
@@ -512,15 +522,16 @@ class LoginApp {
     }
     
     if (statusText) {
-      statusText.textContent = message;
+      statusText.textContent = message || '';
     }
 
     statusElement.style.display = 'block';
 
-    // Auto ocultar después de 5 segundos para mensajes no críticos
     if (type !== 'error') {
       setTimeout(() => {
-        statusElement.style.display = 'none';
+        if (statusElement) {
+          statusElement.style.display = 'none';
+        }
       }, 5000);
     }
   }

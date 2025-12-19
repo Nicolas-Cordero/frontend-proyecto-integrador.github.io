@@ -5,36 +5,59 @@ class DashboardRossService {
   }
 
   async obtenerEstadisticas(carreraCodigo = null) {
-    const url = carreraCodigo 
-      ? `${this.URL_BASE_API}/simulaciones/estadisticas?carrera=${carreraCodigo}`
-      : `${this.URL_BASE_API}/simulaciones/estadisticas`;
+    let url = `${this.URL_BASE_API}/simulaciones/estadisticas`;
+    if (carreraCodigo && typeof carreraCodigo === 'string' && carreraCodigo.trim().length > 0) {
+      url += `?carrera=${encodeURIComponent(carreraCodigo)}`;
+    }
     
-    const respuesta = await fetch(url);
-    if (!respuesta.ok) {
+    try {
+      const respuesta = await fetch(url);
+      if (!respuesta.ok) {
+        const statusText = respuesta.statusText || 'Error desconocido';
+        throw new Error(`Error al obtener estadísticas: ${respuesta.status} ${statusText}`);
+      }
+      
+      const datos = await respuesta.json();
+      return datos || {};
+    } catch (error) {
+      if (error instanceof Error) {
+        throw error;
+      }
       throw new Error('Error al obtener estadísticas');
     }
-    return await respuesta.json();
   }
 
   procesarDatos(datos) {
-    const simulaciones = datos.simulaciones || [];
-    const simulacionesProxSemestre = simulaciones.filter(s => s.tipo === 'simulacion_siguiente_semestre');
-    const simulacionesEgreso = simulaciones.filter(s => s.tipo === 'simulacion_egreso');
+    if (!datos || typeof datos !== 'object') {
+      return {
+        totalSimulaciones: 0,
+        totalProxSemestre: 0,
+        totalEgreso: 0,
+        ramosTop: [],
+        distribucionCarreras: []
+      };
+    }
+
+    const simulaciones = Array.isArray(datos.simulaciones) ? datos.simulaciones : [];
+    const simulacionesProxSemestre = simulaciones.filter(s => s && s.tipo === 'simulacion_siguiente_semestre');
+    const simulacionesEgreso = simulaciones.filter(s => s && s.tipo === 'simulacion_egreso');
 
     const ramosContador = {};
     simulacionesProxSemestre.forEach(sim => {
-      if (sim.contenido && Array.isArray(sim.contenido.cursos)) {
+      if (sim && sim.contenido && Array.isArray(sim.contenido.cursos)) {
         sim.contenido.cursos.forEach(curso => {
-          const clave = curso.codigo || curso.nombre;
-          if (clave) {
-            if (!ramosContador[clave]) {
-              ramosContador[clave] = {
-                codigo: curso.codigo || '',
-                nombre: curso.nombre || clave,
-                cantidad: 0
-              };
+          if (curso) {
+            const clave = curso.codigo || curso.nombre;
+            if (clave) {
+              if (!ramosContador[clave]) {
+                ramosContador[clave] = {
+                  codigo: curso.codigo || '',
+                  nombre: curso.nombre || clave,
+                  cantidad: 0
+                };
+              }
+              ramosContador[clave].cantidad++;
             }
-            ramosContador[clave].cantidad++;
           }
         });
       }
@@ -46,15 +69,17 @@ class DashboardRossService {
 
     const carrerasContador = {};
     simulaciones.forEach(sim => {
-      const carrera = sim.carrera_codigo || 'Sin carrera';
-      if (!carrerasContador[carrera]) {
-        carrerasContador[carrera] = {
-          codigo: carrera,
-          nombre: sim.carrera_nombre || carrera,
-          cantidad: 0
-        };
+      if (sim) {
+        const carrera = sim.carrera_codigo || 'Sin carrera';
+        if (!carrerasContador[carrera]) {
+          carrerasContador[carrera] = {
+            codigo: carrera,
+            nombre: sim.carrera_nombre || carrera,
+            cantidad: 0
+          };
+        }
+        carrerasContador[carrera].cantidad++;
       }
-      carrerasContador[carrera].cantidad++;
     });
 
     return {
@@ -126,13 +151,19 @@ class DashboardRossApp {
   }
 
   async inicializar(usuario) {
+    if (!usuario) {
+      console.error('Usuario no proporcionado para inicializar Dashboard Ross');
+      return;
+    }
+
     this.usuario = usuario;
-    this.carreras = usuario.carreras || [];
+    this.carreras = Array.isArray(usuario.carreras) ? usuario.carreras : [];
     
     if (this.carreras.length > 1) {
       this.configurarSelectorCarrera();
     } else if (this.carreras.length === 1) {
-      this.carreraSeleccionada = this.carreras[0].codigo;
+      const primeraCarrera = this.carreras[0];
+      this.carreraSeleccionada = primeraCarrera.codigo || primeraCarrera.code || null;
     }
 
     this.configurarObservadorTema();
@@ -160,16 +191,21 @@ class DashboardRossApp {
     const selector = document.getElementById('dashboardRossSelectorCarrera');
     if (!selector) return;
 
-    selector.style.display = 'flex';
     const select = selector.querySelector('select');
-    
+    if (!select) return;
+
+    selector.style.display = 'flex';
     select.innerHTML = '<option value="">Todas las carreras</option>';
-    this.carreras.forEach(carrera => {
-      const option = document.createElement('option');
-      option.value = carrera.codigo;
-      option.textContent = carrera.nombre || carrera.codigo;
-      select.appendChild(option);
-    });
+    
+    if (Array.isArray(this.carreras) && this.carreras.length > 0) {
+      this.carreras.forEach(carrera => {
+        const option = document.createElement('option');
+        const codigo = carrera.codigo || carrera.code || '';
+        option.value = codigo;
+        option.textContent = carrera.nombre || carrera.name || codigo;
+        select.appendChild(option);
+      });
+    }
 
     select.addEventListener('change', async (e) => {
       this.carreraSeleccionada = e.target.value || null;
@@ -185,13 +221,17 @@ class DashboardRossApp {
 
     try {
       const datos = await this.service.obtenerEstadisticas(this.carreraSeleccionada);
+      if (!datos) {
+        throw new Error('No se recibieron datos del servidor');
+      }
       this.datosProcesados = this.service.procesarDatos(datos);
       this.renderizar();
     } catch (error) {
       console.error('Error al cargar datos:', error);
+      const mensajeError = error instanceof Error ? error.message : 'Error desconocido';
       contenedor.innerHTML = `
         <div class="dashboard-ross-error">
-          <strong>Error:</strong> No se pudieron cargar las estadísticas. ${error.message}
+          <strong>Error:</strong> No se pudieron cargar las estadísticas. ${mensajeError}
         </div>
       `;
     }
@@ -203,7 +243,8 @@ class DashboardRossApp {
     const contenedor = document.getElementById('dashboardRossContenedor');
     if (!contenedor) return;
 
-    if (this.datosProcesados.totalSimulaciones === 0) {
+    const totalSimulaciones = this.datosProcesados.totalSimulaciones || 0;
+    if (totalSimulaciones === 0) {
       contenedor.innerHTML = `
         <div class="dashboard-ross-empty">
           <div class="dashboard-ross-empty-icon">📊</div>
@@ -255,7 +296,7 @@ class DashboardRossApp {
             <canvas id="graficoTipo"></canvas>
           </div>
         </div>
-        ${this.datosProcesados.distribucionCarreras.length > 1 ? `
+        ${(this.datosProcesados.distribucionCarreras && Array.isArray(this.datosProcesados.distribucionCarreras) && this.datosProcesados.distribucionCarreras.length > 1) ? `
         <div class="dashboard-ross-chart-container">
           <div class="dashboard-ross-chart-title">Distribución por Carrera</div>
           <div class="dashboard-ross-chart-wrapper">
@@ -275,20 +316,31 @@ class DashboardRossApp {
       return;
     }
 
+    if (!this.datosProcesados) {
+      return;
+    }
+
     this.destruirGraficos();
 
     this.renderizarGraficoRamos();
     this.renderizarGraficoRamosTorta();
     this.renderizarGraficoTipoBarras();
     this.renderizarGraficoTipo();
-    if (this.datosProcesados.distribucionCarreras.length > 1) {
+    
+    const tieneMultiplesCarreras = this.datosProcesados.distribucionCarreras && 
+                                   Array.isArray(this.datosProcesados.distribucionCarreras) &&
+                                   this.datosProcesados.distribucionCarreras.length > 1;
+    if (tieneMultiplesCarreras) {
       this.renderizarGraficoCarreras();
     }
   }
 
   renderizarGraficoRamos() {
     const canvas = document.getElementById('graficoRamos');
-    if (!canvas || !this.datosProcesados.ramosTop.length) return;
+    if (!canvas) return;
+    if (!this.datosProcesados || !this.datosProcesados.ramosTop || !Array.isArray(this.datosProcesados.ramosTop) || this.datosProcesados.ramosTop.length === 0) {
+      return;
+    }
 
     const ctx = canvas.getContext('2d');
     const datos = [...this.datosProcesados.ramosTop].reverse();
@@ -344,7 +396,10 @@ class DashboardRossApp {
 
   renderizarGraficoRamosTorta() {
     const canvas = document.getElementById('graficoRamosTorta');
-    if (!canvas || !this.datosProcesados.ramosTop.length) return;
+    if (!canvas) return;
+    if (!this.datosProcesados || !this.datosProcesados.ramosTop || !Array.isArray(this.datosProcesados.ramosTop) || this.datosProcesados.ramosTop.length === 0) {
+      return;
+    }
 
     const ctx = canvas.getContext('2d');
     const datos = this.datosProcesados.ramosTop;
@@ -520,7 +575,10 @@ class DashboardRossApp {
 
   renderizarGraficoCarreras() {
     const canvas = document.getElementById('graficoCarreras');
-    if (!canvas || !this.datosProcesados.distribucionCarreras.length) return;
+    if (!canvas) return;
+    if (!this.datosProcesados || !this.datosProcesados.distribucionCarreras || !Array.isArray(this.datosProcesados.distribucionCarreras) || this.datosProcesados.distribucionCarreras.length === 0) {
+      return;
+    }
 
     const ctx = canvas.getContext('2d');
     const datos = this.datosProcesados.distribucionCarreras;

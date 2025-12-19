@@ -1031,13 +1031,22 @@ class BusquedaService {
   }
 
   filtrarSecciones(seccionesMenu, terminoBusqueda) {
+    if (!terminoBusqueda || typeof terminoBusqueda !== 'string') {
+      return;
+    }
+
+    const terminoLower = terminoBusqueda.toLowerCase();
     seccionesMenu.forEach(seccion => {
+      if (!seccion) return;
+      
       const elementosMenu = seccion.querySelectorAll('.elemento-menu');
       let contadorVisibles = 0;
 
       elementosMenu.forEach(elemento => {
+        if (!elemento) return;
+        
         const span = elemento.querySelector('span');
-        if (span && span.textContent.toLowerCase().includes(terminoBusqueda)) {
+        if (span && span.textContent && span.textContent.toLowerCase().includes(terminoLower)) {
           elemento.style.display = '';
           contadorVisibles++;
         } else {
@@ -1050,10 +1059,20 @@ class BusquedaService {
   }
 
   filtrarElementosInferiores(elementosInferior, terminoBusqueda) {
+    if (!elementosInferior || (Array.isArray(elementosInferior) && elementosInferior.length === 0)) {
+      return;
+    }
+    if (!terminoBusqueda || typeof terminoBusqueda !== 'string' || terminoBusqueda.trim().length === 0) {
+      return;
+    }
+
+    const terminoLower = terminoBusqueda.toLowerCase();
     elementosInferior.forEach(elemento => {
+      if (!elemento || !elemento.classList) return;
+      
       if (!elemento.classList.contains('cerrar-sesion')) {
         const span = elemento.querySelector('span');
-        if (span && span.textContent.toLowerCase().includes(terminoBusqueda)) {
+        if (span && span.textContent && span.textContent.toLowerCase().includes(terminoLower)) {
           elemento.style.display = '';
         } else {
           elemento.style.display = 'none';
@@ -1094,9 +1113,18 @@ class MenuActivoService {
   }
 
   activarPorTexto(textoBuscado, elementosMenu) {
+    if (!textoBuscado || typeof textoBuscado !== 'string') {
+      return;
+    }
+    if (!elementosMenu || (elementosMenu.length === 0 && !(elementosMenu instanceof NodeList))) {
+      return;
+    }
+
     elementosMenu.forEach(elemento => {
+      if (!elemento) return;
+      
       const span = elemento.querySelector('span');
-      if (span && span.textContent.includes(textoBuscado)) {
+      if (span && span.textContent && span.textContent.includes(textoBuscado)) {
         elemento.classList.add('active');
       }
     });
@@ -1232,25 +1260,30 @@ class MainMenuApp {
   async cargarDatosUsuario() {
     let usuario = this.usuarioService.obtenerUsuario();
     
-    if (usuario) {
-      if (usuario.rut && !usuario.foto_perfil) {
-        try {
-          const respuesta = await fetch(`http://localhost:4000/api/estudiantes/${usuario.rut}`);
-          if (respuesta.ok) {
-            const datos = await respuesta.json();
-            if (datos.estudiante?.foto_perfil) {
-              usuario = { ...usuario, foto_perfil: datos.estudiante.foto_perfil };
-              this.storageService.setItem(AppConfig.CLAVES.DATOS_USUARIO, usuario);
-            }
-          }
-        } catch (error) {
-          console.warn('[MainMenuApp] No se pudo obtener foto_perfil del backend:', error);
-        }
-      }
-      this.usuarioUIService.mostrarInformacion(usuario);
-    } else {
+    if (!usuario) {
       this.redirigirAlInicioSesion();
+      return;
     }
+
+    const tieneRut = usuario.rut && typeof usuario.rut === 'string' && usuario.rut.trim().length > 0;
+    const noTieneFoto = !usuario.foto_perfil || usuario.foto_perfil.trim().length === 0;
+    
+    if (tieneRut && noTieneFoto) {
+      try {
+        const respuesta = await fetch(`http://localhost:4000/api/estudiantes/${usuario.rut}`);
+        if (respuesta.ok) {
+          const datos = await respuesta.json();
+          if (datos && datos.estudiante && datos.estudiante.foto_perfil) {
+            usuario = { ...usuario, foto_perfil: datos.estudiante.foto_perfil };
+            this.storageService.setItem(AppConfig.CLAVES.DATOS_USUARIO, usuario);
+          }
+        }
+      } catch (error) {
+        console.warn('[MainMenuApp] No se pudo obtener foto_perfil del backend:', error);
+      }
+    }
+    
+    this.usuarioUIService.mostrarInformacion(usuario);
   }
 
   configurarEventos() {
@@ -1616,6 +1649,9 @@ if (typeof module !== 'undefined' && module.exports) {
     VistaHistoricoStrategy,
     VistaTestingStrategy,
     VistaMisSimulacionesEgreso,
+    VistaMisSimulacionesProxSemestre,
+    VistaSimulacionProxSemestreStrategy,
+    VistaDashboardRossStrategy,
     NavegacionService,
     BusquedaService,
     MenuActivoService,

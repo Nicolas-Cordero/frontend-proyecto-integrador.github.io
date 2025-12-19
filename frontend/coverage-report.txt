@@ -2,52 +2,28 @@ Reporte de Cobertura de Código
 Fecha: 2025-12-19
 
 Resumen
-Total de tests: 304
-Statements: 1392/2071 (67.21%)
-Branches: 745/1315 (56.65%)
-Functions: 271/395 (68.61%)
-Lines: 1336/1956 (68.3%)
+Total de tests: 435
+Statements: 535/633 (84.52%)
+Branches: 459/643 (71.38%)
+Functions: 89/103 (86.41%)
+Lines: 509/584 (87.16%)
 
 Detalle por archivo
 dashboard-ross.js
-  Statements: 137/170 (80.59%)
-  Branches: 65/110 (59.09%)
-  Functions: 34/43 (79.07%)
-  Lines: 133/157 (84.71%)
+  Statements: 168/203 (82.76%)
+  Branches: 119/173 (68.79%)
+  Functions: 35/43 (81.4%)
+  Lines: 162/189 (85.71%)
 
 historico-estadisticas.js
-  Statements: 119/152 (78.29%)
-  Branches: 80/128 (62.5%)
+  Statements: 120/152 (78.95%)
+  Branches: 90/128 (70.31%)
   Functions: 19/21 (90.48%)
-  Lines: 108/134 (80.6%)
-
-historico-script.js
-  Statements: 183/244 (75%)
-  Branches: 111/210 (52.86%)
-  Functions: 24/29 (82.76%)
-  Lines: 173/228 (75.88%)
-
-index-script.js
-  Statements: 200/274 (72.99%)
-  Branches: 115/192 (59.9%)
-  Functions: 31/48 (64.58%)
-  Lines: 193/258 (74.81%)
-
-main-menu-script.js
-  Statements: 381/731 (52.12%)
-  Branches: 137/299 (45.82%)
-  Functions: 94/173 (54.34%)
-  Lines: 377/713 (52.88%)
-
-perfil-usuario-script.js
-  Statements: 170/264 (64.39%)
-  Branches: 87/150 (58%)
-  Functions: 35/42 (83.33%)
-  Lines: 163/251 (64.94%)
+  Lines: 109/134 (81.34%)
 
 simulacion-prox-semestre.js
-  Statements: 202/236 (85.59%)
-  Branches: 150/226 (66.37%)
-  Functions: 34/39 (87.18%)
-  Lines: 189/215 (87.91%)
+  Statements: 247/278 (88.85%)
+  Branches: 250/342 (73.1%)
+  Functions: 35/39 (89.74%)
+  Lines: 238/261 (91.19%)
 

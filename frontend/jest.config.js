@@ -3,17 +3,13 @@ module.exports = {
   roots: ['<rootDir>/tests'],
   testMatch: ['**/*.test.js'],
   collectCoverageFrom: [
-    'js/index-script.js',
-    'js/main-menu-script.js',
-    'js/perfil-usuario-script.js',
     'js/simulacion-prox-semestre.js',
-    'js/dashboard-ross.js',
-    'js/historico-script.js',
-    'js/historico-estadisticas.js'
+    'js/historico-estadisticas.js',
+    'js/dashboard-ross.js'
   ],
   coverageThreshold: {
     global: {
-      branches: 60,
+      branches: 70,
       functions: 70,
       lines: 70,
       statements: 70

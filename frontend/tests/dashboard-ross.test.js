@@ -450,7 +450,10 @@ describe('DashboardRossApp', () => {
       app = new DashboardRossApp();
       app.graficos = {
         ramos: { destroy: jest.fn() },
-        ramosTorta: { destroy: jest.fn() }
+        ramosTorta: { destroy: jest.fn() },
+        tipo: { destroy: jest.fn() },
+        tipoBarras: { destroy: jest.fn() },
+        carreras: { destroy: jest.fn() }
       };
     });
 
@@ -458,6 +461,182 @@ describe('DashboardRossApp', () => {
       app.destruirGraficos();
       expect(app.graficos.ramos.destroy).toHaveBeenCalled();
       expect(app.graficos.ramosTorta.destroy).toHaveBeenCalled();
+    });
+  });
+
+  describe('configurarObservadorTema', () => {
+    beforeEach(() => {
+      document.body.innerHTML = `
+        <div id="dashboardRossContenedor"></div>
+      `;
+      app = new DashboardRossApp();
+      app.datosProcesados = {
+        totalSimulaciones: 10,
+        ramosTop: [],
+        distribucionCarreras: []
+      };
+    });
+
+    test('debe configurar observador de tema', () => {
+      app.configurarObservadorTema();
+      expect(app.observadorTema).toBeDefined();
+    });
+
+    test('debe desconectar observador previo si existe', () => {
+      const disconnectSpy = jest.fn();
+      app.observadorTema = { disconnect: disconnectSpy };
+      app.configurarObservadorTema();
+      expect(disconnectSpy).toHaveBeenCalled();
+    });
+
+    test('debe renderizar gráficos cuando cambia tema y hay datos', () => {
+      app.datosProcesados = {
+        totalSimulaciones: 10,
+        ramosTop: [{ codigo: 'TEST-001', cantidad: 5 }],
+        distribucionCarreras: []
+      };
+      const renderizarSpy = jest.spyOn(app, 'renderizarGraficos').mockImplementation(() => {});
+      
+      app.configurarObservadorTema();
+      
+      document.documentElement.setAttribute('data-theme', 'dark');
+      expect(renderizarSpy).toHaveBeenCalled();
+      
+      renderizarSpy.mockRestore();
+    });
+
+    test('no debe renderizar si no hay datosProcesados', () => {
+      app.datosProcesados = null;
+      const renderizarSpy = jest.spyOn(app, 'renderizarGraficos').mockImplementation(() => {});
+      
+      app.configurarObservadorTema();
+      
+      document.documentElement.setAttribute('data-theme', 'dark');
+      expect(renderizarSpy).not.toHaveBeenCalled();
+      
+      renderizarSpy.mockRestore();
+    });
+  });
+
+  describe('renderizarGraficoRamos', () => {
+    beforeEach(() => {
+      document.body.innerHTML = `
+        <div id="dashboardRossContenedor">
+          <canvas id="graficoRamos"></canvas>
+        </div>
+      `;
+      app = new DashboardRossApp();
+      app.datosProcesados = {
+        ramosTop: [
+          { codigo: 'TEST-001', nombre: 'Test Course Very Long Name That Should Be Truncated', cantidad: 5 }
+        ]
+      };
+    });
+
+    test('debe renderizar gráfico de ramos', () => {
+      app.renderizarGraficoRamos();
+      expect(global.Chart).toHaveBeenCalled();
+    });
+
+    test('no debe renderizar si no hay canvas', () => {
+      document.getElementById('graficoRamos').remove();
+      app.renderizarGraficoRamos();
+      expect(global.Chart).not.toHaveBeenCalled();
+    });
+
+    test('no debe renderizar si no hay datos', () => {
+      app.datosProcesados.ramosTop = [];
+      app.renderizarGraficoRamos();
+      expect(global.Chart).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('renderizarGraficoRamosTorta', () => {
+    beforeEach(() => {
+      document.body.innerHTML = `
+        <div id="dashboardRossContenedor">
+          <canvas id="graficoRamosTorta"></canvas>
+        </div>
+      `;
+      app = new DashboardRossApp();
+      app.datosProcesados = {
+        ramosTop: [
+          { codigo: 'TEST-001', nombre: 'Test Course', cantidad: 5 }
+        ]
+      };
+    });
+
+    test('debe renderizar gráfico de torta', () => {
+      app.renderizarGraficoRamosTorta();
+      expect(global.Chart).toHaveBeenCalled();
+    });
+
+    test('no debe renderizar si no hay canvas', () => {
+      document.getElementById('graficoRamosTorta').remove();
+      app.renderizarGraficoRamosTorta();
+      expect(global.Chart).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('renderizarGraficoTipo', () => {
+    beforeEach(() => {
+      document.body.innerHTML = `
+        <div id="dashboardRossContenedor">
+          <canvas id="graficoTipo"></canvas>
+        </div>
+      `;
+      app = new DashboardRossApp();
+      app.datosProcesados = {
+        totalProxSemestre: 5,
+        totalEgreso: 3
+      };
+    });
+
+    test('debe renderizar gráfico de tipo', () => {
+      app.renderizarGraficoTipo();
+      expect(global.Chart).toHaveBeenCalled();
+    });
+  });
+
+  describe('renderizarGraficoTipoBarras', () => {
+    beforeEach(() => {
+      document.body.innerHTML = `
+        <div id="dashboardRossContenedor">
+          <canvas id="graficoTipoBarras"></canvas>
+        </div>
+      `;
+      app = new DashboardRossApp();
+      app.datosProcesados = {
+        totalProxSemestre: 5,
+        totalEgreso: 3
+      };
+    });
+
+    test('debe renderizar gráfico de barras de tipo', () => {
+      app.renderizarGraficoTipoBarras();
+      expect(global.Chart).toHaveBeenCalled();
+    });
+  });
+
+  describe('renderizarGraficoCarreras', () => {
+    beforeEach(() => {
+      document.body.innerHTML = `
+        <div id="dashboardRossContenedor">
+          <canvas id="graficoCarreras"></canvas>
+        </div>
+      `;
+      app = new DashboardRossApp();
+      app.datosProcesados = {
+        distribucionCarreras: [
+          { codigo: '8266', nombre: 'ITI', cantidad: 5 },
+          { codigo: '8616', nombre: 'ICI', cantidad: 3 }
+        ]
+      };
+    });
+
+    test('debe renderizar gráfico de carreras', () => {
+      app.renderizarGraficoCarreras();
+      expect(global.Chart).toHaveBeenCalled();
     });
   });
 });

@@ -276,11 +276,93 @@ describe('HistoricoApp', () => {
       app.cargarProyeccionesDesdeDatos(datos);
       expect(mockContenedor.innerHTML).toBeDefined();
     });
+
+    test('debe procesar datos con periodo en formato YYYYSS', () => {
+      const datos = [
+        { course: 'TEST-001', status: 'APROBADO', period: '202310' },
+        { course: 'TEST-002', status: 'APROBADO', period: '202320' },
+        { course: 'TEST-003', status: 'APROBADO', period: '202315' }
+      ];
+
+      app.cargarProyeccionesDesdeDatos(datos);
+      expect(mockContenedor.innerHTML).toBeDefined();
+    });
+
+    test('debe procesar datos con periodo usando campo periodo', () => {
+      const datos = [
+        { course: 'TEST-001', status: 'APROBADO', periodo: '202310' }
+      ];
+
+      app.cargarProyeccionesDesdeDatos(datos);
+      expect(mockContenedor.innerHTML).toBeDefined();
+    });
+
+    test('debe procesar datos sin periodo', () => {
+      const datos = [
+        { course: 'TEST-001', status: 'APROBADO' }
+      ];
+
+      app.cargarProyeccionesDesdeDatos(datos);
+      expect(mockContenedor.innerHTML).toBeDefined();
+    });
   });
+
+  describe('fetchAndRenderFromApi - casos adicionales', () => {
+    beforeEach(() => {
+      app = new global.HistoricoApp();
+    });
+
+    test('debe manejar error al parsear sessionStorage', async () => {
+      sessionStorage.setItem('ucn_user_data', 'invalid json');
+      await expect(app.fetchAndRenderFromApi()).rejects.toThrow();
+    });
+
+    test('debe manejar usuario sin rut', async () => {
+      sessionStorage.setItem('ucn_user_data', JSON.stringify({
+        email: 'test@example.com',
+        carreras: []
+      }));
+      await app.fetchAndRenderFromApi().catch(() => {});
+      expect(mockContenedor.innerHTML).toContain('No hay carreras');
+    });
+
+    test('debe manejar carrera sin código', async () => {
+      sessionStorage.setItem('ucn_user_data', JSON.stringify({
+        rut: '222222222',
+        carreras: [{ nombre: 'ITI' }]
+      }));
+      await app.fetchAndRenderFromApi().catch(() => {});
+      expect(mockContenedor.innerHTML).toBeDefined();
+    });
+
+    test('debe manejar error al obtener avance', async () => {
+      sessionStorage.setItem('ucn_user_data', JSON.stringify({
+        rut: '222222222',
+        carreras: [{ codigo: '8266', nombre: 'ITI' }]
+      }));
+      global.fetch.mockRejectedValueOnce(new Error('Network error'));
+      await app.fetchAndRenderFromApi().catch(() => {});
+      expect(mockContenedor.innerHTML).toBeDefined();
+    });
+
+    test('debe manejar avance vacío', async () => {
+      sessionStorage.setItem('ucn_user_data', JSON.stringify({
+        rut: '222222222',
+        carreras: [{ codigo: '8266', nombre: 'ITI' }]
+      }));
+      global.fetch.mockResolvedValueOnce({
+        text: jest.fn().mockResolvedValueOnce(JSON.stringify([]))
+      });
+      await app.fetchAndRenderFromApi().catch(() => {});
+      expect(mockContenedor.innerHTML).toContain('No hay proyecciones');
+    });
+  });
+});
 
   describe('obtenerCarreraGuardada', () => {
     beforeEach(() => {
       app = new global.HistoricoApp();
+      sessionStorage.clear();
     });
 
     test('debe retornar carrera guardada desde sessionStorage', () => {
@@ -293,6 +375,30 @@ describe('HistoricoApp', () => {
     test('debe retornar null si no hay carrera guardada', () => {
       const resultado = app.obtenerCarreraGuardada([]);
       expect(resultado).toBeNull();
+    });
+
+    test('debe retornar null si carrera guardada no está en lista', () => {
+      const carreraGuardada = { codigo: '9999', nombre: 'Otra' };
+      sessionStorage.setItem('historico_carrera_seleccionada', JSON.stringify(carreraGuardada));
+      const carreras = [{ codigo: '8266', nombre: 'ITI' }];
+      const resultado = app.obtenerCarreraGuardada(carreras);
+      expect(resultado).toBeNull();
+    });
+
+    test('debe comparar por code si codigo no existe', () => {
+      const carreraGuardada = { code: '8266', nombre: 'ITI' };
+      sessionStorage.setItem('historico_carrera_seleccionada', JSON.stringify(carreraGuardada));
+      const carreras = [{ code: '8266', nombre: 'ITI' }];
+      const resultado = app.obtenerCarreraGuardada(carreras);
+      expect(resultado).toEqual(carreras[0]);
+    });
+
+    test('debe comparar por cod si code no existe', () => {
+      const carreraGuardada = { cod: '8266', nombre: 'ITI' };
+      sessionStorage.setItem('historico_carrera_seleccionada', JSON.stringify(carreraGuardada));
+      const carreras = [{ cod: '8266', nombre: 'ITI' }];
+      const resultado = app.obtenerCarreraGuardada(carreras);
+      expect(resultado).toEqual(carreras[0]);
     });
   });
 
@@ -342,5 +448,5 @@ describe('HistoricoApp', () => {
       expect(resultado).toBeNull();
     });
   });
-});
+;
 

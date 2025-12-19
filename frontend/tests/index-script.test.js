@@ -562,6 +562,264 @@ describe('LoginApp', () => {
       expect(() => loginApp.alternarMenuMovil()).not.toThrow();
     });
   });
+
+  describe('configurarValidacionFormulario', () => {
+    beforeEach(() => {
+      document.body.innerHTML = `
+        <form id="loginForm">
+          <input id="usuario" name="usuario" type="text" required />
+          <input id="contrasena" name="contrasena" type="password" required />
+        </form>
+      `;
+      loginApp = new global.LoginApp();
+    });
+
+    test('debe configurar validación en inputs requeridos', () => {
+      const form = document.getElementById('loginForm');
+      const inputs = form.querySelectorAll('input[required]');
+      expect(inputs.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe('manejarInicioSesion - casos adicionales', () => {
+    beforeEach(() => {
+      document.body.innerHTML = `
+        <form id="loginForm">
+          <input id="usuario" name="usuario" type="text" required />
+          <input id="contrasena" name="contrasena" type="password" required />
+          <button id="botonLogin" type="submit">
+            <span class="texto-boton">Iniciar Sesión</span>
+            <span class="carga-boton" style="display: none;">Cargando...</span>
+          </button>
+          <div id="superposicionCarga" style="display: none;"></div>
+        </form>
+      `;
+      loginApp = new global.LoginApp();
+      global.fetch = jest.fn();
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    test('debe manejar evento sin preventDefault', async () => {
+      const usuarioInput = document.getElementById('usuario');
+      const passwordInput = document.getElementById('contrasena');
+      usuarioInput.value = 'test@example.com';
+      passwordInput.value = 'password123';
+
+      const mockResponse = { rut: '222222222', carreras: [] };
+      global.fetch
+        .mockResolvedValueOnce({
+          text: jest.fn().mockResolvedValueOnce(JSON.stringify(mockResponse))
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: jest.fn().mockResolvedValueOnce({ estudianteId: 1 })
+        });
+
+      const event = { preventDefault: undefined };
+      await loginApp.manejarInicioSesion(event);
+      expect(global.toast.loading).toHaveBeenCalled();
+    });
+
+    test('debe manejar catch error en manejarInicioSesion', async () => {
+      const usuarioInput = document.getElementById('usuario');
+      const passwordInput = document.getElementById('contrasena');
+      usuarioInput.value = 'test@example.com';
+      passwordInput.value = 'password123';
+
+      global.fetch.mockRejectedValueOnce(new Error('Network error'));
+
+      const event = { preventDefault: jest.fn() };
+      await loginApp.manejarInicioSesion(event);
+      expect(global.toast.error).toHaveBeenCalled();
+    });
+  });
+
+  describe('manejarInicioSesionExitoso - casos adicionales', () => {
+    beforeEach(() => {
+      loginApp = new global.LoginApp();
+      global.fetch = jest.fn();
+      global.window.location = { href: '' };
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    test('debe manejar usuario sin rut', async () => {
+      const data = {
+        user: {
+          email: 'test@example.com',
+          name: 'Test User',
+          carreras: []
+        }
+      };
+
+      await loginApp.manejarInicioSesionExitoso(data);
+      expect(global.toast.success).toHaveBeenCalled();
+    });
+
+    test('debe manejar sincronización sin estudianteId', async () => {
+      const data = {
+        user: {
+          rut: '222222222',
+          email: 'test@example.com',
+          name: 'Test User',
+          carreras: []
+        }
+      };
+
+      global.fetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: jest.fn().mockResolvedValueOnce({})
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: jest.fn().mockResolvedValueOnce({
+            estudiante: { foto_perfil: 'profile.jpg' }
+          })
+        });
+
+      await loginApp.manejarInicioSesionExitoso(data);
+      expect(global.fetch).toHaveBeenCalled();
+    });
+
+    test('debe manejar respuesta sin foto_perfil', async () => {
+      const data = {
+        user: {
+          rut: '222222222',
+          email: 'test@example.com',
+          name: 'Test User',
+          carreras: []
+        }
+      };
+
+      global.fetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: jest.fn().mockResolvedValueOnce({})
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: jest.fn().mockResolvedValueOnce({
+            estudiante: {}
+          })
+        });
+
+      await loginApp.manejarInicioSesionExitoso(data);
+      expect(global.fetch).toHaveBeenCalled();
+    });
+
+    test('debe manejar respuesta no ok al obtener foto_perfil', async () => {
+      const data = {
+        user: {
+          rut: '222222222',
+          email: 'test@example.com',
+          name: 'Test User',
+          carreras: []
+        }
+      };
+
+      global.fetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: jest.fn().mockResolvedValueOnce({})
+        })
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 404
+        });
+
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      await loginApp.manejarInicioSesionExitoso(data);
+      expect(global.fetch).toHaveBeenCalled();
+      consoleWarnSpy.mockRestore();
+    });
+
+    test('debe manejar error al obtener foto_perfil', async () => {
+      const data = {
+        user: {
+          rut: '222222222',
+          email: 'test@example.com',
+          name: 'Test User',
+          carreras: []
+        }
+      };
+
+      global.fetch
+        .mockResolvedValueOnce({
+          ok: true,
+          json: jest.fn().mockResolvedValueOnce({})
+        })
+        .mockRejectedValueOnce(new Error('Network error'));
+
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+      await loginApp.manejarInicioSesionExitoso(data);
+      expect(global.fetch).toHaveBeenCalled();
+      consoleWarnSpy.mockRestore();
+    });
+
+    test('debe manejar sincronización con foto_perfil definida', async () => {
+      const data = {
+        user: {
+          rut: '222222222',
+          email: 'test@example.com',
+          name: 'Test User',
+          carreras: []
+        }
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValueOnce({
+          estudianteId: 1,
+          foto_perfil: 'profile.jpg'
+        })
+      });
+
+      await loginApp.manejarInicioSesionExitoso(data);
+      expect(global.fetch).toHaveBeenCalled();
+    });
+
+    test('debe manejar error en sincronización', async () => {
+      const data = {
+        user: {
+          rut: '222222222',
+          email: 'test@example.com',
+          name: 'Test User',
+          carreras: []
+        }
+      };
+
+      global.fetch.mockRejectedValueOnce(new Error('Sync error'));
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      await loginApp.manejarInicioSesionExitoso(data);
+      expect(consoleWarnSpy).toHaveBeenCalled();
+      consoleWarnSpy.mockRestore();
+    });
+  });
+
+  describe('Utils', () => {
+    test('formatearFecha debe formatear fecha correctamente', () => {
+      const fecha = new Date('2023-12-19');
+      const resultado = global.Utils.formatearFecha(fecha);
+      expect(resultado).toBeDefined();
+      expect(typeof resultado).toBe('string');
+    });
+
+    test('formatearHora debe formatear hora correctamente', () => {
+      const fecha = new Date('2023-12-19T14:30:00');
+      const resultado = global.Utils.formatearHora(fecha);
+      expect(resultado).toBeDefined();
+      expect(typeof resultado).toBe('string');
+    });
+  });
 });
 
 describe('Utils', () => {

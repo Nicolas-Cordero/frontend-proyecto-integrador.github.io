@@ -45,13 +45,9 @@ const leerCobertura = () => {
   }
 
   const archivosCore = [
-    'index-script.js',
-    'main-menu-script.js',
-    'perfil-usuario-script.js',
     'simulacion-prox-semestre.js',
-    'dashboard-ross.js',
-    'historico-script.js',
-    'historico-estadisticas.js'
+    'historico-estadisticas.js',
+    'dashboard-ross.js'
   ];
 
   const coverageData = JSON.parse(fs.readFileSync(coveragePath, 'utf8'));

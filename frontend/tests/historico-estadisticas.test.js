@@ -291,12 +291,161 @@ describe('HistoricoEstadisticas', () => {
 
     test('debe mostrar estado de carga', () => {
       app.setCargando(true);
-      expect(mockContenedor.innerHTML).toContain('Cargando');
+      const bloques = mockContenedor.querySelectorAll('.elemento-estadistica');
+      bloques.forEach(bloque => {
+        expect(bloque.classList.contains('cargando')).toBe(true);
+      });
     });
 
     test('debe ocultar estado de carga', () => {
       app.setCargando(false);
-      expect(mockContenedor.innerHTML).not.toContain('Cargando');
+      const bloques = mockContenedor.querySelectorAll('.elemento-estadistica');
+      bloques.forEach(bloque => {
+        expect(bloque.classList.contains('cargando')).toBe(false);
+      });
+    });
+  });
+
+  describe('cargarDesdeUsuario - casos adicionales', () => {
+    beforeEach(() => {
+      app = new HistoricoEstadisticas({ contenedor: '#estadisticasContainer' });
+    });
+
+    test('debe manejar usuario con user anidado', async () => {
+      const usuario = {
+        user: {
+          rut: '222222222',
+          carreras: [{ codigo: '8266', nombre: 'ITI' }]
+        }
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        text: jest.fn().mockResolvedValueOnce(JSON.stringify([]))
+      });
+
+      await app.cargarDesdeUsuario(usuario);
+      expect(global.fetch).toHaveBeenCalled();
+    });
+
+    test('debe manejar carrera con code en lugar de codigo', async () => {
+      const usuario = {
+        rut: '222222222',
+        carreras: [{ code: '8266', catalog: '202410' }]
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        text: jest.fn().mockResolvedValueOnce(JSON.stringify([]))
+      });
+
+      await app.cargarDesdeUsuario(usuario, { code: '8266' });
+      expect(global.fetch).toHaveBeenCalled();
+    });
+
+    test('debe manejar carrera con cod en lugar de codigo', async () => {
+      const usuario = {
+        rut: '222222222',
+        carreras: [{ cod: '8266' }]
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        text: jest.fn().mockResolvedValueOnce(JSON.stringify([]))
+      });
+
+      await app.cargarDesdeUsuario(usuario, { cod: '8266' });
+      expect(global.fetch).toHaveBeenCalled();
+    });
+
+    test('debe manejar carrera con catalogo en lugar de catalog', async () => {
+      const usuario = {
+        rut: '222222222',
+        carreras: [{ codigo: '8266', catalogo: '202410' }]
+      };
+
+      global.fetch.mockResolvedValueOnce({
+        ok: true,
+        text: jest.fn().mockResolvedValueOnce(JSON.stringify([]))
+      });
+
+      await app.cargarDesdeUsuario(usuario);
+      expect(global.fetch).toHaveBeenCalled();
+    });
+
+    test('debe manejar error al obtener avance', async () => {
+      const usuario = {
+        rut: '222222222',
+        carreras: [{ codigo: '8266', nombre: 'ITI' }]
+      };
+
+      global.fetch.mockRejectedValueOnce(new Error('Network error'));
+      await app.cargarDesdeUsuario(usuario);
+      expect(app.elementos.aprobados.textContent).toBe('0');
+    });
+  });
+
+  describe('calcularEstadisticas - casos adicionales', () => {
+    beforeEach(() => {
+      app = new HistoricoEstadisticas({ contenedor: '#estadisticasContainer' });
+    });
+
+    test('debe filtrar inscripciones no REGULAR', () => {
+      const datos = [
+        { status: 'APROBADO', period: '202310', inscriptionType: 'ESPECIAL' },
+        { status: 'APROBADO', period: '202320', inscriptionType: 'REGULAR' }
+      ];
+
+      const resultado = app.calcularEstadisticas(datos);
+      expect(resultado.aprobados).toBe(1);
+      expect(resultado.totalPeriodos).toBe(2);
+    });
+
+    test('debe contar períodos sin inscriptionType', () => {
+      const datos = [
+        { status: 'APROBADO', period: '202310' },
+        { status: 'REPROBADO', period: '202320' }
+      ];
+
+      const resultado = app.calcularEstadisticas(datos);
+      expect(resultado.aprobados).toBe(1);
+      expect(resultado.reprobados).toBe(1);
+    });
+
+    test('debe manejar periodo vacío', () => {
+      const datos = [
+        { status: 'APROBADO', period: '' },
+        { status: 'REPROBADO', period: '202310' }
+      ];
+
+      const resultado = app.calcularEstadisticas(datos);
+      expect(resultado.totalPeriodos).toBe(1);
+    });
+
+    test('debe manejar periodo usando campo periodo', () => {
+      const datos = [
+        { status: 'APROBADO', periodo: '202310' }
+      ];
+
+      const resultado = app.calcularEstadisticas(datos);
+      expect(resultado.totalPeriodos).toBe(1);
+    });
+  });
+
+  describe('animarNumero', () => {
+    beforeEach(() => {
+      app = new HistoricoEstadisticas({ contenedor: '#estadisticasContainer' });
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    test('debe animar número correctamente', () => {
+      const elemento = document.getElementById('ramosAprobados');
+      app.animarNumero(elemento, 10);
+      expect(elemento).toBeDefined();
     });
   });
 });
