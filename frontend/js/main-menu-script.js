@@ -278,30 +278,7 @@ class RenderService {
             </div>
           </div>
 
-          <div class="tarjeta-detalle">
-            <div class="cabecera-tarjeta-detalle">
-              <i class="fas fa-graduation-cap"></i>
-              <h3>Información Académica</h3>
-            </div>
-            <div class="cuerpo-tarjeta-detalle">
-              <div class="fila-detalle">
-                <span class="etiqueta-detalle">Carrera:</span>
-                <span class="valor-detalle">${carrera}</span>
-              </div>
-              <div class="fila-detalle">
-                <span class="etiqueta-detalle">Generación:</span>
-                <span class="valor-detalle">${generacion}</span>
-              </div>
-              <div class="fila-detalle">
-                <span class="etiqueta-detalle">Nivel actual:</span>
-                <span class="valor-detalle">${semestreActual}° Semestre</span>
-              </div>
-              <div class="fila-detalle">
-                <span class="etiqueta-detalle">Promedio:</span>
-                <span class="valor-detalle">${promedio.toFixed(1)}</span>
-              </div>
-            </div>
-          </div>
+          
         </div>
 
         <div id="estadisticasContainer"></div>
@@ -1658,3 +1635,4 @@ if (typeof module !== 'undefined' && module.exports) {
     UsuarioUIService
   };
 }
+
