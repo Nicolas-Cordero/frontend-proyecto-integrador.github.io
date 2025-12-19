@@ -1,71 +1,181 @@
 {
-  "fecha": "2025-12-12",
-  "totalTests": 145,
+  "fecha": "2025-12-19",
+  "totalTests": 304,
   "cobertura": {
     "statements": {
-      "total": 597,
-      "cubiertos": 509,
-      "porcentaje": 85.26
+      "total": 2071,
+      "cubiertos": 1392,
+      "porcentaje": 67.21
     },
     "branches": {
-      "total": 265,
-      "cubiertos": 203,
-      "porcentaje": 76.6
+      "total": 1315,
+      "cubiertos": 745,
+      "porcentaje": 56.65
     },
     "functions": {
-      "total": 147,
-      "cubiertos": 123,
-      "porcentaje": 83.67
+      "total": 395,
+      "cubiertos": 271,
+      "porcentaje": 68.61
     },
     "lines": {
-      "total": 581,
-      "cubiertos": 498,
-      "porcentaje": 85.71
+      "total": 1956,
+      "cubiertos": 1336,
+      "porcentaje": 68.3
     }
   },
   "archivos": {
-    "main-menu-script.js": {
+    "dashboard-ross.js": {
       "statements": {
-        "total": 455,
-        "cubiertos": 372,
-        "porcentaje": 81.76
+        "total": 170,
+        "cubiertos": 137,
+        "porcentaje": 80.59
       },
       "branches": {
-        "total": 190,
-        "cubiertos": 133,
-        "porcentaje": 70
+        "total": 110,
+        "cubiertos": 65,
+        "porcentaje": 59.09
       },
       "functions": {
-        "total": 115,
-        "cubiertos": 91,
-        "porcentaje": 79.13
+        "total": 43,
+        "cubiertos": 34,
+        "porcentaje": 79.07
       },
       "lines": {
-        "total": 447,
-        "cubiertos": 367,
-        "porcentaje": 82.1
+        "total": 157,
+        "cubiertos": 133,
+        "porcentaje": 84.71
+      }
+    },
+    "historico-estadisticas.js": {
+      "statements": {
+        "total": 152,
+        "cubiertos": 119,
+        "porcentaje": 78.29
+      },
+      "branches": {
+        "total": 128,
+        "cubiertos": 80,
+        "porcentaje": 62.5
+      },
+      "functions": {
+        "total": 21,
+        "cubiertos": 19,
+        "porcentaje": 90.48
+      },
+      "lines": {
+        "total": 134,
+        "cubiertos": 108,
+        "porcentaje": 80.6
+      }
+    },
+    "historico-script.js": {
+      "statements": {
+        "total": 244,
+        "cubiertos": 183,
+        "porcentaje": 75
+      },
+      "branches": {
+        "total": 210,
+        "cubiertos": 111,
+        "porcentaje": 52.86
+      },
+      "functions": {
+        "total": 29,
+        "cubiertos": 24,
+        "porcentaje": 82.76
+      },
+      "lines": {
+        "total": 228,
+        "cubiertos": 173,
+        "porcentaje": 75.88
+      }
+    },
+    "index-script.js": {
+      "statements": {
+        "total": 274,
+        "cubiertos": 200,
+        "porcentaje": 72.99
+      },
+      "branches": {
+        "total": 192,
+        "cubiertos": 115,
+        "porcentaje": 59.9
+      },
+      "functions": {
+        "total": 48,
+        "cubiertos": 31,
+        "porcentaje": 64.58
+      },
+      "lines": {
+        "total": 258,
+        "cubiertos": 193,
+        "porcentaje": 74.81
+      }
+    },
+    "main-menu-script.js": {
+      "statements": {
+        "total": 731,
+        "cubiertos": 381,
+        "porcentaje": 52.12
+      },
+      "branches": {
+        "total": 299,
+        "cubiertos": 137,
+        "porcentaje": 45.82
+      },
+      "functions": {
+        "total": 173,
+        "cubiertos": 94,
+        "porcentaje": 54.34
+      },
+      "lines": {
+        "total": 713,
+        "cubiertos": 377,
+        "porcentaje": 52.88
       }
     },
     "perfil-usuario-script.js": {
       "statements": {
-        "total": 142,
-        "cubiertos": 137,
-        "porcentaje": 96.48
+        "total": 264,
+        "cubiertos": 170,
+        "porcentaje": 64.39
       },
       "branches": {
-        "total": 75,
-        "cubiertos": 70,
-        "porcentaje": 93.33
+        "total": 150,
+        "cubiertos": 87,
+        "porcentaje": 58
       },
       "functions": {
-        "total": 32,
-        "cubiertos": 32,
-        "porcentaje": 100
+        "total": 42,
+        "cubiertos": 35,
+        "porcentaje": 83.33
       },
       "lines": {
-        "total": 134,
-        "cubiertos": 131,
-        "porcentaje": 97.76
+        "total": 251,
+        "cubiertos": 163,
+        "porcentaje": 64.94
+      }
+    },
+    "simulacion-prox-semestre.js": {
+      "statements": {
+        "total": 236,
+        "cubiertos": 202,
+        "porcentaje": 85.59
+      },
+      "branches": {
+        "total": 226,
+        "cubiertos": 150,
+        "porcentaje": 66.37
+      },
+      "functions": {
+        "total": 39,
+        "cubiertos": 34,
+        "porcentaje": 87.18
+      },
+      "lines": {
+        "total": 215,
+        "cubiertos": 189,
+        "porcentaje": 87.91
       }
     }
   }

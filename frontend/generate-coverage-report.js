@@ -44,6 +44,16 @@ const leerCobertura = () => {
     return null;
   }
 
+  const archivosCore = [
+    'index-script.js',
+    'main-menu-script.js',
+    'perfil-usuario-script.js',
+    'simulacion-prox-semestre.js',
+    'dashboard-ross.js',
+    'historico-script.js',
+    'historico-estadisticas.js'
+  ];
+
   const coverageData = JSON.parse(fs.readFileSync(coveragePath, 'utf8'));
   
   const archivos = {};
@@ -59,7 +69,8 @@ const leerCobertura = () => {
   Object.keys(coverageData).forEach(filePath => {
     const relPath = filePath.replace(__dirname + path.sep, '').replace(/\\/g, '/');
     
-    if (relPath.includes('js/main-menu-script.js') || relPath.includes('js/perfil-usuario-script.js')) {
+    const archivoCore = archivosCore.find(nombre => relPath.includes(`js/${nombre}`));
+    if (archivoCore) {
       const coverage = coverageData[filePath];
       const s = coverage.s;
       const b = coverage.b || {};
@@ -97,10 +108,8 @@ const leerCobertura = () => {
       const porcentajeBranches = branches > 0 ? ((branchesCubiertos / branches) * 100).toFixed(2) : 0;
       const porcentajeFunctions = functions > 0 ? ((functionsCubiertos / functions) * 100).toFixed(2) : 0;
       const porcentajeLines = lines > 0 ? ((linesCubiertos / lines) * 100).toFixed(2) : 0;
-
-      const nombreArchivo = relPath.includes('main-menu-script.js') ? 'main-menu-script.js' : 'perfil-usuario-script.js';
       
-      archivos[nombreArchivo] = {
+      archivos[archivoCore] = {
         statements: {
           total: statements,
           cubiertos: statementsCubiertos,
@@ -181,6 +190,18 @@ if (ejecutarTestsConCobertura()) {
     const contenidoJSON = JSON.stringify(reporte, null, 2);
     fs.writeFileSync(path.join(__dirname, 'coverage-report.json'), contenidoJSON, 'utf8');
 
+    let detalleArchivos = '';
+    Object.keys(cobertura.archivos).sort().forEach(nombreArchivo => {
+      const datos = cobertura.archivos[nombreArchivo];
+      detalleArchivos += `${nombreArchivo}
+  Statements: ${datos.statements.cubiertos}/${datos.statements.total} (${datos.statements.porcentaje}%)
+  Branches: ${datos.branches.cubiertos}/${datos.branches.total} (${datos.branches.porcentaje}%)
+  Functions: ${datos.functions.cubiertos}/${datos.functions.total} (${datos.functions.porcentaje}%)
+  Lines: ${datos.lines.cubiertos}/${datos.lines.total} (${datos.lines.porcentaje}%)
+
+`;
+    });
+
     const contenidoTXT = `Reporte de Cobertura de Código
 Fecha: ${reporte.fecha}
 
@@ -192,18 +213,7 @@ Functions: ${cobertura.resumen.functions.cubiertos}/${cobertura.resumen.function
 Lines: ${cobertura.resumen.lines.cubiertos}/${cobertura.resumen.lines.total} (${cobertura.resumen.lines.porcentaje}%)
 
 Detalle por archivo
-main-menu-script.js
-  Statements: ${cobertura.archivos['main-menu-script.js'].statements.cubiertos}/${cobertura.archivos['main-menu-script.js'].statements.total} (${cobertura.archivos['main-menu-script.js'].statements.porcentaje}%)
-  Branches: ${cobertura.archivos['main-menu-script.js'].branches.cubiertos}/${cobertura.archivos['main-menu-script.js'].branches.total} (${cobertura.archivos['main-menu-script.js'].branches.porcentaje}%)
-  Functions: ${cobertura.archivos['main-menu-script.js'].functions.cubiertos}/${cobertura.archivos['main-menu-script.js'].functions.total} (${cobertura.archivos['main-menu-script.js'].functions.porcentaje}%)
-  Lines: ${cobertura.archivos['main-menu-script.js'].lines.cubiertos}/${cobertura.archivos['main-menu-script.js'].lines.total} (${cobertura.archivos['main-menu-script.js'].lines.porcentaje}%)
-
-perfil-usuario-script.js
-  Statements: ${cobertura.archivos['perfil-usuario-script.js'].statements.cubiertos}/${cobertura.archivos['perfil-usuario-script.js'].statements.total} (${cobertura.archivos['perfil-usuario-script.js'].statements.porcentaje}%)
-  Branches: ${cobertura.archivos['perfil-usuario-script.js'].branches.cubiertos}/${cobertura.archivos['perfil-usuario-script.js'].branches.total} (${cobertura.archivos['perfil-usuario-script.js'].branches.porcentaje}%)
-  Functions: ${cobertura.archivos['perfil-usuario-script.js'].functions.cubiertos}/${cobertura.archivos['perfil-usuario-script.js'].functions.total} (${cobertura.archivos['perfil-usuario-script.js'].functions.porcentaje}%)
-  Lines: ${cobertura.archivos['perfil-usuario-script.js'].lines.cubiertos}/${cobertura.archivos['perfil-usuario-script.js'].lines.total} (${cobertura.archivos['perfil-usuario-script.js'].lines.porcentaje}%)
-`;
+${detalleArchivos}`;
 
     fs.writeFileSync(path.join(__dirname, 'coverage-report.txt'), contenidoTXT, 'utf8');
 

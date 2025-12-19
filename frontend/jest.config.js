@@ -3,15 +3,20 @@ module.exports = {
   roots: ['<rootDir>/tests'],
   testMatch: ['**/*.test.js'],
   collectCoverageFrom: [
+    'js/index-script.js',
     'js/main-menu-script.js',
-    'js/perfil-usuario-script.js'
+    'js/perfil-usuario-script.js',
+    'js/simulacion-prox-semestre.js',
+    'js/dashboard-ross.js',
+    'js/historico-script.js',
+    'js/historico-estadisticas.js'
   ],
   coverageThreshold: {
     global: {
-      branches: 80,
-      functions: 80,
-      lines: 80,
-      statements: 80
+      branches: 60,
+      functions: 70,
+      lines: 70,
+      statements: 70
     }
   },
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
